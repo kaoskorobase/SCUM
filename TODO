@@ -8,3 +8,5 @@
 * border for all views?
 * make contextMenu work completely in language
 * Font.measure primitive [done]
+
+* remove abstraction layer

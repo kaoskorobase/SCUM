@@ -9,33 +9,68 @@ AM_PROG_CC_STDC
 AC_HEADER_STDC
 
 AC_ARG_WITH(fltk-config,
-AC_HELP_STRING([--with-fltk-config],[location of the fltk-config script]))
+AC_HELP_STRING([--with-fltk-config],[location of the fltk-config script]),
+[fltk_config=$withval],[fltk_config="fltk-config"])
 
 AC_ARG_ENABLE(debug,
-AC_HELP_STRING([--enable-debug],[enable debugging support]))
+AC_HELP_STRING([--enable-debug],[enable debugging support]),
+  [],[enable_debug=no])
+
+AC_ARG_WITH(cairo,
+  AC_HELP_STRING([--with-cairo],[enable cairo support]),
+  [use_cairo=$withval],[use_cairo=yes])
+
+AC_ARG_WITH(glitz,
+AC_HELP_STRING([--with-glitz],[disable glitz support]),
+  [use_glitz=$withval],[use_glitz=yes])
 
 PKG_CHECK_MODULES(PACKAGE,["libsclang"])
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-if test "x${with_fltk_config}" = "x"; then
-    fltk_config="fltk-config"
+if test "$use_cairo" = "yes"; then
+   PKG_CHECK_MODULES(CAIRO,[cairo],[HAVE_CAIRO=true],[HAVE_CAIRO=false])
 else
-    fltk_config="$with_fltk_config"
+   HAVE_CAIRO=false
+fi
+
+AM_CONDITIONAL(HAVE_CAIRO,$HAVE_CAIRO)
+
+if $HAVE_CAIRO; then
+   PACKAGE_CFLAGS="$PACKAGE_CFLAGS $CAIRO_CFLAGS"
+   PACKAGE_LIBS="$PACKAGE_LIBS $CAIRO_LIBS"
+   AC_DEFINE([HAVE_CAIRO],[1],[Cairo])
+else
+   AC_DEFINE([HAVE_CAIRO],[0],[Cairo])
+fi
+
+if test "$HAVE_CAIRO" = "true" -a "$use_glitz" = "yes"; then
+   PKG_CHECK_MODULES(GLITZ,[glitz,glitz-glx],[HAVE_GLITZ=true],[HAVE_GLITZ=false])
+else
+   HAVE_GLITZ=false
+fi
+
+if $HAVE_GLITZ; then
+   PACKAGE_CFLAGS="$PACKAGE_CFLAGS $GLITZ_CFLAGS"
+   PACKAGE_LIBS="$PACKAGE_LIBS $GLITZ_LIBS"
+   AC_DEFINE([HAVE_GLITZ],[1],[glitz support])
+else
+   AC_DEFINE([HAVE_GLITZ],[0],[glitz support])
 fi
 
 if ! which "${fltk_config}" &>/dev/null; then
     AC_MSG_ERROR([flkt-config not found])
 fi
 
-if test "x${enable_debug}" = "xyes"; then
-    PACKAGE_DEBUG_CFLAGS="-g -O0"
+if test "$enable_debug" = "yes"; then
+    PACKAGE_DEBUG_CFLAGS="-g -DSCUM_DEBUG"
 else
     PACKAGE_DEBUG_CFLAGS="-DNDEBUG"
 fi
 
-FLTK_CFLAGS="$(${fltk_config} --cflags --use-gl)"
-FLTK_LIBS="$(${fltk_config} --ldflags --use-gl)"
+fltk_config_args="--use-gl --use-images"
+FLTK_CFLAGS="$(${fltk_config} ${fltk_config_args} --cflags)"
+FLTK_LIBS="$(${fltk_config} ${fltk_config_args} --ldflags)"
 
 PACKAGE_CFLAGS="${PACKAGE_CFLAGS} -D_REENTRANT -Wno-unknown-pragmas ${PACKAGE_DEBUG_CFLAGS} ${FLTK_CFLAGS}"
 PACKAGE_LIBS="${PACKAGE_LIBS} ${FLTK_LIBS}"
