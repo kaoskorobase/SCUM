@@ -33,6 +33,8 @@ dnl AC_ARG_WITH(glitz,
 dnl AC_HELP_STRING([--with-glitz],[disable glitz support]),
 dnl   [use_glitz=$withval],[use_glitz=yes])
 
+AC_C_BIGENDIAN([words_bigendian=true],[words_bigendian=false])
+
 if test "x$with_howl" == "xtrue"; then
     PKG_CHECK_MODULES(PACKAGE,["howl"],[HAVE_HOWL=true],[HAVE_HOWL=false])
 else
@@ -83,6 +85,10 @@ if test "$enable_debug" = "yes"; then
     PACKAGE_DEBUG_CFLAGS="-g -DSCUM_DEBUG"
 else
     PACKAGE_DEBUG_CFLAGS="-DNDEBUG"
+fi
+
+if ! $words_bigendian; then
+    PACKAGE_CFLAGS="${PACKAGE_CFLAGS} -DOSC_HOST_LITTLE_ENDIAN=1"
 fi
 
 #fltk_config_args="--use-gl --use-images"
