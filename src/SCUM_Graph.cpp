@@ -18,36 +18,54 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Graph.cpp,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
 #include "SCUM_Graph.hh"
-#include "SCUM_GL.hh"
+#include "SCUM_Client.hh"
 #include "SCUM_System.hh"
+
+#ifdef __APPLE__
+# include <OpenGL/glu.h>
+#else
+# include <GL/glu.h>
+#endif
 
 using namespace SCUM;
 
 // =====================================================================
 // SCUM_Scope
 
-int getScopeBuf(uint32 index, SndBuf *buf, bool& didChange);
+//int getScopeBuf(uint32 index, SndBuf *buf, bool& didChange);
 
-SCUM_Scope::SCUM_Scope(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_GLView(parent, obj),
-	  m_bufNum(-1),
+SCUM_Scope::SCUM_Scope(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_GLView(klass, client, oid, args),
+	  m_buf(0),
 	  m_zoom(1.f, 1.f),
 	  m_style(kStyleSeparate)
 {
-	memset(&m_buf, 0, sizeof(SndBuf));
+	char shmName[SHM_NAME_MAX];
+	int err;
+
 	setPadding(1.f);
 	setBorder(kBorderIn);
-	startAnimation();
+
+	err = snprintf(shmName, SHM_NAME_MAX, "/SCUM:%d:Scope:%d", getClient()->getPort(), getId());
+	if (err < SHM_NAME_MAX) {
+		err = m_shm.attach(shmName);
+		if (err) {
+			fprintf(stderr, "SCUM_SharedMemory::attach: %s\n", strerror(err));
+		} else {
+			m_buf = (SCUM_SndBuf*)m_shm.getData();
+		}
+		startAnimation();
+	}
 }
 
 SCUM_Scope::~SCUM_Scope()
 {
-	free(m_buf.data);
+	m_shm.detach();
 }
 
 // shamelessly stolen from jmc's scope.
@@ -83,29 +101,36 @@ void SCUM_Scope::initGL()
 
 void SCUM_Scope::drawGL()
 {
+#if 0
 	bool didChange;
 	int err = getScopeBuf(m_bufNum, &m_buf, didChange);
 	if (err) return;
+#endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	switch (m_style) {
-		case kStyleSeparate: drawSeparate(); break;
-		case kStyleOverlay: drawOverlay(); break;
-		case kStyleXY: drawXY(); break;
+	if (m_buf) {
+		m_shm.lock();
+		switch (m_style) {
+			case kStyleSeparate: drawSeparate(); break;
+			case kStyleOverlay: drawOverlay(); break;
+			case kStyleXY: drawXY(); break;
+		}
+		m_shm.unlock();
 	}
 }
 
 void SCUM_Scope::drawSeparate()
 {
-	float* data = m_buf.data;
-	if (!data) return;
+	float* data = m_buf->data;
 
-	int samples = m_buf.samples;
+	int samples = m_buf->samples;
 	SCUM_Rect bounds(context()->bounds().flipped());
 	float width = bounds.w;
-	int channels = m_buf.channels;
+	int channels = m_buf->channels;
 	float chanHeight = bounds.h / channels;
 	float chanHeight2 = 0.5f * chanHeight;
+
+	printf("samples %d channels %d\n", samples, channels);
 
 	SCUM_Point zoom(samples / (channels * width * m_zoom.x), chanHeight);
 // 	SCUM_Point scroll(scrollOffset());
@@ -157,13 +182,12 @@ void SCUM_Scope::drawOverlay()
 
 void SCUM_Scope::drawXY()
 {
-	float* data = m_buf.data;
-	if (!data) return;
+	float* data = m_buf->data;
 	
-	int samples = m_buf.samples;
+	int samples = m_buf->samples;
 
 	SCUM_Rect r(context()->bounds());
-	int channels = min(m_buf.channels, 16);
+	int channels = min((int)m_buf->channels, 16);
 	float height = r.h - 2.;
 	float height2 = 0.5 * height;
 	float width = r.w - 2.;
@@ -175,8 +199,7 @@ void SCUM_Scope::drawXY()
 	
 	glColor(fgColor());
 
-	for (int k=0, j=0; j < channels; k++, j+=2)
-	{
+	for (int k=0, j=0; j < channels; k++, j+=2) {
 		float x = xoff + data[j] * xScale;
 		float y = yoff - data[j+1] * yScale;
 
@@ -192,25 +215,23 @@ void SCUM_Scope::drawXY()
 	}
 }
 
-void SCUM_Scope::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Scope::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "xZoom")) {
-		m_zoom.x = max(1., floatValue(slot));
+		m_zoom.x = max(1.f, args.get_f());
 		refresh();
 	} else if (equal(key, "yZoom")) {
-		m_zoom.y = max(1., floatValue(slot));
-		refresh();
-	} else if (equal(key, "bufnum")) {
-		m_bufNum = intValue(slot);
+		m_zoom.y = max(1.f, args.get_f());
 		refresh();
 	} else if (equal(key, "style")) {
-		m_style = intValue(slot);
+		m_style = args.get_i();
 		refresh();
 	} else {
-		SCUM_GLView::setProperty(key, slot);
+		SCUM_GLView::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Scope::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "xZoom")) {
@@ -225,6 +246,7 @@ void SCUM_Scope::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_GLView::getProperty(key, slot);
 	}
 }
+#endif
 
 // SCUM_Point SCUM_Scope::scrollOffset()
 // {
@@ -246,7 +268,8 @@ void SCUM_Scope::getProperty(const PyrSymbol* key, PyrSlot* slot)
 void SCUM_Scope::animate()
 {
 	bool didChange = false;
-	getScopeBuf(m_bufNum, &m_buf, didChange);
+	//getScopeBuf(m_bufNum, &m_buf, didChange);
+	didChange = true;
 	if (didChange) context()->refresh();
 }
 
@@ -272,5 +295,12 @@ void SCUM_Scope::animate()
 
 // 	m_context->refresh();
 // }
+
+#include "SCUM_Class.hh"
+
+void SCUM_Graph_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_Scope>(reg, "Scope", "GLView");
+}
 
 // EOF

@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Window.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -91,11 +91,10 @@ namespace SCUM
    methods purely virtual in SCUM_WindowHandle are called in view
    destructors; these cannot be called in the handle's destructor.
  */
-class SCUM_Window : public SCUM_Bin, protected Fl_Double_Window
+class SCUM_Window : public SCUM_Bin, public Fl_Double_Window
 {
 	struct DeferredCommands
 	{
-		unsigned		destroy : 1;
 		unsigned		show : 1;
 		unsigned		hide : 1;
 		unsigned		resize : 1;
@@ -109,12 +108,11 @@ class SCUM_Window : public SCUM_Bin, protected Fl_Double_Window
 	friend class SCUM_Container;
 
 public:
-	SCUM_Window(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Window(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_Window();
 
 	inline Fl_Group* asGroup();
 
-	virtual void destroy(bool now);
 	virtual void raise();
 	virtual void lower();
 
@@ -142,8 +140,8 @@ public:
 	virtual SCUM_Size getMinSize();
 
 	// properties
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
 	// overrides

@@ -79,7 +79,7 @@ SCUMMenu : SCUMObject
 	init { | argItems |
 		items = argItems;
 		this.prInit(items.collectMsg(\primSpec));
-		SCUMDesktop.prRetain(this);
+		SCUM.desktop.prRetain(this);
 	}
 
 	popup { | pos, item=nil |
@@ -105,7 +105,7 @@ SCUMMenu : SCUMObject
 		^this.primitiveFailed
 	}
 	prDestroyed {
-		SCUMDesktop.prRelease(this);
+		SCUM.desktop.prRelease(this);
 		super.prDestroyed;
 	}
 	prPopup { | pos, item |

@@ -1,12 +1,21 @@
-SCUMLabel : SCUMView
-{
+SCUMLabel : SCUMView {
 	var <text, <font;
 
-	initDefaults {
-		super.initDefaults;
+	initClass {
+		this.propertyDefaults.putAll((
+			font: { SCUM.desktop.font },
+			textAlignment: 5,
+			xPadding: 5,
+			yPadding: 5,
+			frozen: false // better name?
+		));
+	}
+	
+	initView {
+		super.initView;
 		this.canFocus = false;
 		this.xFill = 1;
-		this.font = SCUMDesktop.font;
+		this.font = SCUM.desktop.font;
 	}
 
 	// properties
@@ -23,15 +32,23 @@ SCUMLabel : SCUMView
 	yPadding_ { |v| this.setProperty(\yPadding, v) }
 	padding { ^this.prGetPointProperty(\xPadding, \yPadding) }
 	padding_ { |v| this.prSetPointProperty(\xPadding, \yPadding, v.asPoint) }
+	frozen { ^this.getProperty(\frozen) }
+	frozen_ { |v| this.setProperty(\frozen, v != 0); }
+	minSize_ { |v|
+		if (v.isKindOf(String)) {
+			this.setProperty(\minSize, v);
+		}{
+			super.minSize_(v);
+		}
+	}
 }
 
-SCUMTextEntry : SCUMLabel
-{
+SCUMTextEntry : SCUMLabel {
 	var <value, <>setBoth=true, <editColor;
 	var fgColorSave, keyString;
 
-	initDefaults {
-		super.initDefaults;
+	initView {
+		super.initView;
 		editColor = Color.red;
 		value = this.defaultValue;
 		this.canFocus = true;
@@ -127,12 +144,11 @@ SCUMTextEntry : SCUMLabel
 	}
 }
 
-SCUMStringEntry : SCUMTextEntry
-{
+SCUMStringEntry : SCUMTextEntry {
 	var <>history, historyIndex;
 
-	initDefaults {
-		super.initDefaults;
+	initView {
+		super.initView;
 		history = History(10);
 		ActionListener(this, \value, #{ | view |
 			view.history.push(view.value);
@@ -164,20 +180,22 @@ SCUMStringEntry : SCUMTextEntry
 	}
 }
 
-SCUMNumberEntry : SCUMTextEntry
-{
-	var <precision, <>coarseStep=1, <>fineStep=0.001;
+SCUMNumberEntry : SCUMTextEntry {
+	var <>precision, <>coarseStep=1, <>fineStep=0.001;
 	var lastMousePos;
 
 	*viewClass { ^SCUMStringEntry }
 
-	initDefaults {
-		super.initDefaults;
+	initView {
+		super.initView;
 		this.bgColor = Color.grey(0.6);
 		this.font = Font("Courier", 12);
 		this.textAlignment = 4;
 		this.precision = 5;
-	}
+		this
+			.setKey(nil, SCUM.keyUp, { |v| v.increment })
+			.setKey(nil, SCUM.keyDown, { |v| v.decrement })
+			.setKey(\S, SCUM.keyUp, { |v| v.increment(fine: true) })			.setKey(\S, SCUM.keyDown, { |v| v.decrement(fine: true) })	}
 
 	defaultValue { ^0 }
 	valueToString { | obj | ^obj.asFloat.asStringPrec(precision) }
@@ -209,6 +227,7 @@ SCUMNumberEntry : SCUMTextEntry
 	*propertyKeys {
 		^super.propertyKeys ++ #[\precision];
 	}
+	/*
 	precision_ { | n |
 		var size;
 		precision = n;
@@ -218,6 +237,7 @@ SCUMNumberEntry : SCUMTextEntry
 		size.height = 2.0 * this.padding.y + size.height;
 		this.minSize = size;
 	}
+	*/
 	padding_ { | v |
 		super.padding_(v);
 		this.precision_(this.precision);
@@ -225,17 +245,26 @@ SCUMNumberEntry : SCUMTextEntry
 }
 
 SCUMList : SCUMScrollView {
-	var <font, <items;
-
+	*initClass {
+		this.propertyDefaults.putAll((
+			value: 0,
+			font: { SCUM.desktop.font },
+			textAlignment: 5,
+			fgColorSel: nil, // FIXME
+			bgColorSel: nil, // FIXME
+			xPadding: 4,
+			yPadding: 1
+		));
+	}
+	
 	// properties
 	value { ^this.getProperty(\value) }
-	value_ { |v| this.setProperty(\value, v) }
-	font_ { |v| font = v; this.setProperty(\font, v) }
-	items_ { |v|
-		items = v;
-		this.setProperty(\items, v.asArray);
-	}
-	item { ^items[this.value] }
+	value_ { |v| this.setActiveProperty(\value, v.clip(0, this.items.size)) }
+	font { ^this.getProperty(\font) }
+	font_ { |v| this.setProperty(\font, v) }
+	items { ^this.getProperty(\items) }
+	items_ { |v| this.setProperty(\items, v.asArray) }
+	item { ^this.items.at(this.value) }
 	bgColorSel_ { |v| this.setProperty(\bgColorSel, v) }
 	fgColorSel_ { |v| this.setProperty(\fgColorSel, v) }
 }

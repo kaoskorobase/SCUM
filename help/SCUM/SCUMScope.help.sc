@@ -4,7 +4,7 @@
 //
 // scope view
 //
-// see also: SCUMScrollView
+// see also: SCUMScrollView, ScopeOut
 //
 // ---------------------------------------------------------------------
 // examples
@@ -13,7 +13,7 @@
 (
 	w = SCUMWindow.new;
 	w.title = "Scope example";
-	w.initialSize = Size(400, 100);
+	w.initialSize = Size(400, 200);
 
 	v = SCUMScope(w);
 	v.fgColor = Color.red;
@@ -37,5 +37,5 @@
 )
 
 // ---------------------------------------------------------------------
-// $Id: SCUMScope.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ---------------------------------------------------------------------

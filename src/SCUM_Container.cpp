@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.cpp,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -27,15 +27,13 @@
 #include "SCUM_Window.hh"
 #include "SCUM_Util.hh"
 
-#include <PyrSlot.h>
-
 using namespace SCUM;
 
 // =====================================================================
 // SCUM_Container
 
-SCUM_Container::SCUM_Container(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_Container::SCUM_Container(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args),
 	  m_firstChild(0), m_lastChild(0), m_numChildren(0),
 	  m_padding(0.)
 {
@@ -171,19 +169,20 @@ void SCUM_Container::drawChildren(const SCUM_Rect& damage)
 	}
 }
 
-void SCUM_Container::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Container::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "xPadding")) {
-		m_padding.x = max(0., floatValue(slot));
+		m_padding.x = max(0.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "yPadding")) {
-		m_padding.y = max(0., floatValue(slot));
+		m_padding.y = max(0.f, args.get_f());
 		updateLayout();
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Container::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "padding")) {
@@ -192,6 +191,7 @@ void SCUM_Container::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 bool SCUM_Container::canFocus() const
 {
@@ -322,8 +322,8 @@ void SCUM_Container::removeChild(SCUM_View* view)
 // =====================================================================
 // SCUM_Bin
 
-SCUM_Bin::SCUM_Bin(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Container(parent, obj),
+SCUM_Bin::SCUM_Bin(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Container(klass, client, oid, args),
 	  m_visibleChild(0),
 	  m_border(kBorderNone)
 {
@@ -385,8 +385,8 @@ void SCUM_Bin::childRemoved(SCUM_View* view)
 // =====================================================================
 // SCUM_Box
 
-SCUM_Box::SCUM_Box(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Container(parent, obj),
+SCUM_Box::SCUM_Box(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Container(klass, client, oid, args),
 	  m_spacing(0.0f),
 	  m_numExpand(0),
 	  m_totalExpand(0.f)
@@ -395,19 +395,20 @@ SCUM_Box::SCUM_Box(SCUM_Container* parent, PyrObject* obj)
 	flags().cHasVisible = false;
 }
 
-void SCUM_Box::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Box::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "homogenous")) {
-		flags().cHomogenous = boolValue(slot);
+		flags().cHomogenous = args.get_i();
 		updateLayout();
 	} else if (equal(key, "spacing")) {
-		m_spacing = floatValue(slot);
+		m_spacing = args.get_f();
 		updateLayout();
 	} else {
-		SCUM_Container::setProperty(key, slot);
+		SCUM_Container::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Box::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal("homogenous", key)) {
@@ -418,12 +419,13 @@ void SCUM_Box::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_Container::getProperty(key, slot);
 	}
 }
+#endif
 
 // =====================================================================
 // SCUM_HBox
 
-SCUM_HBox::SCUM_HBox(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Box(parent, obj)
+SCUM_HBox::SCUM_HBox(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Box(klass, client, oid, args)
 {
 }
 
@@ -557,8 +559,8 @@ void SCUM_HBox::boundsChanged(const SCUM_Rect& newBounds)
 // =====================================================================
 // SCUM_VBox
 
-SCUM_VBox::SCUM_VBox(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Box(parent, obj)
+SCUM_VBox::SCUM_VBox(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Box(klass, client, oid, args)
 {
 }
 
@@ -692,8 +694,8 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 // =====================================================================
 // SCUM_Grid
 
-SCUM_Grid::SCUM_Grid(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Container(parent, obj),
+SCUM_Grid::SCUM_Grid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Container(klass, client, oid, args),
 // 	  m_wrap(1),
 	  m_numRows(0), m_numCols(0),
 	  m_grid(0), m_rowInfo(0), m_colInfo(0),
@@ -710,19 +712,19 @@ SCUM_Grid::~SCUM_Grid()
 	free(m_colInfo);
 }
 
-void SCUM_Grid::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Grid::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "homogenous")) {
-		flags().cHomogenous = boolValue(slot);
+		flags().cHomogenous = args.get_i();
 		updateLayout();
 	} else if (equal(key, "xSpacing")) {
-		m_spacing.x = max(0., floatValue(slot));
+		m_spacing.x = max(0.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "ySpacing")) {
-		m_spacing.y = max(0., floatValue(slot));
+		m_spacing.y = max(0.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "dimensions")) {
-		SCUM_Size size = sizeValue(slot);
+		SCUM_Size size(args.get_f(), args.get_f());
 		m_numRows = max(0, (int)size.h);
 		m_numCols = max(0, (int)size.w);
 		dimensionsChanged();
@@ -731,10 +733,11 @@ void SCUM_Grid::setProperty(const PyrSymbol* key, PyrSlot* slot)
 // 		m_wrap = (uint16_t)max(1, intValue(slot));
 // 		updateGrid(true);
 	} else {
-		SCUM_Container::setProperty(key, slot);
+		SCUM_Container::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Grid::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "homogenous")) {
@@ -749,6 +752,7 @@ void SCUM_Grid::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_Container::getProperty(key, slot);
 	}
 }
+#endif
 
 SCUM_Size SCUM_Grid::getMinSize()
 {
@@ -1025,11 +1029,16 @@ void SCUM_Grid::updateGrid()
 	}
 }
 
+size_t SCUM_Grid::childIndex(size_t row, size_t col)
+{
+	return 0;
+}
+
 // =====================================================================
 // SCUM_HGrid
 
-SCUM_HGrid::SCUM_HGrid(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Grid(parent, obj)
+SCUM_HGrid::SCUM_HGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Grid(klass, client, oid, args)
 { }
 
 size_t SCUM_HGrid::childIndex(size_t row, size_t col)
@@ -1040,8 +1049,8 @@ size_t SCUM_HGrid::childIndex(size_t row, size_t col)
 // =====================================================================
 // SCUM_VGrid
 
-SCUM_VGrid::SCUM_VGrid(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Grid(parent, obj)
+SCUM_VGrid::SCUM_VGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Grid(klass, client, oid, args)
 { }
 
 size_t SCUM_VGrid::childIndex(size_t row, size_t col)
@@ -1153,5 +1162,19 @@ void SCUM_Scroll::updateLayout()
 	}
 }
 #endif // 0
+
+#include "SCUM_Class.hh"
+
+void SCUM_Container_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_Container>(reg, "Container", "View");
+	new SCUM_ClassT<SCUM_Bin>(reg, "Bin", "Container");
+	new SCUM_ClassT<SCUM_Box>(reg, "Box", "Container");
+	new SCUM_ClassT<SCUM_HBox>(reg, "HBox", "Box");
+	new SCUM_ClassT<SCUM_VBox>(reg, "VBox", "Box");
+	new SCUM_ClassT<SCUM_Grid>(reg, "Grid", "Container");
+	new SCUM_ClassT<SCUM_HGrid>(reg, "HGrid", "Grid");
+	new SCUM_ClassT<SCUM_VGrid>(reg, "VGrid", "Grid");
+}
 
 // EOF

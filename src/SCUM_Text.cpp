@@ -18,32 +18,27 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
 #include "SCUM_Text.hh"
-#include "SCUM_Desktop.hh"
+#include "SCUM_Client.hh"
 #include "SCUM_GC.hh"
-#include "SCUM_Symbol.hh"
 
 #include <string.h>
-
-#include <PyrKernel.h>
-#include <PyrObject.h>
-#include <PyrSlot.h>
 
 using namespace SCUM;
 
 // =====================================================================
 // SCUM_Label
 
-SCUM_Label::SCUM_Label(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_Label::SCUM_Label(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args),
 	  m_padding(SCUM_Point(5, 5)),
 	  m_textAlign(kAlignC)
 {
-	m_text.setFont(desktop()->font());
+	m_text.setFont(getClient()->font());
 }
 
 void SCUM_Label::drawView(const SCUM_Rect& damage)
@@ -63,34 +58,44 @@ void SCUM_Label::drawView(const SCUM_Rect& damage)
 	GCRestore();
 }
 
-void SCUM_Label::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "text")) {
-		size_t size;
-		const char* str = stringValue(slot, size);
-		m_text.setText(str, size);
-		if (layoutNeedsUpdate(getMinSize())) {
+		m_text.setText(args.get_s());
+		printf("frozenSize %d needsUpdate %d\n", m_frozenSize.isEmpty(), layoutNeedsUpdate(getMinSize()));
+		if (m_frozenSize.isEmpty() && layoutNeedsUpdate(getMinSize())) {
 			updateLayout();
 		} else {
 			refresh();
 		}
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = intValue(slot);
+		m_textAlign = args.get_i();
 		refresh();
 	} else if (equal(key, "font")) {
-		m_text.setFont(fontValue(slot));
+		m_text.setFont(SCUM_Font(args.get_s(), args.get_f()));
 		updateLayout();
 	} else if (equal(key, "xPadding")) {
-		m_padding.x = max(2., floatValue(slot));
+		m_padding.x = max(2.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "yPadding")) {
-		m_padding.y = max(2., floatValue(slot));
+		m_padding.y = max(2.f, args.get_f());
+		updateLayout();
+	} else if (equal(key, "frozen")) {
+		if (args.get_i()) {
+			m_frozenSize = minSize();
+		} else {
+			m_frozenSize = SCUM_Size();
+		}
+		updateLayout();
+	} else if (equal(key, "minSize") && (args.peek() == 's')) { // overridden from SCUM_View
+		layout().minSize = m_text.font().measure(args.get_s()).size;
 		updateLayout();
 	} else {
-		SCUM_View::setProperty(key, slot);
-	}
+		SCUM_View::setProperty(key, args);
+	} 
 }
 
+#if 0
 void SCUM_Label::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "xPadding")) {
@@ -103,17 +108,20 @@ void SCUM_Label::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 SCUM_Size SCUM_Label::getMinSize()
 {
-	return m_text.extents().size.padded(m_padding);
+	return m_frozenSize.isEmpty() ?
+		m_text.extents().size.padded(m_padding) :
+		m_frozenSize.max(SCUM_View::getMinSize());
 }
 
 // =====================================================================
 // SCUM_StringEntry
 
-SCUM_StringEntry::SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Label(parent, obj)
+SCUM_StringEntry::SCUM_StringEntry(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Label(klass, client, oid, args)
 { }
 
 void SCUM_StringEntry::drawView(const SCUM_Rect& damage)
@@ -176,18 +184,19 @@ void SCUM_StringEntry::scrollWheel(int state, const SCUM_Point& where, const SCU
 // =====================================================================
 // SCUM_List
 
-SCUM_List::SCUM_List(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_ScrollView(parent, obj),
+SCUM_List::SCUM_List(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_ScrollView(klass, client, oid, args),
 	  m_value(-1),
 	  m_textAlign(kAlignW),
 	  m_padding(4, 1)
 {
-	m_font = desktop()->font();
+	m_font = getClient()->font();
 	m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
 }
 
-void SCUM_List::drawContent()
+void SCUM_List::drawContent(const SCUM_Rect& damage)
 {
+	printf("SCUM::draw: %d\n", m_items.size());
 	if (m_items.empty()) return;
 
 	GCSave();
@@ -220,6 +229,7 @@ void SCUM_List::drawContent()
 		}
 
 		m_font.draw(itemBounds.inset(m_padding), makeAlign(m_textAlign), m_items[i].c_str());
+		printf("SCUM: %s\n", m_items[i].c_str());
 
 		if (GCIsClipped(itemBounds)) break;
 		itemBounds.y += h;
@@ -228,9 +238,9 @@ void SCUM_List::drawContent()
 	GCRestore();
 }
 
-void SCUM_List::drawContentFocus()
+void SCUM_List::drawContentFocus(const SCUM_Rect& damage)
 {
-	SCUM_ScrollView::drawContentFocus();
+	SCUM_ScrollView::drawContentFocus(damage);
 }
 
 bool SCUM_List::mouseDownInContent(int, const SCUM_Point& where)
@@ -243,12 +253,16 @@ bool SCUM_List::mouseDownInContent(int, const SCUM_Point& where)
 	return false;
 }
 
-void SCUM_List::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_List::setProperty(const char* key, SCUM_ArgStream& args)
 {
-	if (key == SCUM_Symbol::value) {
-		setBoolValue(slot, setValue(intValue(slot), false));
+	if (equal(key, "value")) {
+		setValue(args.get_i(), false);
 	} else if (equal(key, "items")) {
-		stringValues(slot, m_items);
+		m_items.clear();
+		m_items.reserve(args.get_i());
+		while (!args.atEnd()) {
+			m_items.push_back(args.get_s());
+		}
 		m_itemSize.w = 0.f;
 		for (int i=0; i < m_items.size(); i++) {
 			m_itemSize.w = max(m_itemSize.w, m_font.measure(m_items[i].c_str()).size.w);
@@ -257,29 +271,30 @@ void SCUM_List::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		m_scrollStep = SCUM_Point(1, m_itemSize.h);
 		updateContentSize();
 	} else if (equal(key, "font")) {
-		m_font = fontValue(slot);
+		m_font = fontValue(args);
 		m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
 		updateContentSize();
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = clipAlign(intValue(slot));
+		m_textAlign = clipAlign(args.get_i());
 		refresh();
 	} else if (equal(key, "fgColorSel")) {
-		m_fgColorSel = colorValue(slot);
+		m_fgColorSel = colorValue(args);
 		refresh();
 	} else if (equal(key, "bgColorSel")) {
-		m_bgColorSel = colorValue(slot);
+		m_bgColorSel = colorValue(args);
 		refresh();
 	} else if (equal(key, "xPadding")) {
-		m_padding.x = max(0., floatValue(slot));
+		m_padding.x = max(0.f, args.get_f());
 		updateContentSize();
 	} else if (equal(key, "yPadding")) {
-		m_padding.y = max(0., floatValue(slot));
+		m_padding.y = max(0.f, args.get_f());
 		updateContentSize();
 	} else {
-		SCUM_ScrollView::setProperty(key, slot);
+		SCUM_ScrollView::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_List::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::value) {
@@ -292,6 +307,7 @@ void SCUM_List::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_ScrollView::getProperty(key, slot);
 	}
 }
+#endif
 
 SCUM_Size SCUM_List::preferredViewPortSize()
 {
@@ -321,6 +337,15 @@ bool SCUM_List::setValue(int value, bool send)
 		return true;
 	}
 	return false;
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_Text_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_Label>(reg, "Label", "View");
+	new SCUM_ClassT<SCUM_StringEntry>(reg, "StringEntry", "Label");
+	new SCUM_ClassT<SCUM_List>(reg, "List", "ScrollView");
 }
 
 // EOF

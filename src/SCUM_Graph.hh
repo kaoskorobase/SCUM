@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Graph.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -26,14 +26,21 @@
 #define SCUM_GRAPH_HH_INCLUDED
 
 #include "SCUM_GL.hh"
+#include "SCUM_Shm.hh"
+
+#include <stdint.h>
+#include <vector>
 
 // =====================================================================
 // SCUM_Scope
 
-#include <vector>
-
-#include <SC_Types.h>
-#include <SC_SndBuf.h>
+struct SCUM_SndBuf
+{
+	double		samplerate;
+	uint32_t	channels;
+	uint32_t	samples;
+	float		data[1];
+};
 
 class SCUM_Scope : public SCUM_GLView
 {
@@ -45,7 +52,7 @@ public:
 		kStyleXY
 	};
 
-	SCUM_Scope(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Scope(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	~SCUM_Scope();
 
 // 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
@@ -58,8 +65,8 @@ public:
 	virtual void initGL();
 	virtual void drawGL();
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual void animate();
 
@@ -73,8 +80,8 @@ protected:
 	void drawInvalid();
 
 private:
-	int							m_bufNum;
-	SndBuf						m_buf;
+	SCUM_SharedMemory			m_shm;
+	SCUM_SndBuf*				m_buf;
 	SCUM_Point					m_zoom;
 	std::vector<SCUM_Color>		m_waveColors;
 	uint8_t						m_style;

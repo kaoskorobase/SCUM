@@ -12,7 +12,7 @@
 
 (
 	w = SCUMWindow({ |v| v.title = "VGrid example" });
-	c = SCUMVGrid(w, { |v| v.wrap = 3 });
+	c = SCUMVGrid(w, { |v| v.dimensions = Size(3, 3) });
 	9.do({ |i|
 		SCUMLabel(c, { |v|
 			v.text = (i+1).asString;
@@ -32,5 +32,5 @@ c.xSpacing = 5;
 c.ySpacing = 10;
 
 // ---------------------------------------------------------------------
-// $Id: SCUMVGrid.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ---------------------------------------------------------------------

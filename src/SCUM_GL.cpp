@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_GL.cpp,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -73,8 +73,8 @@ void SCUM_GLContext::draw()
 // =====================================================================
 // SCUM_View
 
-SCUM_GLView::SCUM_GLView(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj)
+SCUM_GLView::SCUM_GLView(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args)
 {
 	m_context = new SCUM_GLContext(this);
 }
@@ -122,19 +122,26 @@ void SCUM_GLView::drawGL()
 {
 }
 
-void SCUM_GLView::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_GLView::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "visible")) {
 		bool vis0 = isVisible();
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 		bool vis1 = isVisible();
 		if (vis0 != vis1) {
 			if (vis1) m_context->show();
 			else m_context->hide();
 		}
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_GL_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_GLView>(reg, "GLView", "View");
 }
 
 // EOF

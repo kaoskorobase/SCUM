@@ -18,19 +18,15 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
 #include "SCUM_Menu.hh"
-#include "SCUM_Desktop.hh"
+#include "SCUM_Client.hh"
 #include "SCUM_Symbol.hh"
 #include "SCUM_Util.hh"
 #include "SCUM_View.hh"
-
-#include <PyrKernel.h>
-#include <PyrObject.h>
-#include <PyrSlot.h>
 
 using namespace SCUM;
 
@@ -45,6 +41,7 @@ SCUM_MenuItem::SCUM_MenuItem(const SCUM_MenuItem& item)
 	: m_type(item.m_type), m_text(item.m_text)
 { }
 
+#if 0
 SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
 {
 	if (!isKindOfSlot(spec, class_array) || (spec->uo->size < 2))
@@ -53,6 +50,7 @@ SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
 	m_type = charValue(spec->uo->slots+0);
 	m_text = stringValue(spec->uo->slots+1);
 }
+#endif
 
 // =====================================================================
 // SCUM_MenuHandle
@@ -66,19 +64,20 @@ SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
 // =====================================================================
 // SCUM_Menu
 
-SCUM_Menu::SCUM_Menu(PyrObject* obj, const SCUM_MenuItems& items)
-	: SCUM_Object(obj),
+SCUM_Menu::SCUM_Menu(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Object(klass, client, oid, args),
 	  m_handle(0),
 	  m_item(-1)
 {
-	m_handle = SCUM::MenuHandle::create(items);
+	//m_handle = SCUM::MenuHandle::create(items);
 	SCUM_ASSERT(m_handle != 0);
-	SCUM_Desktop::instance().retain(this);
+	getClient()->retain(this);
 }
 
 SCUM_Menu::~SCUM_Menu()
 {
-	SCUM_Desktop::instance().release(this);
+	//SCUM_Desktop::instance().release(this);
+	getClient()->release(this);
 	m_handle->release();
 }
 
@@ -108,17 +107,19 @@ int SCUM_Menu::popup(const SCUM_Point& where, int item, bool send)
 	return item;
 }
 
-void SCUM_Menu::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Menu::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "item")) {
-		m_item = intValue(slot);
-	} else if (key == SCUM_Symbol::value) {
-		setBoolValue(slot, setValue(m_item, boolValue(slot)));
+		m_item = args.get_i();
+	} else if (equal(key, "value")) {
+		//setBoolValue(slot, setValue(m_item, boolValue(slot)));
+		setValue(m_item, args.get_i());
 	} else {
-		SCUM_Object::setProperty(key, slot);
+		SCUM_Object::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Menu::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::value) {
@@ -129,5 +130,6 @@ void SCUM_Menu::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_Object::getProperty(key, slot);
 	}
 }
+#endif
 
 // EOF

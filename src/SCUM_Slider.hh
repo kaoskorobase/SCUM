@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -30,20 +30,24 @@
 #include <vector>
 
 // =====================================================================
+// SCUM_SliderBase
+
+// =====================================================================
 // SCUM_Slider
 
 class SCUM_Slider : public SCUM_View
 {
 public:
-	SCUM_Slider(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
+	SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args, int orient);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
 	virtual SCUM_Size getMinSize();
@@ -53,13 +57,25 @@ protected:
 	double valueFromPoint(const SCUM_Point& p);
 
 private:
+	int			m_orient;
 	double		m_value;
 	double		m_step;
 	SCUM_Rect	m_thumbRect;
 	int			m_thumbSize;
 	bool		m_steady;
 	double		m_steadyOffset;
-	uint8_t		m_orient;
+};
+
+class SCUM_VSlider : public SCUM_Slider
+{
+public:
+	SCUM_VSlider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
+};
+
+class SCUM_HSlider : public SCUM_Slider
+{
+public:
+	SCUM_HSlider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 };
 
 // class SCUM_FillSlider : public SCUM_View
@@ -97,15 +113,15 @@ private:
 class SCUM_Pad : public SCUM_View
 {
 public:
-	SCUM_Pad(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Pad(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual SCUM_Size getMinSize();
 
@@ -117,8 +133,7 @@ protected:
 private:
 	double		m_x;
 	double		m_y;
-	double		m_xStep;
-	double		m_yStep;
+	double		m_step;
 	int			m_thumbSize;
 	SCUM_Rect	m_thumbRect;
 	bool		m_steady;
@@ -148,26 +163,28 @@ public:
 		kWaveform
 	};
 
-	SCUM_Table(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Table(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
+	virtual ~SCUM_Table();
 
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual SCUM_Size getMinSize();
 
 protected:
 	int indexFromPoint(const SCUM_Point& p);
 	double valueFromPoint(const SCUM_Point& p);
-	bool setValue(int x, double y, bool send);
+	bool setValueRange(size_t start, size_t end, float value, float inc, bool send);
+	bool setValue(int x, float y, bool send);
 	bool setValue(const SCUM_Point& p);
 
 private:
-	PyrObject*			m_data;
+	float*				m_data;
 	int					m_size;
 	int					m_style;
 	double				m_step;

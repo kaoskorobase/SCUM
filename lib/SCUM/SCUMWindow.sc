@@ -1,22 +1,30 @@
-SCUMWindow : SCUMBin
-{
-	var <title;
+SCUMWindow : SCUMBin {
 	var showFocusTask, showFocusCond;
 	var inAction=false;
 
+	*initClass {
+		this.propertyDefaults.putAll((
+			title: "a SCUMBag",
+			initialSize: Size(10, 10),
+			resizable: true,
+			fullscreen: false,
+			decorated: true,
+			modal: false,
+			showFocus: false
+		));
+	}
 	*new { | function |
 		^super.new(nil, function)
 	}
 
 	// initialization
-	initDefaults {
-		showFocusCond = Condition.new;
-		super.initDefaults;
-		this.title = "Unnamed Window";
+	initView {
+		super.initView;
+		this.title = this.class.propertyDefault(\title);
 		this
-		.setKey(modControl, $w, #{ | view | view.close })
-		.setKey(modControl, $q, #{ SCUMDesktop.closeAllWindows })
-		.setKey(modCommand, $., #{ thisProcess.stop });
+			.setKey(modDefault, $w, #{ | view | view.close })
+			.setKey(modDefault, $q, #{ \disconnect.postln; SCUM.disconnect })
+			.setKey(modCommand, $., #{ thisProcess.stop });
 	}
 
 	// SCView compat
@@ -31,7 +39,7 @@ SCUMWindow : SCUMBin
 			this.destroy;
 		}{
 			if (inAction) {
-				"SCUMWindow: close called in close action, destroying window!".warn;
+				this.message("SCUMWindow: close called in close action, destroying window!");
 				this.destroy;
 			}{
 				inAction = true;
@@ -52,20 +60,20 @@ SCUMWindow : SCUMBin
 				this.showFocus = false;
 			};
 			showFocusTask = nil;
-		}, clock: AppClock);
+		});
 	}
 	showFocusFor { | seconds |
 		var cond;
 		cond = Condition.new;
 		this.showFocusUntil(cond);
-		AppClock.play(Routine({
+		SystemClock.play(Routine({
 			seconds.wait;
 			cond.unhang;
 		}))
 	}
 
 	// events
-	nextKeyHandler { ^SCUMDesktop }
+	nextKeyHandler { ^SCUM.desktop }
 	defaultKeyDownAction { | evt |
 		if (this.showFocus.not && { evt.hasMod(modControl) } && { evt.char == $f }) {
 			showFocusCond = Condition({ this.showFocus.not });
@@ -85,13 +93,11 @@ SCUMWindow : SCUMBin
 	*propertyKeys {
 		^super.propertyKeys ++ #[\title, \initialSize, \resizable, \fullscreen, \decorated, \modal];
 	}
-	title_ { |v|
-		title = v.asString;
-		this.setProperty(\title, "SuperCollider: " ++ title)
-	}
-	initialSize { ^this.getProperty(\initialSize, Size.new) }
+	title { ^this.getProperty(\title) }
+	title_ { |v| this.setProperty(\title, v.asString) }
+	initialSize { ^this.getProperty(\initialSize) }
 	initialSize_ { |v| this.setProperty(\initialSize, v.asSize) }
-	screenBounds { ^this.getProperty(\screenBounds, Rect.new) }
+	screenBounds { ^this.prQueryProperty(\screenBounds, Rect) }
 	resizable { ^this.getProperty(\resizable) }
 	resizable_ { |v| this.setProperty(\resizable, v) }
 	fullscreen { ^this.getProperty(\fullscreen) }
@@ -104,19 +110,18 @@ SCUMWindow : SCUMBin
 	showFocus_ { |v| this.setProperty(\showFocus, v) }
 
 	// layout
-	updateLayout { | xFit=false, yFit=false |
-		_SCUM_Window_UpdateLayout
-		^this.primitiveFailed
+	updateLayout { | xFit(false) yFit(false) |
+		SCUM.sendMsg("/w_update", id, xFit, yFit)
 	}
 
 	// PRIVATE
 	prAddToParent {
-		SCUMDesktop.prRetain(this);
+		SCUM.desktop.prRetain(this);
 	}
 	prRemoveFromParent {
-		SCUMDesktop.prRelease(this);
+		SCUM.desktop.prRelease(this);
 	}
-	prHandleClose {
+	prHandle_close {
 		this.close;
 	}
 }

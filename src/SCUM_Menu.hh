@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -26,7 +26,7 @@
 #define SCUM_MENU_HH_INCLUDED
 
 #include "SCUM_Handle.hh"
-#include "SCUM_Lang.hh"
+#include "SCUM_Object.hh"
 
 #include <string>
 #include <vector>
@@ -38,7 +38,7 @@ struct SCUM_MenuItem
 {
 	SCUM_MenuItem(int type, const std::string& text);
 	SCUM_MenuItem(const SCUM_MenuItem& item);
-	SCUM_MenuItem(PyrSlot* spec);
+	//SCUM_MenuItem(PyrSlot* spec);
 
 	int type() const { return m_type; }
 	const char* text() const { return m_text.c_str(); }
@@ -87,7 +87,7 @@ namespace SCUM
 class SCUM_Menu : public SCUM_Object
 {
 public:
-	SCUM_Menu(PyrObject* obj, const SCUM_MenuItems& items);
+	SCUM_Menu(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_Menu();
 
 	SCUM::MenuHandle* handle() { return m_handle; }
@@ -100,8 +100,8 @@ public:
 
 	int popup(const SCUM_Point& where, int item, bool send);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 private:
 	SCUM::MenuHandle*			m_handle;

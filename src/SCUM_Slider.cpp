@@ -18,18 +18,16 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
-#include "SCUM_GC.hh"
 #include "SCUM_Slider.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
 
-#include <PyrKernel.h>
-#include <PyrObject.h>
-#include <PyrSlot.h>
+#include <stdexcept>
 
 namespace SCUM
 {
@@ -45,14 +43,15 @@ namespace SCUM
 		
 // 		return sign * exp(delta * delta) / M_E;
 // 	}
-	inline static Orient orientValue(PyrSlot* slot)
+	inline static Orient orientValue(SCUM_ArgStream& args)
 	{
-		PyrSymbol* sym = symbolValue(slot);
+		const char* sym = args.get_s();
 		if (equal(sym, "h") || equal(sym, "horizontal")) return kOrientHorizontal;
 		if (equal(sym, "v") || equal(sym, "vertical")) return kOrientVertical;
-		throw TypeError();
+		throw std::runtime_error("type error");
 	}
 
+#if 0
 	inline static void setOrientValue(PyrSlot* slot, int orient)
 	{
 		switch (orient) {
@@ -61,6 +60,7 @@ namespace SCUM
 			default: SetNil(slot);
 		}
 	}
+#endif
 };
 
 using namespace SCUM;
@@ -68,13 +68,19 @@ using namespace SCUM;
 // =====================================================================
 // SCUM_Slider
 
-SCUM_Slider::SCUM_Slider(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_Slider::SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args)
+{
+	throw std::runtime_error("abstract class");
+}
+
+SCUM_Slider::SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args, int orient)
+	: SCUM_View(klass, client, oid, args),
+	  m_orient(orient),
 	  m_value(1.0),
 	  m_step(0.0),
 	  m_thumbSize(kDefaultThumbSize),
-	  m_steady(false),
-	  m_orient(SCUM::kOrientVertical)
+	  m_steady(false)
 {
 	setValue(0.0, false);
 }
@@ -126,26 +132,29 @@ void SCUM_Slider::mouseMove(int state, const SCUM_Point& where)
 // 	setValue(m_value - expDelta(delta.y) * scale, true);
 // }
 
-void SCUM_Slider::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Slider::setProperty(const char* key, SCUM_ArgStream& args)
 {
-	if (key == SCUM_Symbol::value) {
-		setBoolValue(slot, setValue(floatValue(slot), false));
+	if (equal(key, "value")) {
+		//setBoolValue(slot, setValue(floatValue(slot), false));
+		setValue(args.get_f(), false);
 	} else if (equal(key, "step")) {
-		m_step = clip(floatValue(slot), 0., 1.);
-		setBoolValue(slot, setValue(m_value, false));
+		m_step = clip(args.get_f(), 0.f, 1.f);
+		//setBoolValue(slot, setValue(m_value, false));
+		setValue(m_value, false);
 	} else if (equal(key, "thumbSize")) {
-		m_thumbSize = max(1, intValue(slot));
+		m_thumbSize = max(1, args.get_i());
 		updateLayout();
 	} else if (equal(key, "steady")) {
-		m_steady = boolValue(slot);
+		m_steady = args.get_i();
 	} else if (equal(key, "orientation")) {
-		m_orient = orientValue(slot);
+		m_orient = orientValue(args);
 		updateLayout();
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Slider::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::value) {
@@ -162,6 +171,7 @@ void SCUM_Slider::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 SCUM_Size SCUM_Slider::getMinSize()
 {
@@ -186,14 +196,22 @@ SCUM_Rect SCUM_Slider::thumbRect()
 	return r;
 }
 
-bool SCUM_Slider::setValue(double value, bool send)
+bool SCUM_Slider::setValue(double value, bool doSend)
 {
 	value = clipQuant(value, 0., 1., m_step);
 	
 	if (value != m_value) {
 		m_value = value;
 		refresh();
-		if (send) doAction();
+		if (doSend) {
+			OSC::StaticClientPacket<36> p;
+			p.openMessage("/changed", 3);
+			putId(p);
+			p.putString("value");
+			p.putFloat32(value);
+			p.closeMessage();
+			send(p);
+		}
 		return true;
 	}
 
@@ -215,13 +233,36 @@ double SCUM_Slider::valueFromPoint(const SCUM_Point& p)
 	return value;
 }
 
+#if 0
+void SCUM_Slider::boundsChanged(const SCUM_Rect& bounds)
+{
+	SCUM_View::boundsChanged(bounds);
+	double ratio = 1. / (m_orient == kOrientHorizontal ? bounds.w : bounds.h);
+	OSC::StaticClientPacket<40> p;
+	p.openMessage("/changed", 3);
+	putId(p);
+	p.putString("aspectRatio");
+	p.putFloat32(ratio);
+	p.closeMessage();
+	send(p);
+}
+#endif
+
+SCUM_HSlider::SCUM_HSlider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Slider(klass, client, oid, args, (int)SCUM::kOrientHorizontal)
+{ }
+
+SCUM_VSlider::SCUM_VSlider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Slider(klass, client, oid, args, (int)SCUM::kOrientVertical)
+{ }
+
 // =====================================================================
 // SCUM_Pad
 
-SCUM_Pad::SCUM_Pad(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_Pad::SCUM_Pad(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args),
 	  m_x(.5), m_y(.5),
-	  m_xStep(0.), m_yStep(0.),
+	  m_step(0.),
 	  m_thumbSize(kDefaultThumbSize),
 	  m_steady(false)
 { }
@@ -273,28 +314,29 @@ SCUM_Size SCUM_Pad::getMinSize()
 	return SCUM_Size(m_thumbSize + 1.);
 }
 
-void SCUM_Pad::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Pad::setProperty(const char* key, SCUM_ArgStream& args)
 {
-	if (key == SCUM_Symbol::x) {
-		setBoolValue(slot, setValue(floatValue(slot), m_y, false));
-	} else if (key == SCUM_Symbol::y) {
-		setBoolValue(slot, setValue(m_x, floatValue(slot), false));
-	} else if (equal(key, "xStep")) {
-		m_xStep = floatValue(slot);
-		setBoolValue(slot, setValue(m_x, m_y, false));
-	} else if (equal(key, "yStep")) {
-		m_yStep = floatValue(slot);
-		setBoolValue(slot, setValue(m_x, m_y, false));
+	if (equal(key, "x")) {
+		//setBoolValue(slot, setValue(floatValue(slot), m_y, false));
+		setValue(args.get_f(), m_y, false);
+	} else if (equal(key, "y")) {
+		//setBoolValue(slot, setValue(m_x, floatValue(slot), false));
+		setValue(m_x, args.get_f(), false);
+	} else if (equal(key, "step")) {
+		m_step = args.get_f();
+		//setBoolValue(slot, setValue(m_x, m_y, false));
+		setValue(m_x, m_y, true);
 	} else if (equal(key, "thumbSize")) {
-		m_thumbSize = max(1, intValue(slot));
+		m_thumbSize = max(1, args.get_i());
 		updateLayout();
 	} else if (equal(key, "steady")) {
-		m_steady = boolValue(slot);
+		m_steady = args.get_i();
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Pad::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::x) {
@@ -313,6 +355,7 @@ void SCUM_Pad::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 SCUM_Rect SCUM_Pad::thumbRect()
 {
@@ -329,12 +372,12 @@ SCUM_Rect SCUM_Pad::thumbRect()
 	return r;
 }
 
-bool SCUM_Pad::setValue(double ix, double iy, bool send)
+bool SCUM_Pad::setValue(double ix, double iy, bool doSend)
 {
 	bool changed = false;
 
-	ix = clipQuant(ix, 0., 1., m_xStep);
-	iy = clipQuant(iy, 0., 1., m_yStep);
+	ix = clipQuant(ix, 0., 1., m_step);
+	iy = clipQuant(iy, 0., 1., m_step);
 
 	if (ix != m_x) {
 		m_x = ix;
@@ -347,7 +390,16 @@ bool SCUM_Pad::setValue(double ix, double iy, bool send)
 	}
 
 	if (changed) {
-		if (send) doAction();
+		if (doSend) {
+			OSC::StaticClientPacket<40> p;
+			p.openMessage("/changed", 3);
+			putId(p);
+			p.putString("value");
+			p.putFloat32(m_x);
+			p.putFloat32(m_y);
+			p.closeMessage();
+			send(p);
+		}
 		refresh();
 		return true;
 	}
@@ -371,14 +423,21 @@ void SCUM_Pad::valueFromPoint(const SCUM_Point& p, double& ox, double& oy)
 // =====================================================================
 // SCUM_Table
 
-SCUM_Table::SCUM_Table(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_Table::SCUM_Table(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args),
 	  m_data(0),
 	  m_size(0),
 	  m_style(kLines),
 	  m_step(0.),
 	  m_readOnly(false)
 { }
+
+SCUM_Table::~SCUM_Table()
+{
+	if (m_data) {
+		free(m_data);
+	}
+}
 
 void SCUM_Table::drawView(const SCUM_Rect& damage)
 {
@@ -394,8 +453,8 @@ void SCUM_Table::drawView(const SCUM_Rect& damage)
 	GCSetLineWidth(1);
 
 	SCUM_Rect r(bounds().inset(1));
-	int n = m_data->size;
-	float* values = ((PyrFloatArray*)m_data)->f;
+	int n = m_size;
+	float* values = m_data;
 
 	if (n > 0) {
 		int lasti = n - 1;
@@ -480,17 +539,23 @@ void SCUM_Table::mouseMove(int state, const SCUM_Point& where)
 	} else if (prevIndex < index) {
 		double val = prevValue;
 		double delta = (value - prevValue) / (index - prevIndex);
+		setValueRange(prevIndex, index + 1, prevValue, delta, true);
+		/*
 		for (int i=prevIndex; i <= index; ++i) {
 			setValue(i, val, true);
 			val += delta;
 		}
+		*/
 	} else {
 		double val = value;
 		double delta = (prevValue - value) / (prevIndex - index);
+		setValueRange(index, prevIndex + 1, value, delta, true);
+		/*
 		for (int i=index; i <= prevIndex; ++i) {
 			setValue(i, val, true);
 			val += delta;
 		}
+		*/
 	}
 
 	m_prevPoint = where;
@@ -501,20 +566,36 @@ SCUM_Size SCUM_Table::getMinSize()
 	return SCUM_Size(m_size, 10).padded(1);
 }
 
-void SCUM_Table::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Table::setProperty(const char* key, SCUM_ArgStream& args)
 {
-	if (key == SCUM_Symbol::value) {
-		if (!isKindOfSlot(slot, class_floatarray)) throw TypeError();
-		m_data = slot->uo;
-		m_size = m_data->size;
+	if (equal(key, "value")) {
+		if (m_data) {
+			free(m_data);
+		}
+		OSC::blob_t b = args.get_b();
+		printf("b.size %d\n", b.size);
+		if (b.size > 0) {
+			m_data = (float*)malloc(b.size);
+			m_size = b.size / sizeof(float);
+		} else {
+			m_data = 0;
+			m_size = 0;
+		}
+		if (m_data) {
+			memcpy(m_data, b.data, b.size);
+			for (int i=0; i < m_size; i++) {
+				OSC::convert32(m_data + i);
+			}
+		}
 		refresh();
 	} else if (equal(key, "style")) {
+		const char* styleStr = args.get_s();
 		int style = m_style;
-		if (getsym("lines") == slot->us) {
+		if (equal(styleStr, "lines")) {
 			style = kLines;
-		} else if (getsym("filled") == slot->us) {
+		} else if (equal(styleStr, "filled")) {
 			style = kFilled;
-		} else if (getsym("waveform") == slot->us) {
+		} else if (equal(styleStr, "waveform")) {
 			style = kWaveform;
 		}
 		if (style != m_style) {
@@ -522,15 +603,16 @@ void SCUM_Table::setProperty(const PyrSymbol* key, PyrSlot* slot)
 			refresh();
 		}
 	} else if (equal(key, "step")) {
-		m_step = clip(floatValue(slot), 0., 1.);
+		m_step = clip(args.get_f(), 0.f, 1.f);
 		refresh();
 	} else if (equal(key, "readOnly")) {
-		m_readOnly = boolValue(slot);
+		m_readOnly = args.get_i();
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Table::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "style")) {
@@ -547,6 +629,7 @@ void SCUM_Table::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 int SCUM_Table::indexFromPoint(const SCUM_Point& p)
 {
@@ -558,26 +641,72 @@ double SCUM_Table::valueFromPoint(const SCUM_Point& p)
 	return 1.0 - (p.y - bounds().y - 1 - 1) / (bounds().h - 1 - 2);
 }
 
-bool SCUM_Table::setValue(int x, double y, bool send)
+bool SCUM_Table::setValueRange(size_t start, size_t end, float value, float inc, bool doSend)
+{
+	bool changed;
+
+	if (!m_size) return false;
+
+	for (size_t i=start; i < end; i++) {
+		if (i >= m_size) {
+			break;
+		}
+		double y = clip<float>(value, 0., 1.);
+		if (m_step > 0.) {
+			y = floor(y / m_step + 0.5) * m_step;
+		}
+
+		if (m_data[i] != y) {
+			m_data[i] = y;
+			changed = true;
+		}
+
+		value += inc;
+	}
+	if (changed) {
+		if (doSend) {
+			OSC::StaticClientPacket<52> p;
+			p.openMessage("/changed", 6);
+			putId(p);
+			p.putString("valueRange");
+			p.putInt32(start);
+			p.putInt32(end);
+			p.putFloat32(value);
+			p.putFloat32(inc);
+			p.closeMessage();
+			send(p);
+		}
+		refresh();
+	}
+    return changed;
+}
+
+bool SCUM_Table::setValue(int x, float y, bool doSend)
 {
 	bool changed;
 
 	if (!m_size) return false;
 
 	x = clip(x, 0, m_size - 1);
-	y = clip(y, 0., 1.);
+	y = clip<float>(y, 0., 1.);
 
 	if (m_step > 0.) {
         y = floor(y / m_step + 0.5) * m_step;
     }
 
-	float* values = ((PyrFloatArray*)m_data)->f;
-
-	changed = values[x] != y;
-
+	changed = m_data[x] != y;
 	if (changed) {
-		values[x] = y;
-		if (send) doAction();
+		m_data[x] = y;
+		if (doSend) {
+			OSC::StaticClientPacket<40> p;
+			p.openMessage("/changed", 3);
+			putId(p);
+			p.putString("value");
+			p.putInt32(x);
+			p.putFloat32(y);
+			p.closeMessage();
+			send(p);
+		}
 		refresh();
 	}
 
@@ -587,6 +716,17 @@ bool SCUM_Table::setValue(int x, double y, bool send)
 bool SCUM_Table::setValue(const SCUM_Point& p)
 {
 	return setValue(indexFromPoint(p), valueFromPoint(p), true);
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_Slider_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_Slider>(reg, "Slider", "View");
+	new SCUM_ClassT<SCUM_HSlider>(reg, "HSlider", "Slider");
+	new SCUM_ClassT<SCUM_VSlider>(reg, "VSlider", "Slider");
+	new SCUM_ClassT<SCUM_Pad>(reg, "Pad", "View");
+	new SCUM_ClassT<SCUM_Table>(reg, "Table", "View");
 }
 
 // EOF

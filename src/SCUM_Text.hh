@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -45,17 +45,18 @@ namespace SCUM
 class SCUM_Label : public SCUM_View
 {
 public:
-	SCUM_Label(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Label(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual SCUM_Size getMinSize();
 
 protected:
 	SCUM_Point	m_padding;
+	SCUM_Size	m_frozenSize;
 	SCUM_Text	m_text;
 	uint8_t		m_textAlign;
 };
@@ -66,7 +67,7 @@ protected:
 class SCUM_StringEntry : public SCUM_Label
 {
 public:
-	SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj);
+	SCUM_StringEntry(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
@@ -85,16 +86,16 @@ public:
 class SCUM_List : public SCUM_ScrollView
 {
 public:
-	SCUM_List(SCUM_Container* parent, PyrObject* obj);
+	SCUM_List(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 protected:
-	virtual void drawContent();
-	virtual void drawContentFocus();
+	virtual void drawContent(const SCUM_Rect& damage);
+	virtual void drawContentFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDownInContent(int, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
 	virtual SCUM_Size preferredViewPortSize();

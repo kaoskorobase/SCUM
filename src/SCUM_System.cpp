@@ -18,11 +18,10 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.cpp,v 1.2 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
-#include "SCUM_FLApp.hh"
 #include "SCUM_Image.hh"
 #include "SCUM_Menu.hh"
 #include "SCUM_System.hh"
@@ -592,6 +591,7 @@ SCUM_Size SCUM::FLImageHandle::size()
 
 // splash
 
+#if 0
 namespace SCUM
 {
 	class FLSplash : public Fl_Window
@@ -659,6 +659,7 @@ namespace SCUM
 		new FLSplash(label, timeout);
 	}
 };
+#endif
 
 // =====================================================================
 // SCUM::System

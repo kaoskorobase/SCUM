@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Button.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -36,15 +36,15 @@
 class SCUM_Toggle : public SCUM_View
 {
 public:
-	SCUM_Toggle(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Toggle(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 	
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
 	bool setValue(bool value, bool send);
@@ -61,14 +61,14 @@ private:
 class SCUM_Bang : public SCUM_View
 {
 public:
-	SCUM_Bang(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Bang(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual void animate();
 
@@ -97,20 +97,20 @@ public:
 	typedef std::vector<State> StateArray;
 
 public:
-	SCUM_Button(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Button(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual SCUM_Size getMinSize();
 
 private:
-	void stateValue(PyrSlot* slot, StateArray& array);
+	void stateValue(StateArray& array, SCUM_ArgStream& args);
 	bool setValue(int value, bool send);
 
 private:
@@ -130,7 +130,7 @@ class SCUM_Menu;
 class SCUM_Choice : public SCUM_View
 {
 public:
-	SCUM_Choice(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Choice(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_Choice();
 
 	virtual void drawView(const SCUM_Rect& damage);
@@ -138,8 +138,8 @@ public:
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void contextMenu(int state, const SCUM_Point& where);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	virtual SCUM_Size getMinSize();
 

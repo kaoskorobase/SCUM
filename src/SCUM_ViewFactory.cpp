@@ -18,11 +18,42 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ViewFactory.cpp,v 1.2 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
+#include "SCUM_Button.hh"
+#include "SCUM_Container.hh"
+#include "SCUM_Graph.hh"
+#include "SCUM_Slider.hh"
+#include "SCUM_Text.hh"
+#include "SCUM_View.hh"
 #include "SCUM_ViewFactory.hh"
+#include "SCUM_Window.hh"
+
+SCUM_ViewFactory::SCUM_ViewFactory()
+{
+	add("SCUMBang", new SCUM_ViewMaker<SCUM_Bang>());
+	add("SCUMBin", new SCUM_ViewMaker<SCUM_Bin>());
+	add("SCUMButton", new SCUM_ViewMaker<SCUM_Button>());
+	//add("SCUMCanvasView", new SCUM_ViewMaker<SCUM_CanvasView>());
+	add("SCUMChoice", new SCUM_ViewMaker<SCUM_Choice>());
+	add("SCUMHBox", new SCUM_ViewMaker<SCUM_HBox>());
+	add("SCUMHGrid", new SCUM_ViewMaker<SCUM_HGrid>());
+	add("SCUMHSlider", new SCUM_ViewMaker<SCUM_HSlider>());
+	add("SCUMLabel", new SCUM_ViewMaker<SCUM_Label>());
+	add("SCUMList", new SCUM_ViewMaker<SCUM_List>());
+	add("SCUMPad", new SCUM_ViewMaker<SCUM_Pad>());
+	add("SCUMScope", new SCUM_ViewMaker<SCUM_Scope>());
+	add("SCUMStringEntry", new SCUM_ViewMaker<SCUM_StringEntry>());
+	add("SCUMTable", new SCUM_ViewMaker<SCUM_Table>());
+	add("SCUMToggle", new SCUM_ViewMaker<SCUM_Toggle>());
+	add("SCUMVBox", new SCUM_ViewMaker<SCUM_VBox>());
+	add("SCUMVGrid", new SCUM_ViewMaker<SCUM_VGrid>());
+	add("SCUMVSlider", new SCUM_ViewMaker<SCUM_VSlider>());
+	add("SCUMView", new SCUM_ViewMaker<SCUM_View>());
+	add("SCUMWindow", new SCUM_ViewMaker<SCUM_Window>());
+}
 
 SCUM_ViewFactory& SCUM_ViewFactory::instance()
 {
@@ -37,45 +68,11 @@ void SCUM_ViewFactory::add(const char* className, SCUM_ViewMakerBase* maker)
 	m_makers[className] = maker;
 }
 
-SCUM_View* SCUM_ViewFactory::makeView(const char* className, SCUM_Container* parent, PyrObject* obj)
+SCUM_View* SCUM_ViewFactory::makeView(const char* className, SCUM_Client* client, int oid, SCUM_Container* parent)
 {
 	MakerIter iter = m_makers.find(className);
 	if (iter == m_makers.end()) return 0;
-	return iter->second->makeView(parent, obj);
-}
-
-#include "SCUM_Button.hh"
-#include "SCUM_Canvas.hh"
-#include "SCUM_Container.hh"
-#include "SCUM_Graph.hh"
-#include "SCUM_Text.hh"
-#include "SCUM_View.hh"
-#include "SCUM_Slider.hh"
-#include "SCUM_Window.hh"
-
-void SCUM_ViewFactory::init()
-{
-	SCUM_ViewFactory& f = SCUM_ViewFactory::instance();
-
-	f.add("SCUMBang", new SCUM_ViewMaker<SCUM_Bang>());
-	f.add("SCUMBin", new SCUM_ViewMaker<SCUM_Bin>());
-	f.add("SCUMButton", new SCUM_ViewMaker<SCUM_Button>());
-	f.add("SCUMCanvasView", new SCUM_ViewMaker<SCUM_CanvasView>());
-	f.add("SCUMChoice", new SCUM_ViewMaker<SCUM_Choice>());
-	f.add("SCUMHBox", new SCUM_ViewMaker<SCUM_HBox>());
-	f.add("SCUMHGrid", new SCUM_ViewMaker<SCUM_HGrid>());
-	f.add("SCUMLabel", new SCUM_ViewMaker<SCUM_Label>());
-	f.add("SCUMList", new SCUM_ViewMaker<SCUM_List>());
-	f.add("SCUMPad", new SCUM_ViewMaker<SCUM_Pad>());
-	f.add("SCUMScope", new SCUM_ViewMaker<SCUM_Scope>());
-	f.add("SCUMSlider", new SCUM_ViewMaker<SCUM_Slider>());
-	f.add("SCUMStringEntry", new SCUM_ViewMaker<SCUM_StringEntry>());
-	f.add("SCUMTable", new SCUM_ViewMaker<SCUM_Table>());
-	f.add("SCUMToggle", new SCUM_ViewMaker<SCUM_Toggle>());
-	f.add("SCUMVBox", new SCUM_ViewMaker<SCUM_VBox>());
-	f.add("SCUMVGrid", new SCUM_ViewMaker<SCUM_VGrid>());
-	f.add("SCUMView", new SCUM_ViewMaker<SCUM_View>());
-	f.add("SCUMWindow", new SCUM_ViewMaker<SCUM_Window>());
+	return iter->second->makeView(client, oid, parent);
 }
 
 // EOF

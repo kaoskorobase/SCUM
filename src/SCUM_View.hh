@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_View.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -26,12 +26,11 @@
 #define SCUM_VIEW_HH_INCLUDED
 
 #include "SCUM_Geometry.hh"
-#include "SCUM_Lang.hh"
+#include "SCUM_Object.hh"
 
 #include <stdint.h>
 
 class SCUM_Container;
-class SCUM_Desktop;
 class SCUM_Menu;
 class SCUM_Timer;
 class SCUM_Window;
@@ -76,7 +75,7 @@ public:
 	friend class SCUM_Window;
 
 public:
-	SCUM_View(SCUM_Container* parent, PyrObject* pyrObj);
+	SCUM_View(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_View();
 
 	// hierarchy access
@@ -88,8 +87,6 @@ public:
 
 	const SCUM_View* parentView() const;
 	SCUM_View* parentView();
-
-	SCUM_Desktop* desktop();
 
 	inline SCUM_View* prevView();
 	inline SCUM_View* nextView();
@@ -152,14 +149,14 @@ public:
 	void scrollChanged();
 
 	// property access
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	inline const SCUM_Color& fgColor() const { return m_fgColor; }
 	inline const SCUM_Color& bgColor() const { return m_bgColor; }
 
 	// action
-	void doAction(PyrSymbol* message);
+	void doAction(const char* message);
 	void doAction();
 
 	// animation
@@ -167,6 +164,12 @@ public:
 	void stopAnimation();
 	virtual void animate();
 	
+	// OSC methods
+	void osc_raise(const char*, SCUM_ArgStream&);
+	void osc_lower(const char*, SCUM_ArgStream&);
+	void osc_refresh(const char*, SCUM_ArgStream&);
+	void osc_update(const char*, SCUM_ArgStream&);
+
 protected:
 	inline const Flags& flags() const { return m_flags; }
 	inline Flags& flags() { return m_flags; }

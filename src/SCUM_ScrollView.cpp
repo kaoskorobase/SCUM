@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ScrollView.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -31,8 +31,8 @@ using namespace SCUM;
 // =====================================================================
 // SCUM_ScrollView
 
-SCUM_ScrollView::SCUM_ScrollView(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_View(parent, obj),
+SCUM_ScrollView::SCUM_ScrollView(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_View(klass, client, oid, args),
 	  m_scrollStep(1, 1),
 	  m_thumbSize(15),
 	  m_hThumb(true),
@@ -93,28 +93,29 @@ void SCUM_ScrollView::scrollWheel(int state, const SCUM_Point& where, const SCUM
 	}
 }
 
-void SCUM_ScrollView::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_ScrollView::setProperty(const char* key, SCUM_ArgStream& args)
 {
-	if (key == SCUM_Symbol::x) {
-		setHScrollRatio(floatValue(slot));
+	if (equal(key, "x")) {
+		setHScrollRatio(args.get_f());
 		refresh();
-	} else if (key == SCUM_Symbol::y) {
-		setVScrollRatio(floatValue(slot));
+	} else if (equal(key, "y")) {
+		setVScrollRatio(args.get_f());
 		refresh();
 	} else if (equal(key, "thumbSize")) {
-		m_thumbSize = max(5, intValue(slot));
+		m_thumbSize = max(5, args.get_i());
 		updateLayout();
 	} else if (equal(key, "hThumb")) {
-		m_hThumb = boolValue(slot);
+		m_hThumb = args.get_i();
 		updateLayout();
 	} else if (equal(key, "vThumb")) {
-		m_vThumb = boolValue(slot);
+		m_vThumb = args.get_i();
 		updateLayout();
 	} else {
-		SCUM_View::setProperty(key, slot);
+		SCUM_View::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_ScrollView::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::x) {
@@ -131,6 +132,7 @@ void SCUM_ScrollView::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_View::getProperty(key, slot);
 	}
 }
+#endif
 
 void SCUM_ScrollView::setHScrollRatio(double ratio)
 {
@@ -204,7 +206,7 @@ void SCUM_ScrollView::scrollVisible(const SCUM_Rect& rect, const SCUM_Point& pad
 	scrollBy(delta);
 }
 
-void SCUM_ScrollView::drawView()
+void SCUM_ScrollView::drawView(const SCUM_Rect& damage)
 {
 	const SCUM_Rect r(bounds());
 
@@ -220,21 +222,21 @@ void SCUM_ScrollView::drawView()
 	if (m_vThumb) GCDrawBeveledRect(m_vThumbBounds, 1, false);
 
 	GCSetClip(m_viewPortBounds);
-	drawContent();
+	drawContent(damage);
 
 	GCRestore();
 }
 
-void SCUM_ScrollView::drawFocus()
+void SCUM_ScrollView::drawFocus(const SCUM_Rect& damage)
 {
-	drawContentFocus();
+	drawContentFocus(damage);
 }
 
-void SCUM_ScrollView::drawContent()
+void SCUM_ScrollView::drawContent(const SCUM_Rect& damage)
 {
 }
 
-void SCUM_ScrollView::drawContentFocus()
+void SCUM_ScrollView::drawContentFocus(const SCUM_Rect& damage)
 {
 	SCUM_View::drawFocus(m_viewPortBounds);
 }
@@ -323,6 +325,13 @@ void SCUM_ScrollView::updateVThumbBounds()
 	m_vThumbBounds.y = m_viewPortBounds.y + vRange() * m_scrollRatio.y;
 
 	m_contentBounds.y = m_viewPortBounds.y - m_scrollRatio.y * vRange() / vRatio();
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_ScrollView_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_ScrollView>(reg, "ScrollView", "View");
 }
 
 // EOF

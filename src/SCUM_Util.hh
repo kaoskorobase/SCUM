@@ -29,7 +29,7 @@ namespace SCUM
 	{
 		va_list ap;
 		va_start(ap, fmt);
-		fprintf(ostream, "%s:%d:%s ", file, line, func);
+		fprintf(ostream, "SCUM:%s:%d:%s ", file, line, func);
 		vfprintf(ostream, fmt, ap);
 		fflush(ostream);
 		va_end(ap);
@@ -49,6 +49,7 @@ namespace SCUM
 # endif
 #else // !SCUM_DEBUG
 # define SCUM_ASSERT(expr) /* SCUM_ASSERT */
+# define SCUM_ASSERT_PTR(otr) /* SCUM_ASSERT_PTR */
 # define SCUM_DEBUG_PRINT(fmt, ...) /* SCUM_DEBUG_PRINT */
 #endif // SCUM_DEBUG
 

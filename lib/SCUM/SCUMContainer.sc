@@ -1,15 +1,29 @@
 SCUMContainer : SCUMView {
 	var children, named;
 
+	*initClass {
+		this.propertyDefaults.putAll((
+			xPadding: 0.0,
+			yPadding: 0.0
+		));
+	}
 	init { | parent, function |
+		var continuation;
 		super.init(parent, function);
+		continuation = children;
 		children = List.new;
 		named = Dictionary.new;
+		Environment.new.put(\parent, this).use(continuation);
 	}
 
 	size { ^children.size }
 	at { | key |
 		^key.isNumber.if(children, named).at(key)
+	}
+	children_ { | continuation |
+		if (children.isNil) {
+			children = continuation;
+		}
 	}
 	children {
 		^children.copy
@@ -121,8 +135,7 @@ SCUMVGrid : SCUMGrid {
 }
 
 // not a container
-SCUMScrollView : SCUMView
-{
+SCUMScrollView : SCUMView {
 	// properties
 	*propertyKeys {
 		^super.propertyKeys ++ [\hThumb, \vThumb, \thumbSize];

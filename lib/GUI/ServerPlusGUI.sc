@@ -1,5 +1,5 @@
 + Server {
-	makeWindow { | w=nil |
+	makeSCUMWindow { | w=nil |
 		w = w ?? { ServerWindow.default };
 		if (window.isNil) {
 			window = ServerPanel(w, this);

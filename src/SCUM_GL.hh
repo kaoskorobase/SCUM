@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_GL.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -31,7 +31,6 @@
 
 #include <FL/Fl_Gl_Window.H>
 #include <FL/gl.h>
-#include <GL/glu.h>
 
 // =====================================================================
 // SCUM_GLContext
@@ -64,7 +63,7 @@ class SCUM_GLView : public SCUM_View
 	friend class SCUM_GLContext;
 
 public:
-	SCUM_GLView(SCUM_Container* parent, PyrObject* obj);
+	SCUM_GLView(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_GLView();
 
 	virtual void refresh(const SCUM_Rect& damage);
@@ -73,7 +72,7 @@ public:
 	virtual void setBounds(const SCUM_Rect& bounds);
 	virtual SCUM_Size getMinSize();
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
 
 	virtual void initGL();
 	virtual void drawGL();

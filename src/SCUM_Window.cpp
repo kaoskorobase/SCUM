@@ -18,28 +18,26 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Window.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
 #include "SCUM_Window.hh"
-#include "SCUM_Desktop.hh"
+#include "SCUM_Client.hh"
 #include "SCUM_FLUtil.hh"
-#include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
 #include "SCUM_Util.hh"
 
 #include <iostream>
 #include <FL/fl_draw.H>
-#include <PyrSlot.h>
 
 using namespace SCUM;
 
 // =====================================================================
 // SCUM_Window
 
-SCUM_Window::SCUM_Window(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Bin(parent, obj),
+SCUM_Window::SCUM_Window(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Bin(klass, client, oid, args),
 	  Fl_Double_Window(0, 0),
 	  m_deferredTimer(0),
 	  m_mouseMoveView(0),
@@ -63,32 +61,18 @@ SCUM_Window::SCUM_Window(SCUM_Container* parent, PyrObject* obj)
 		= new SCUM_MemTimer<SCUM_Window>(0.075, &SCUM_Window::deferredAction, this);
 	addTimer(m_deferredTimer);
 
-	desktop()->retain(this);
+	getClient()->retain(this);
 }
 
 SCUM_Window::~SCUM_Window()
 {
-	desktop()->release(this);
+	getClient()->release(this);
 	if (m_deferredTimer) {
 		m_deferredTimer->remove();
 		m_deferredTimer = 0;
 	}
 	// this is done in the language from closeEvent or destroy
 	// sendMessage(SCUM_Symbol::prDestroyed, 0, 0);
-}
-
-static void deferredDestroyCB(void* arg)
-{
-	delete (SCUM_Window*)arg;
-}
-
-void SCUM_Window::destroy(bool now)
-{
-	if (now) {
-		delete this;
-	} else {
-		m_deferredCommands.destroy = true;
-	}
 }
 
 void SCUM_Window::refresh(const SCUM_Rect& damage)
@@ -115,8 +99,7 @@ void SCUM_Window::draw(const SCUM_Rect& damage)
 
 void SCUM_Window::raise()
 {
-	m_deferredCommands.show = true;
-	m_deferredCommands.hide = false;
+	show();
 }
 
 void SCUM_Window::lower()
@@ -125,7 +108,12 @@ void SCUM_Window::lower()
 
 void SCUM_Window::closeEvent()
 {
-	sendMessage(getsym("prHandleClose"), 0, 0);
+	OSC::StaticClientPacket<24> p;
+	p.openMessage("/event", 2);
+	putId(p);
+	p.putString("close");
+	p.closeMessage();
+	send(p);
 }
 
 void SCUM_Window::showEvent()
@@ -163,14 +151,15 @@ void SCUM_Window::focusEvent(bool hasFocus)
 
 void SCUM_Window::setMouseView(SCUM_View* view)
 {
-	SCUM_ASSERT(m_mouseMoveView == 0);
+	//SCUM_ASSERT(m_mouseMoveView == 0); ??
 	m_mouseMoveView = view;
 }
 
 void SCUM_Window::mouseMove(int state, const SCUM_Point& where)
 {
-	if (m_mouseMoveView)
+	if (m_mouseMoveView) {
 		m_mouseMoveView->mouseMove(state, where);
+	}
 }
 
 void SCUM_Window::mouseUp(int state, const SCUM_Point& where)
@@ -279,48 +268,49 @@ void SCUM_Window::doUpdateLayout(bool xFit, bool yFit)
 	}
 }
 
-void SCUM_Window::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_Window::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "visible")) { // overridden from SCUM_View
-		if (boolValue(slot)) {
-			m_deferredCommands.hide = false;
+		if (args.get_i()) {
 			m_deferredCommands.show = true;
+			m_deferredCommands.hide = false;
 		} else {
 			m_deferredCommands.show = false;
 			m_deferredCommands.hide = true;
 		}
 	} else if (equal(key, "title")) {
-		m_title = stringValue(slot);
+		m_title = args.get_s();
 		label(m_title.c_str());
 	} else if (equal(key, "initialSize")) {
-		m_initialSize = sizeValue(slot);
+		m_initialSize = SCUM_Size(args.get_f(), args.get_f());
 	} else if (equal(key, "resizable")) {
-		SCUM_View::flags().wResizable = boolValue(slot);
+		SCUM_View::flags().wResizable = args.get_i();
 		updateLayout(false, false);
 	} else if (equal(key, "fullscreen")) {
-		m_deferredCommands.fullscreen = boolValue(slot);
+		//m_deferredCommands.fullscreen = args.get_i();
 	} else if (equal(key, "decorated")) {
-		bool flag = boolValue(slot);
+		bool flag = args.get_i();
 		if (flag != border()) {
 			border(flag);
 		}
 	} else if (equal(key, "modal")) {
-		bool flag = boolValue(slot);
+		bool flag = args.get_i();
 		if (flag != modal()) {
 			if (flag) set_modal();
 			else set_non_modal();
 		}
 	} else if (equal(key, "showFocus")) {
-		bool flag = boolValue(slot);
+		bool flag = args.get_i();
 		if (flag != SCUM_View::flags().wShowFocus) {
 			SCUM_View::flags().wShowFocus = flag;
 			if (m_focusView) m_focusView->refreshFocus();
 		}
 	} else {
-		SCUM_Bin::setProperty(key, slot);
+		SCUM_Bin::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_Window::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "initialSize")) {
@@ -341,15 +331,10 @@ void SCUM_Window::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_Bin::getProperty(key, slot);
 	}
 }
+#endif
 
 void SCUM_Window::deferredAction(SCUM_Timer*)
 {
-	if (m_deferredCommands.destroy) {
-		m_deferredCommands.destroy = false;
-		destroy(true);
-		return;
-	}
-
 #ifdef LATER
 	if (handle()->flags().fullscreen != m_deferredCommands.fullscreen) {
 		WindowHandle::Flags flags(handle()->flags());
@@ -477,8 +462,10 @@ int SCUM_Window::handle(int evt)
 void SCUM_Window::resize(int x, int y, int w, int h)
 {
 	Fl_Double_Window::resize(x, y, w, h);
-	m_screenBounds = SCUM_Rect(x, y, w, h);
-	setBounds(SCUM_Rect(0.f, 0.f, w, h));
+	// this is necessary on OSX:
+	SCUM_Size ms(minSize().max(SCUM_Size(w, h)));
+	m_screenBounds = SCUM_Rect(x, y, ms.w, ms.h);
+	setBounds(SCUM_Rect(0.f, 0.f, ms.w, ms.h));
 }
 
 void SCUM_Window::draw()
@@ -495,6 +482,13 @@ void SCUM_Window::draw()
 void SCUM_Window::closeCB(Fl_Widget* w, void* arg)
 {
 	((SCUM_Window*)arg)->closeEvent();
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_Window_Init(SCUM_ClassRegistry* reg)
+{
+	new SCUM_ClassT<SCUM_Window>(reg, "Window", "Bin");
 }
 
 // EOF

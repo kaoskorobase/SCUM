@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ScrollView.hh,v 1.2 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
@@ -31,7 +31,7 @@
 class SCUM_ScrollView : public SCUM_View
 {
 public:
-	SCUM_ScrollView(SCUM_Container* parent, PyrObject* obj);
+	SCUM_ScrollView(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	const SCUM_Rect& viewPortBounds() const { return m_viewPortBounds; }
 	const SCUM_Rect& contentBounds() const { return m_contentBounds; }
@@ -50,8 +50,8 @@ public:
 	virtual void mouseUp(int, const SCUM_Point&);
 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	void setHScrollRatio(double ratio);
 	void setVScrollRatio(double ratio);
@@ -64,10 +64,10 @@ public:
 	void scrollVisible(const SCUM_Rect& rect, const SCUM_Point& padding);
 
 protected:
-	virtual void drawView();
-	virtual void drawFocus();
-	virtual void drawContent();
-	virtual void drawContentFocus();
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void drawFocus(const SCUM_Rect& damage);
+	virtual void drawContent(const SCUM_Rect& damage);
+	virtual void drawContentFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDownInContent(int, const SCUM_Point&);
 	virtual void mouseMoveInContent(int, const SCUM_Point&);

@@ -18,32 +18,28 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_View.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id$
 */
 
 
 #include "SCUM_View.hh"
+#include "SCUM_Client.hh"
 #include "SCUM_Container.hh"
-#include "SCUM_Desktop.hh"
 #include "SCUM_GC.hh"
 #include "SCUM_Menu.hh"
 #include "SCUM_Window.hh"
-#include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
 #include "SCUM_Util.hh"
 
 #include <iostream>
-
-#include <PyrSlot.h>
-#include <PyrKernel.h>
 
 using namespace SCUM;
 
 // =====================================================================
 // SCUM_View
 
-SCUM_View::SCUM_View(SCUM_Container* parent, PyrObject* pyrObj)
-	: SCUM_Object(pyrObj),
+SCUM_View::SCUM_View(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+	: SCUM_Object(klass, client, oid, args),
 	  m_window(0), m_parent(0),
 	  m_prevView(0), m_nextView(0),
 	  m_animateTimer(0)
@@ -54,10 +50,15 @@ SCUM_View::SCUM_View(SCUM_Container* parent, PyrObject* pyrObj)
 	m_flags.vEnabled = true;
 	m_flags.vCanFocus = true;
 
+	int pid = args.get_i();
+	SCUM_Container* parent = dynamic_cast<SCUM_Container*>(getClient()->getObject(pid));
 	if (parent) {
 		parent->addChild(this);
 		SCUM_ASSERT(m_window != 0);
 	}
+
+	m_fgColor = getClient()->fgColor();
+	m_bgColor = getClient()->bgColor();
 }
 
 SCUM_View::~SCUM_View()
@@ -74,11 +75,6 @@ const SCUM_View* SCUM_View::parentView() const
 SCUM_View* SCUM_View::parentView()
 {
 	return static_cast<SCUM_View*>(m_parent);
-}
-
-SCUM_Desktop* SCUM_View::desktop()
-{
-	return &SCUM_Desktop::instance();
 }
 
 void SCUM_View::raise()
@@ -116,29 +112,39 @@ void SCUM_View::scrollWheel(int state, const SCUM_Point& where, const SCUM_Point
 
 void SCUM_View::contextMenu(int state, const SCUM_Point& where)
 {
+#if 0
 	PyrSlot args[3];
 	SetInt(args+0, state);
 	SetFloat(args+1, where.x);
 	SetFloat(args+2, where.y);
 	sendMessage(SCUM_Symbol::contextMenu, 3, args);
+#endif
 }
 
 void SCUM_View::keyDown(int state, wint_t key)
 {
-	PyrSlot args[3];
-	SetInt(args+0, state);
-	SetChar(args+1, (char)key);
-	SetInt(args+2, key);
-	sendMessage(SCUM_Symbol::keyDown, 3, args);
+	OSC::StaticClientPacket<40> p;
+	p.openMessage("/event", 5);
+	putId(p);
+	p.putString("keyDown");
+	p.putInt32(state);
+	p.putInt32((char)key);
+	p.putInt32(key);
+	p.closeMessage();
+	send(p);
 }
 
 void SCUM_View::keyUp(int state, wint_t key)
 {
-	PyrSlot args[3];
-	SetInt(args+0, state);
-	SetChar(args+1, (char)key);
-	SetInt(args+2, key);
-	sendMessage(SCUM_Symbol::keyUp, 3, args);
+	OSC::StaticClientPacket<40> p;
+	p.openMessage("/event", 5);
+	putId(p);
+	p.putString("keyUp");
+	p.putInt32(state);
+	p.putInt32((char)key);
+	p.putInt32(key);
+	p.closeMessage();
+	send(p);
 }
 
 void SCUM_View::refresh(const SCUM_Rect& damage)
@@ -198,7 +204,7 @@ void SCUM_View::drawFocus(const SCUM_Rect& damage)
 {
 	if (hasFocus()) {
 		GCSave();
-		GCSetColor(desktop()->focusColor());
+		GCSetColor(getClient()->focusColor());
 		GCSetLineWidth(2);
 // 		GCSetLineStyle(kLineStyleDash);
 		GCDrawRect(bounds().inset(1));
@@ -223,7 +229,7 @@ bool SCUM_View::canFocus() const
 	return flags().vCanFocus && isVisible() && isEnabled() && (parent() && parent()->canFocus());
 }
 
-void SCUM_View::makeFocus(bool flag, bool send)
+void SCUM_View::makeFocus(bool flag, bool doSend)
 {
 	SCUM_ASSERT(m_window != 0);
 
@@ -231,13 +237,31 @@ void SCUM_View::makeFocus(bool flag, bool send)
 		if (canFocus() && !hasFocus()) {
 			m_window->unsetFocus(true);
 			m_window->setFocusView(this);
-			if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+			//if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+			if (doSend) {
+				OSC::StaticClientPacket<32> p;
+				p.openMessage("/event", 3);
+				putId(p);
+				p.putString("focus");
+				p.putInt32(1);
+				p.closeMessage();
+				send(p);
+			}
 			refreshFocus();
 		}
 	} else {
 		if (hasFocus()) {
 			m_window->setFocusView(0);
-			if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+			//if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+			if (doSend) {
+				OSC::StaticClientPacket<32> p;
+				p.openMessage("/event", 3);
+				putId(p);
+				p.putString("focus");
+				p.putInt32(0);
+				p.closeMessage();
+				send(p);
+			}
 			refreshFocus();
 		}
 	}
@@ -285,75 +309,70 @@ SCUM_Size SCUM_View::getMinSize()
 	return layout().minSize;
 }
 
-void SCUM_View::setProperty(const PyrSymbol* key, PyrSlot* slot)
+void SCUM_View::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	SCUM_ASSERT(m_window != 0);
 
 	if (equal(key, "visible")) {
-		bool flag = boolValue(slot);
-		SetFalse(slot);
+		bool flag = args.get_i();
 		if (flags().vVisible != flag) {
 			flags().vVisible = flag;
 			bool focus = hasFocus();
 			if (focus && !flag) {
-				m_window->resetFocus(false);
-				setBoolValue(slot, focus != hasFocus());
+				m_window->resetFocus(true);
 			}
 			updateLayout();
 		}
 	} else if (equal(key, "enabled")) {
-		bool flag = boolValue(slot);
-		SetFalse(slot);
+		bool flag = args.get_i();
 		if (flags().vEnabled != flag) {
 			flags().vEnabled = flag;
 			bool focus = hasFocus();
 			if (focus && !flag) {
-				m_window->resetFocus(false);
-				setBoolValue(slot, focus != hasFocus());
+				m_window->resetFocus(true);
 			}
 			refresh();
 		}
 	} else if (equal(key, "canFocus")) {
-		bool flag = boolValue(slot);
-		SetFalse(slot);
+		bool flag = args.get_i();
 		if (flags().vCanFocus != flag) {
 			flags().vCanFocus = flag;
 			bool focus = hasFocus();
 			if (focus && !flag) {
-				m_window->resetFocus(false);
-				setBoolValue(slot, focus != hasFocus());
+				m_window->resetFocus(true);
 			}
 			refresh();
 		}
 	} else if (equal(key, "fgColor")) {
-		m_fgColor = colorValue(slot);
+		m_fgColor = colorValue(args);
 		refresh();
 	} else if (equal(key, "bgColor")) {
-		m_bgColor = colorValue(slot);
+		m_bgColor = colorValue(args);
 		refresh();
 	} else if (equal(key, "minSize")) {
-		layout().minSize = sizeValue(slot);
+		layout().minSize = sizeValue(args);
 		updateLayout();
 	} else if (equal(key, "alignment")) {
-		layout().alignment = clipAlign(intValue(slot));
+		layout().alignment = clipAlign(args.get_i());
 		updateLayout();
 	} else if (equal(key, "xExpand")) {
-		layout().expand.x = max(0., floatValue(slot));
+		layout().expand.x = max(0.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "yExpand")) {
-		layout().expand.y = max(0., floatValue(slot));
+		layout().expand.y = max(0.f, args.get_f());
 		updateLayout();
 	} else if (equal(key, "xFill")) {
-		layout().fill.x = clip(floatValue(slot), 0., 1.);
+		layout().fill.x = clip(args.get_f(), 0.f, 1.f);
 		updateLayout();
 	} else if (equal(key, "yFill")) {
-		layout().fill.y = clip(floatValue(slot), 0., 1.);
+		layout().fill.y = clip(args.get_f(), 0.f, 1.f);
 		updateLayout();
 	} else {
-		SCUM_Object::setProperty(key, slot);
+		SCUM_Object::setProperty(key, args);
 	}
 }
 
+#if 0
 void SCUM_View::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal("bounds", key)) {
@@ -382,6 +401,7 @@ void SCUM_View::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		SCUM_Object::getProperty(key, slot);
 	}
 }
+#endif
 
 void SCUM_View::setBounds(const SCUM_Rect& bounds)
 {
@@ -414,17 +434,17 @@ void SCUM_View::setScrollRatio(const SCUM_Point& /* ratio */)
 
 void SCUM_View::scrollChanged()
 {
-	changed(getsym("scroll"));
+	//changed(getsym("scroll"));
 }
 
-void SCUM_View::doAction(PyrSymbol* message)
+void SCUM_View::doAction(const char* message)
 {
-	sendMessage(message, 0, 0);
+	//sendMessage(message, 0, 0);
 }
 
 void SCUM_View::doAction()
 {
-	sendMessage(SCUM_Symbol::doAction, 0, 0);
+	//sendMessage(SCUM_Symbol::doAction, 0, 0);
 }
 
 void SCUM_View::animateAction(SCUM_Timer*)
@@ -455,51 +475,89 @@ void SCUM_View::animate()
 
 bool SCUM_View::sendMouseDown(int state, const SCUM_Point& where)
 {
-	PyrSlot args[3];
-	PyrSlot res;
+	OSC::StaticClientPacket<44> p;
+	p.openMessage("/event", 5);
+	putId(p);
+	p.putString("mouseDown");
+	p.putInt32(state);
+	p.putFloat32(where.x);
+	p.putFloat32(where.y);
+	p.closeMessage();
+	send(p);
 
-	SetInt(args+0, state);
-	SetFloat(args+1, where.x);
-	SetFloat(args+2, where.y);
-
-	sendMessage(SCUM_Symbol::mouseDown, 3, args, &res);
-
-	return IsTrue(&res);
+	return true;
 }
 
 void SCUM_View::sendMouseMove(int state, const SCUM_Point& where)
 {
-	PyrSlot args[3];
-
-	SetInt(args+0, state);
-	SetFloat(args+1, where.x);
-	SetFloat(args+2, where.y);
-
-	sendMessage(SCUM_Symbol::mouseMove, 3, args, 0);
+	OSC::StaticClientPacket<44> p;
+	p.openMessage("/event", 5);
+	putId(p);
+	p.putString("mouseMove");
+	p.putInt32(state);
+	p.putFloat32(where.x);
+	p.putFloat32(where.y);
+	p.closeMessage();
+	send(p);
 }
 
 void SCUM_View::sendMouseUp(int state, const SCUM_Point& where)
 {
-	PyrSlot args[3];
-
-	SetInt(args+0, state);
-	SetFloat(args+1, where.x);
-	SetFloat(args+2, where.y);
-
-	sendMessage(SCUM_Symbol::mouseUp, 3, args, 0);
+	OSC::StaticClientPacket<40> p;
+	p.openMessage("/event", 5);
+	putId(p);
+	p.putString("mouseUp");
+	p.putInt32(state);
+	p.putFloat32(where.x);
+	p.putFloat32(where.y);
+	p.closeMessage();
+	send(p);
 }
 
 void SCUM_View::sendScrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta)
 {
-	PyrSlot args[5];
+	OSC::StaticClientPacket<56> p;
+	p.openMessage("/event", 7);
+	putId(p);
+	p.putString("scrollWheel");
+	p.putInt32(state);
+	p.putFloat32(where.x);
+	p.putFloat32(where.y);
+	p.putFloat32(delta.x);
+	p.putFloat32(delta.y);
+	p.closeMessage();
+	send(p);
+}
 
-	SetInt(args+0, state);
-	SetFloat(args+1, where.x);
-	SetFloat(args+2, where.y);
-	SetFloat(args+3, delta.x);
-	SetFloat(args+4, delta.y);
+#include "SCUM_Class.hh"
 
-	sendMessage(SCUM_Symbol::scrollWheel, 5, args, 0);
+void SCUM_View::osc_raise(const char*, SCUM_ArgStream&)
+{
+	raise();
+}
+
+void SCUM_View::osc_lower(const char*, SCUM_ArgStream&)
+{
+	lower();
+}
+
+void SCUM_View::osc_refresh(const char*, SCUM_ArgStream&)
+{
+	refresh();
+}
+
+void SCUM_View::osc_update(const char*, SCUM_ArgStream&)
+{
+	updateLayout();
+}
+
+void SCUM_View_Init(SCUM_ClassRegistry* reg)
+{
+	SCUM_ClassT<SCUM_View>* klass = new SCUM_ClassT<SCUM_View>(reg, "View", "Object");
+	klass->addMethod("raise", &SCUM_View::osc_raise);
+	klass->addMethod("lower", &SCUM_View::osc_lower);
+	klass->addMethod("refresh", &SCUM_View::osc_refresh);
+	klass->addMethod("update", &SCUM_View::osc_update);
 }
 
 // EOF

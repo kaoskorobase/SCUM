@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
+	$Id$
 */
 
 
@@ -37,7 +37,7 @@ class SCUM_Container : public SCUM_View
 	friend class SCUM_View;
 
 public:
-	SCUM_Container(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Container(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_Container();
 
 	// hierarchy access
@@ -65,8 +65,8 @@ public:
 	virtual bool canFocus() const;
 
 	// properties
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	inline bool isHomogenous() const { return flags().cHomogenous; }
 	inline SCUM_Point padding() const { return m_padding; }
@@ -100,7 +100,7 @@ private:
 class SCUM_Bin : public SCUM_Container
 {
 public:
-	SCUM_Bin(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Bin(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	inline SCUM_View* visibleChild();
 	SCUM_View* firstVisibleChild();
@@ -126,10 +126,10 @@ private:
 class SCUM_Box : public SCUM_Container
 {
 public:
-	SCUM_Box(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Box(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	float spacing() const { return m_spacing; }
 
@@ -147,7 +147,7 @@ protected:
 class SCUM_HBox : public SCUM_Box
 {
 public:
-	SCUM_HBox(SCUM_Container* parent, PyrObject* obj);
+	SCUM_HBox(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual SCUM_Size getMinSize();
 
@@ -163,7 +163,7 @@ protected:
 class SCUM_VBox : public SCUM_Box
 {
 public:
-	SCUM_VBox(SCUM_Container* parent, PyrObject* obj);
+	SCUM_VBox(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 	virtual SCUM_Size getMinSize();
 
@@ -187,19 +187,19 @@ class SCUM_Grid : public SCUM_Container
 	};
 
 public:
-	SCUM_Grid(SCUM_Container* parent, PyrObject* obj);
+	SCUM_Grid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual ~SCUM_Grid();
 
 	size_t numRows() const { return m_numRows; }
 	size_t numCols() const { return m_numCols; }
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+	virtual void setProperty(const char* key, SCUM_ArgStream& args);
+	//virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 	inline SCUM_View* childAt(size_t row, size_t col);
 	inline void childPut(size_t row, size_t col, SCUM_View* view);
 
-	virtual size_t childIndex(size_t row, size_t col) = 0;
+	virtual size_t childIndex(size_t row, size_t col);
 
 protected:
 	virtual SCUM_Size getMinSize();
@@ -233,7 +233,7 @@ private:
 class SCUM_HGrid : public SCUM_Grid
 {
 public:
-	SCUM_HGrid(SCUM_Container* parent, PyrObject* obj);
+	SCUM_HGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual size_t childIndex(size_t row, size_t col);
 };
 
@@ -245,7 +245,7 @@ public:
 class SCUM_VGrid : public SCUM_Grid
 {
 public:
-	SCUM_VGrid(SCUM_Container* parent, PyrObject* obj);
+	SCUM_VGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 	virtual size_t childIndex(size_t row, size_t col);
 };
 

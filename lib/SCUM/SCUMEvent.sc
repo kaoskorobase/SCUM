@@ -1,5 +1,4 @@
-SCUMEvent : SCUM
-{
+SCUMEvent : SCUM {
 	var <view, <isAccepted=true;
 
 	isIgnored { ^isAccepted.not }
@@ -19,8 +18,7 @@ SCUMEvent : SCUM
 	}
 }
 
-SCUMInputEvent : SCUMEvent
-{
+SCUMInputEvent : SCUMEvent {
 	var <state;
 
 	// converting
@@ -70,8 +68,7 @@ SCUMInputEvent : SCUMEvent
 	}
 }
 
-SCUMKeyEvent : SCUMInputEvent
-{
+SCUMKeyEvent : SCUMInputEvent {
 	var <char, <key;
 
 	*new { | view, state, char, key |
@@ -109,8 +106,7 @@ SCUMKeyEvent : SCUMInputEvent
 	}
 }
 
-SCUMMouseEvent : SCUMInputEvent
-{
+SCUMMouseEvent : SCUMInputEvent {
 	var <pos;
 
 	*new { | view, state, x, y |
@@ -122,8 +118,7 @@ SCUMMouseEvent : SCUMInputEvent
 	}
 }
 
-SCUMScrollWheelEvent : SCUMMouseEvent
-{
+SCUMScrollWheelEvent : SCUMMouseEvent {
 	var <delta;
 
 	*new { | view, state, x, y, dx, dy |

@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ViewFactory.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id$
 */
 
 
@@ -32,25 +32,27 @@
 class SCUM_ViewMakerBase
 {
 public:
-	virtual SCUM_View* makeView(SCUM_Container* parent, PyrObject* obj) = 0;
+	virtual SCUM_View* makeView(SCUM_Client* client, int oid, SCUM_Container* parent) = 0;
 };
 
 template <class T> class SCUM_ViewMaker : public SCUM_ViewMakerBase
 {
 public:
-	SCUM_View* makeView(SCUM_Container* parent, PyrObject* obj)
+	SCUM_View* makeView(SCUM_Client* client, int oid, SCUM_Container* parent)
 	{
-		return new T(parent, obj);
+		return new T(client, oid, parent);
 	}
 };
 
 class SCUM_ViewFactory
 {
 public:
+	SCUM_ViewFactory();
+
 	static SCUM_ViewFactory& instance();
 
 	void add(const char* className, SCUM_ViewMakerBase* maker);
-	SCUM_View* makeView(const char* className, SCUM_Container* parent, PyrObject* obj);
+	SCUM_View* makeView(const char* className, SCUM_Client* client, int oid, SCUM_Container* parent);
 
 	static void init();
 
