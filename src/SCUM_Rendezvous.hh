@@ -18,43 +18,22 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA
 
-    $Id: SCUM_FLApp.hh 8 2004-08-15 14:42:24Z steve $
+    $Id: SCUM_Button.hh 13 2005-03-10 17:21:31Z sk $
 */
 
 
-#ifndef SCUM_APP_HH_INCLUDED
-#define SCUM_APP_HH_INCLUDED
-
-#include "SCUM_Client.hh"
-#include "SCUM_Object.hh"
+#ifndef SCUM_RENDEZVOUS_HH_INCLUDED
+#define SCUM_RENDEZVOUS_HH_INCLUDED
 
 #include <stdint.h>
 
-class SCUM_App
-{
-public:
-    static SCUM_App& instance();
-    void initOSC(const char* addr, uint16_t port);
-
-    void run();
-
-private:
-    SCUM_App();
-    ~SCUM_App();
-
-    friend class SCUM_Client;
-    void addClient(SCUM_Client* obj);
-    void removeClient(SCUM_Client* obj);
-
-    void maybeQuit();
-
-    static void dataAvailableCB(int, void*);
-    static void timeoutCB(void*);
-
-private:
-    int			m_socket;
-    SCUM_ObjectList	m_clients;
-    bool		m_shouldBeRunning;
+enum {
+    kSCUM_ProtoUDP,
+    kSCUM_ProtoTCP
 };
 
-#endif // SCUM_APP_HH_INCLUDED
+bool SCUM_RendezvousStart();
+void SCUM_RendezvousStop();
+bool SCUM_RendezvousPublish(const char* serviceName, int protocol, uint16_t port);
+
+#endif // SCUM_RENDEZVOUS_HH_INCLUDED

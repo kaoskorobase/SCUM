@@ -11,11 +11,10 @@ SCUMLabel : SCUMView {
 		));
 	}
 	
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		this.canFocus = false;
 		this.xFill = 1;
-		this.font = SCUM.desktop.font;
 	}
 
 	// properties
@@ -47,8 +46,8 @@ SCUMTextEntry : SCUMLabel {
 	var <value, <>setBoth=true, <editColor;
 	var fgColorSave, keyString;
 
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		editColor = Color.red;
 		value = this.defaultValue;
 		this.canFocus = true;
@@ -147,8 +146,8 @@ SCUMTextEntry : SCUMLabel {
 SCUMStringEntry : SCUMTextEntry {
 	var <>history, historyIndex;
 
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		history = History(10);
 		ActionListener(this, \value, #{ | view |
 			view.history.push(view.value);
@@ -186,8 +185,8 @@ SCUMNumberEntry : SCUMTextEntry {
 
 	*viewClass { ^SCUMStringEntry }
 
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		this.bgColor = Color.grey(0.6);
 		this.font = Font("Courier", 12);
 		this.textAlignment = 4;

@@ -7,9 +7,9 @@ SCUMContainer : SCUMView {
 			yPadding: 0.0
 		));
 	}
-	init { | parent, function |
+	initObject { | argParent initFunction serverArgs |
 		var continuation;
-		super.init(parent, function);
+		super.initObject(argParent, initFunction, serverArgs);
 		continuation = children;
 		children = List.new;
 		named = Dictionary.new;
@@ -134,7 +134,7 @@ SCUMVGrid : SCUMGrid {
 	}
 }
 
-// not a container
+// actually not a container
 SCUMScrollView : SCUMView {
 	// properties
 	*propertyKeys {

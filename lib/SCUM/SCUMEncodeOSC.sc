@@ -58,6 +58,12 @@
 	}
 }
 
++ Function {
+	scumEncodeOSC { | stream |
+		this.value.scumEncodeOSC(stream)
+	}
+}
+
 + Color {
 	*scumDecodeOSC { | stream |
 		^this.new(*stream.nextN(4))
@@ -108,5 +114,14 @@
 	}
 	scumEncodeOSC { | stream |
 		stream.put(this.name).put(this.size)
+	}
+}
+
++ SCUMObject {
+	*scumDecodeOSC { | stream |
+		^SCUM.objectAt(Integer.scumDecodeOSC(stream)) { Error("object not found").throw }
+	}
+	scumEncodeOSC { | stream |
+		this.id.scumEncodeOSC(stream);
 	}
 }

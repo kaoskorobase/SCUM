@@ -24,7 +24,6 @@
 
 #include "SCUM_GC.hh"
 #include "SCUM_ScrollView.hh"
-#include "SCUM_Symbol.hh"
 
 using namespace SCUM;
 

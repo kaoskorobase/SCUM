@@ -27,31 +27,19 @@ SCUMView : SCUMObject {
 	}
 	
 	*new { | parent, function |
-		^super.new.init(parent, function);
+		^super.new.initObject(parent, function);
 	}
 	*make { | function |
+		if (~parent.isNil) {
+			Error("missing ~parent for view").throw;
+		};
 		^this.new(~parent, function)
 	}
-	init { | argParent, function |
-		var pid = 0, bundle;
+	initObject { | argParent initFunction serverArgs |
 		parent = argParent.asView;
-		if (parent.notNil) {
-			pid = parent.id;
-		};
-		this.prInitID;
-		bundle = this.setPropertiesBundle(this.recordPropertyChangesDuring {
-			this.use {
-				this.initView;
-				function.value(this);
-			}
-		});
+		super.initObject(initFunction, [parent] ++ serverArgs);
 		this.prAddToParent;
-		SCUM.makeBundle(nil) {
-			SCUM.sendMsg("new", this.class.viewClass.name, id, pid);
-			SCUM.sendBundle(nil, *bundle);
-		};
 	}
-	initView { }
 
 	*viewClass { ^this }
 	*actionProperty { ^nil }

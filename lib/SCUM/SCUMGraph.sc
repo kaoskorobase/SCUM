@@ -1,26 +1,22 @@
-SCUMScope : SCUMScrollView {
-	var sndBuf, shm, updater;
+SCUMGLView : SCUMView {
+}
+
+SCUMScope : SCUMGLView {
+	var sndBuf, shm;
 	classvar kSndBufHeaderSize = 16, <>maxBufSize = 1024;
 	
-	initView {
-		var shmName;
-		super.initView;
-		this.vThumb = false;
+	initObject { | argParent initFunction serverArgs |
 		sndBuf = SndBuf(0);
-		// TODO: pass this as constructor arg!
-		shmName = "/SCUM:" ++ SCUM.addr.port ++ ":Scope:" ++ id;
-		shm = SharedMemory.open(shmName, kSndBufHeaderSize + (maxBufSize * 4));
-		updater = Routine.run {
-			loop {
-				try { this.prUpdate } { |e| e.reportError };
-				0.1.wait;
-			}
-		};
+		shm = SharedMemory.open(this.makeIPCName, kSndBufHeaderSize + (maxBufSize * 4));
+		super.initObject(argParent, initFunction, [shm.name] ++ serverArgs);
 		ActionListener(this, \destroyed, {
-			updater.stop;
-			sndBuf.free;
+			CmdPeriod.remove(this);
 			shm.free;
+			sndBuf.free;
 		});
+		CmdPeriod.add(this);
+		sndBuf.update(false);
+		this.cmdPeriod;
 	}
 
 	// properties
@@ -34,7 +30,12 @@ SCUMScope : SCUMScrollView {
 	bufnum_ { |v| sndBuf.bufnum_(v).update(false) }
 	style { ^this.getProperty(\style) }
 	style_ { |v| this.setProperty(\style, v) }
-	
+
+	// cmd period	
+	cmdPeriod {
+		this.play({ try { this.prUpdate }; 0.05 });
+	}
+
 	// PRIVATE
 	prUpdate {
 		if (sndBuf.update(true)) {

@@ -24,7 +24,6 @@
 
 #include "SCUM_Menu.hh"
 #include "SCUM_Client.hh"
-#include "SCUM_Symbol.hh"
 #include "SCUM_Util.hh"
 #include "SCUM_View.hh"
 

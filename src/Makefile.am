@@ -25,10 +25,10 @@ SCUM_GL.hh \
 SCUM_Geometry.hh \
 SCUM_Graph.hh \
 SCUM_Handle.hh \
-SCUM_Invocation.hh \
 SCUM_Menu.hh \
 SCUM_NSKey.h \
 SCUM_Object.hh \
+SCUM_Rendezvous.hh \
 SCUM_ScrollView.hh \
 SCUM_Shm.hh \
 SCUM_Slider.hh \
@@ -51,9 +51,9 @@ SCUM_GC.cpp \
 SCUM_GL.cpp \
 SCUM_Graph.cpp \
 SCUM_Handle.cpp \
-SCUM_Invocation.cpp \
 SCUM_Menu.cpp \
 SCUM_Object.cpp \
+SCUM_Rendezvous.cpp \
 SCUM_ScrollView.cpp \
 SCUM_Shm.cpp \
 SCUM_Slider.cpp \

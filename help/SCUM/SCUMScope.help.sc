@@ -26,11 +26,14 @@
 	s.waitForBoot {
 		b = Buffer.alloc(s, 441, 1);
 		v
-		.addResource(b)
 		.bufnum_(b.bufnum)
+		.addResource(b)
 		.addResource(
 			{
-				ScopeOut.ar(Saw.ar(MouseY.kr(10, 2000), mul: MouseX.kr(0, 1)), b.bufnum);
+				var z;
+				z = Saw.ar(MouseY.kr(10, 2000), mul: MouseX.kr(0, 1));
+				ScopeOut.ar(z * 4, b.bufnum);
+				Out.ar(0, z * 0.4);
 			}.play(s)
 		);
 	};

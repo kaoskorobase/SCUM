@@ -10,7 +10,23 @@ SCUMDesktop : SCUMObject {
 			font: Font("Helvetica", 12)
 		));
 	}
-		
+	*allocID { ^0 }
+	*new {
+		^super.new.initObject
+	}
+	initObject {
+		super.initObject;
+		resources = [];
+	}
+	initDefaults {
+		//SCUM.makeBundle(nil) {
+			this.class.propertyDefaults.keys.do { | key |
+				// SCUM.sendMsg(*this.setPropertyMsg(key, this.class.propertyDefault(key)));
+				this.perform(key.asSetter, this.class.propertyDefault(key));
+			}
+		//}
+	}
+
 	// windows
 	windows {
 		^resources.selectMsg(\isKindOf, SCUMWindow)
@@ -44,16 +60,6 @@ SCUMDesktop : SCUMObject {
 	font_ { |v| this.setProperty(\font, v) }
 
 	// PRIVATE
-	prInit {
-		var bundle;
-		this.prInitID(0);
-		resources = [];
-		SCUM.makeBundle(nil) {
-			this.class.propertyDefaults.keys.do { | key |
-				SCUM.sendMsg(*this.setPropertyMsg(key, this.class.propertyDefault(key)));
-			}
-		}
-	}
 	prDestroyed {
 		var list;
 		list = resources.copy;

@@ -16,10 +16,13 @@ SCUMWindow : SCUMBin {
 	*new { | function |
 		^super.new(nil, function)
 	}
+	*make { | function |
+		^this.new(function)
+	}
 
 	// initialization
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		this.title = this.class.propertyDefault(\title);
 		this
 			.setKey(modDefault, $w, #{ | view | view.close })

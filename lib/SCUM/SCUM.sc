@@ -13,6 +13,7 @@ SCUM {
 	classvar <borderNone, <borderFlat, <borderRaised, <borderSunken;
 
 	classvar <addr, <desktop, <objectTable, objectIDStream, resources;
+	classvar <>defaultServerAddress;
 	classvar <>serverProgramPath = "/usr/local/bin/scum";
 	
 	*initClass {
@@ -53,7 +54,6 @@ SCUM {
 		keyF11			= 16rF70E;
 		keyF12			= 16rF70F;
 		
-		//addr = NetAddr("localhost", 57130);
 		objectTable = IdentityDictionary.new;
 		objectIDStream = {: x, x <- (0..inf), x != 0 };
 	}
@@ -71,7 +71,7 @@ SCUM {
 		if (addr.isNil or: {Êaddr.isConnected.not }) {
 			Routine.run {
 				10.do { |i|
-					#addr = OSCService.knownAddresses("SCUM", \tcp).asArray;
+					#addr = (defaultServerAddress ?? { OSCService.knownAddresses("SCUM", \tcp) }).asArray;
 					if (addr.isNil) {
 						if (booted.not) {
 							this.message("booting server");
@@ -102,6 +102,9 @@ SCUM {
 		if (addr.notNil) {
 			addr.disconnect;
 		}
+	}
+	*kill {
+		"killall -HUP scum".systemCmd
 	}
 	// OSC messages + bundles
 	*sendMsg { | ... msg |
@@ -161,7 +164,7 @@ SCUM {
 	}
 	*prOnConnect {
 		this.message("connected");
-		desktop = SCUMDesktop.new.prInit;
+		desktop = SCUMDesktop.new;
 		OSCresponder(addr, "/message", { | time, resp, msg |
 			this.message(msg[1])
 		}).add;

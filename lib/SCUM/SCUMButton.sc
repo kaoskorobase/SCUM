@@ -4,8 +4,8 @@ SCUMToggle : SCUMControl {
 	*initClass {
 		this.addProperty(\value, false)
 	}
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		value = this.class.propertyDefault(\value);
 		this.setKey(nil, keySpace, #{ |v| v.value = v.value.not });
 		this.setKey(nil, keyCR, #{ |v| v.value = true });
@@ -55,8 +55,8 @@ SCUMButton : SCUMControl {
 		));
 	}
 
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		value = this.class.propertyDefault(\value);
 	}
 	
@@ -103,8 +103,8 @@ SCUMChoice : SCUMControl {
 		));
 	}
 
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		value = this.class.propertyDefault(\value);
 	}
 

@@ -11,8 +11,8 @@ SCUMSlider : SCUMControl {
 	}
 
 	// initialization
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		value = this.class.propertyDefault(\value);
 		this
 			.setKey(nil, $r, #{ | view | view.value = 1.0.rand })
@@ -104,8 +104,8 @@ SCUMPad : SCUMControl {
 	}
 	
 	// initialization
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		x = this.class.propertyDefault(\x);
 		y = this.class.propertyDefault(\y);
 		this
@@ -164,8 +164,8 @@ SCUMTable : SCUMControl {
 			.addProperty(\style, \lines)
 	}
 	
-	initView {
-		super.initView;
+	initDefaults {
+		super.initDefaults;
 		value = this.class.propertyDefault(\value);
 		this.prUpdate;
 	}

@@ -1,12 +1,12 @@
 SCUMObject : SCUM {
-	var <id, properties, blockedDepth=0, mutedDepth=0;
+	var <id, properties;
+	var blockedDepth=0, mutedDepth=0;
 	var <resources, <dependants;
-	classvar propertySpecs;
-	classvar propertyDefaults;
-	classvar <>preferredClock;
+	classvar propertySpecs, propertyDefaults;
+	classvar <>defaultClock;
 
 	*initClass {
-		preferredClock = AppClock;
+		defaultClock = AppClock;
 		ActionListener(SCUM, \connected, {
 			SCUM.registerObjectMethod("/changed", {Ê| obj, name ... args |
 				obj.doBlocked {
@@ -16,7 +16,10 @@ SCUMObject : SCUM {
 		});
 	}
 	*serverClass {
-		^this
+		^this.name
+	}
+	*allocID {
+		^SCUM.nextObjectID
 	}
 	
 	// property defaults
@@ -40,6 +43,35 @@ SCUMObject : SCUM {
 	}
 	*propertyDefault { | name |
 		^this.propertyDefaults.at(name).value
+	}
+	
+	// initialization
+	*new {
+		^super.newCopyArgs(this.allocID)
+	}
+	initObject { | initFunction serverArgs |
+		var bundle;
+		bundle = SCUM.makeBundle(false) {
+			// create remote object
+			if (serverArgs.isArray) {
+				// don't send if serverArgs.isNil
+				SCUM.sendMsg(*this.newMsg(*serverArgs));
+			};
+			// set properties
+			SCUM.sendBundle(nil, *this.setPropertiesBundle(
+				this.recordPropertyChangesDuring {
+					// default initializer
+					this.initDefaults;
+					// user initializer
+					this.use { initFunction.value(this) };
+				}
+			))
+		};
+		SCUM.putObject(id, this);
+		SCUM.sendBundle(nil, *bundle);
+	}
+	initDefaults {
+		// initialize property defaults etc. here
 	}
 	
 	// model support
@@ -98,9 +130,13 @@ SCUMObject : SCUM {
 		}
 	}
 
-	// messages
+	// messages, communication
 	newMsg { | ... args |
-		^["new", this.class.serverClass.asString, id] ++ args
+		var msg;
+		msg = CollStream.on([]);
+		msg.putAll(["new", this.class.serverClass.asString, id]);
+		args.do(_.scumEncodeOSC(msg));
+		^msg.contents
 	}
 	freeMsg {
 		^["free", id]
@@ -121,7 +157,16 @@ SCUMObject : SCUM {
 		};
 		^bundle
 	}
-	
+	makeIPCName { | suffix |
+		var name;
+		// locally, an object is uniquely identified by a (port, id) tuple
+		name = format("/SCUM:%:%%", SCUM.addr.port.asHexString(4), id.asHexString(8), suffix);
+		if (name.size >= SharedMemory.kIPCNameMax) {
+			Error("IPC name too long").throw;
+		};
+		^name
+	}
+
 	// action
 	doAction { | aspect | }
 	doActionUnlessMuted { | ...args |
@@ -212,26 +257,17 @@ SCUMObject : SCUM {
 	}
 
 	// scheduling
-	sched { | delta function clock(preferredClock) |
-		clock.sched(delta, {
-			if (this.isValid) {
-				function.value(this)
-			}
-		})
+	ifValid { | function |
+		^this.isValid.if(function)
 	}
-	play { | function clock(preferredClock) |
-		clock.play({
-			if (this.isValid) {
-				function.value(this)
-			}
-		})
+	sched { | delta function clock(defaultClock) |
+		clock.sched(delta, { this.ifValid(function) })
+	}
+	play { | function clock(defaultClock) |
+		clock.play({ this.ifValid(function) })
 	}
 
 	// PRIVATE
-	prInitID { | oid |
-		id = oid ?? {ÊSCUM.nextObjectID };
-		SCUM.putObject(id, this);
-	}
 	prDestroy {
 		SCUM.sendMsg(*this.freeMsg);
 	}

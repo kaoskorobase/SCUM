@@ -10,11 +10,19 @@ AC_HEADER_STDC
 
 AC_ARG_WITH(fltk-config,
 AC_HELP_STRING([--with-fltk-config],[location of the fltk-config script]),
-[FLTK_CONFIG=$withval],[FLTK_CONFIG="fltk-config"])
+  [FLTK_CONFIG=$withval],[FLTK_CONFIG="fltk-config"])
 
 AC_ARG_ENABLE(debug,
 AC_HELP_STRING([--enable-debug],[enable debugging support]),
   [],[enable_debug=no])
+
+AC_ARG_ENABLE(fat-binary,
+AC_HELP_STRING([--enable-fat-binary],[produce fat (statically linked) binary]),
+  [enable_fat_binary=$enableval],[enable_fat_binary=no])
+
+AC_ARG_WITH(howl,
+AC_HELP_STRING([--without-howl],[compile without libhowl support]),
+  [with_howl=$withval],[with_howl=true])
 
 dnl AC_ARG_WITH(cairo,
 dnl   AC_HELP_STRING([--with-cairo],[enable cairo support]),
@@ -24,7 +32,12 @@ dnl AC_ARG_WITH(glitz,
 dnl AC_HELP_STRING([--with-glitz],[disable glitz support]),
 dnl   [use_glitz=$withval],[use_glitz=yes])
 
-PKG_CHECK_MODULES(PACKAGE,["howl"])
+if test "x$with_howl" == "xtrue"; then
+    PKG_CHECK_MODULES(PACKAGE,["howl"],[HAVE_HOWL=true],[HAVE_HOWL=false])
+else
+    HAVE_HOWL=false
+fi
+
 dnl PKG_CHECK_MODULES(PACKAGE,["libsclang"])
 
 dnl if test "$use_cairo" = "yes"; then
@@ -61,6 +74,10 @@ if ! which "${FLTK_CONFIG}" &>/dev/null; then
     AC_MSG_ERROR([flkt-config not found])
 fi
 
+if $HAVE_HOWL; then
+    AC_DEFINE([HAVE_HOWL],[1],[Define when libhowl is available])
+fi
+
 if test "$enable_debug" = "yes"; then
     PACKAGE_DEBUG_CFLAGS="-g -DSCUM_DEBUG"
 else
@@ -70,7 +87,12 @@ fi
 #fltk_config_args="--use-gl --use-images"
 fltk_config_args="--use-gl"
 FLTK_CFLAGS="$(${FLTK_CONFIG} ${fltk_config_args} --cflags)"
-FLTK_LIBS="$(${FLTK_CONFIG} ${fltk_config_args} --ldstaticflags)"
+if test "x$enable_fat_binary" == "xyes"; then
+    fltk_config_ld_args="--ldstaticflags"
+else
+    fltk_config_ld_args="--ldflags"
+fi
+FLTK_LIBS="$(${FLTK_CONFIG} ${fltk_config_args} ${fltk_config_ld_args})"
 
 PACKAGE_CFLAGS="${PACKAGE_CFLAGS} -D_REENTRANT -Wno-unknown-pragmas ${PACKAGE_DEBUG_CFLAGS} ${FLTK_CFLAGS}"
 PACKAGE_LIBS="${PACKAGE_LIBS} ${FLTK_LIBS}"
@@ -80,6 +102,7 @@ AC_SUBST(FLTK_CONFIG)
 
 AC_OUTPUT([
 Makefile
+oscpp/Makefile
 src/Makefile
 ])
 

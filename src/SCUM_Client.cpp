@@ -32,7 +32,9 @@
 #include <Fl/Fl.H>
 #include <stdexcept>
 
+#include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 typedef SCUM_ObjectList::iterator SCUM_ObjectIter;
 using namespace SCUM;
