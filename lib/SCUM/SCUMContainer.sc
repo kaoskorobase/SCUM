@@ -102,8 +102,10 @@ SCUMGrid : SCUMContainer {
 	ySpacing_ { |v| this.setProperty(\ySpacing, v) }
 	spacing { ^this.prGetPointProperty(\xSpacing, \ySpacing) }
 	spacing_ { |v| this.prSetPointProperty(\xSpacing, \ySpacing, v.asPoint) }
-	wrap { ^this.getProperty(\wrap) }
-	wrap_ { |v| this.setProperty(\wrap, v) }
+// 	wrap { ^this.getProperty(\wrap) }
+// 	wrap_ { |v| this.setProperty(\wrap, v) }
+	dimensions { ^this.getProperty(\dimensions, Size.new) }
+	dimensions_ { |v| this.setProperty(\dimensions, v.asSize) }
 }
 
 SCUMHGrid : SCUMGrid {

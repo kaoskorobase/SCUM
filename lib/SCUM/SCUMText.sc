@@ -76,12 +76,8 @@ SCUMTextEntry : SCUMLabel
 	
 	// properties
 	*propertyKeys {
-		^super.propertyKeys ++ [\sendMouse, \sendScroll, \editColor]
+		^super.propertyKeys ++ [\editColor]
 	}
-	sendMouse { ^this.getProperty(\sendMouse) }
-	sendMouse_ { |v| this.setProperty(\sendMouse, v) }
-	sendScroll { ^this.getProperty(\sendScroll) }
-	sendScroll_ { |v| this.setProperty(\sendScroll, v) }
 	editColor_ { | color |
 		editColor = color;
 		if (this.isEditing) {
@@ -180,8 +176,6 @@ SCUMNumberEntry : SCUMTextEntry
 		this.bgColor = Color.grey(0.6);
 		this.font = Font("Courier", 12);
 		this.textAlignment = 4;
-		this.sendMouse = true;
-		this.sendScroll = true;
 		this.precision = 5;
 	}
 

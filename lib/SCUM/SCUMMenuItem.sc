@@ -1,7 +1,7 @@
 SCUMMenuItem
 {
 	text { ^"" }
-	update { | menu, index | ^index + 1 }
+	update { | menu, index | }
 	invoke { | menu, index | }
 
 	primTag { ^this.subclassResponsibility  }
@@ -58,7 +58,6 @@ SCUMMenuToggle : SCUMMenuLabel
 		value = menu.value;
 		updateAction.value(menu, this);
 		menu.value = value;
-		^index + 1
 	}
 	invoke { | menu, index |
 		value = menu.value.not;
@@ -82,7 +81,7 @@ SCUMMenuRadioProxy : SCUMMenuLabel
 	}
 
 	update { | menu, index |
-		^group.update(menu, index)
+		group.update(menu, index)
 	}
 	invoke { | menu, index |
 		group.invoke(menu, index);
@@ -96,7 +95,7 @@ SCUMMenuRadioGroup : SCUMMenuItem
 	var firstIndex, size;
 	var <>value, <>action, <>updateAction;
 
-	*new { | firstIndex, items, action, updateAction |
+	*new { | firstIndex, action, updateAction, items |
 		var obj;
 		obj = this.newCopyArgs(firstIndex, items.size, 0, action, updateAction);
 		^items.collect({ | text | SCUMMenuRadioProxy(obj, text) })

@@ -1,5 +1,4 @@
-SCUMObject : SCUM
-{
+SCUMObject : SCUM {
 	var dataPtr, resources;
 
 	use { | function |

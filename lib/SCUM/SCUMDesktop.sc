@@ -1,5 +1,4 @@
-SCUMDesktop : SCUMObject
-{
+SCUMDesktop : SCUMObject {
 	classvar instance, objects;
 	classvar <font, <>keyDownAction, <>keyUpAction;
 	classvar <>currentCopy;
@@ -26,14 +25,10 @@ SCUMDesktop : SCUMObject
 
 	// events
 	*keyDown { | evt |
-		evt.ifMod(modCommand, {
-			evt.ifChar($c, { currentCopy = this.copyEvent; ^this });
-			evt.ifChar($v, { if (currentCopy.notNil) { evt.view.pasteEvent(currentCopy) } ^this });
-		});
-		keyDownAction.value(evt)
+		keyDownAction.value(this, evt)
 	}
 	*keyUp { | evt |
-		keyUpAction.value(evt)
+		keyUpAction.value(this, evt)
 	}
 
 	// properties

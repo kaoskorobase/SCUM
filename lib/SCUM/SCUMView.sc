@@ -1,5 +1,4 @@
-SCUMView : SCUMObject
-{
+SCUMView : SCUMObject {
 	var <name, <parent;
 	var <>action, <>keyDownAction, <>keyUpAction, keyDict;
 
@@ -73,13 +72,11 @@ SCUMView : SCUMObject
 	nextKeyHandler {
 		^parent
 	}
-	defaultKeyDownAction { | evt |
-		evt.ignore
-	}
+	defaultKeyDownAction { | evt | evt.ignore }
 	keyDown { | evt |
 		this.defaultKeyDownAction(evt);
 		if (evt.isIgnored) {
-			keyDownAction.value(evt);
+			keyDownAction.value(this, evt);
 		};
 		if (evt.isIgnored) {
 			this.invokeKeyBinding(evt);
@@ -92,7 +89,7 @@ SCUMView : SCUMObject
 	keyUp { | evt |
 		this.defaultKeyUpAction(evt);
 		if (evt.isIgnored) {
-			keyUpAction.value(evt);
+			keyUpAction.value(this, evt);
 		};
 		if (evt.isIgnored) {
 			this.nextKeyHandler.keyUp(evt);
@@ -103,18 +100,7 @@ SCUMView : SCUMObject
 	setKey { | mods, key, action |
 		var dict0, dict1;
 		dict0 = keyDict ?? { keyDict = IdentityDictionary.new };
-		mods = mods.asArray.inject(0, {
-			| cur, nxt |
-			if (nxt.isKindOf(Symbol)) {
-				nxt = (
-					C: SCUM.modControl,
-					M: SCUM.modCommand,
-					S: SCUM.modShift,
-					K: SCUM.modKeypad
-				).at(nxt) ? 0;
-			};
-			cur | nxt
-		});
+		mods = SCUMInputEvent.specToModMask(mods);
 		if (key.isKindOf(Char)) {
 			key = key.ascii
 		};
@@ -141,7 +127,7 @@ SCUMView : SCUMObject
 			action = keyDict.atFail(evt.state, { ^this }).atFail(evt.key, { ^this });
 			if (action.notNil) {
 				evt.accept;
-				action.value(this);
+				action.value(this, evt);
 			}
 		}
 	}
@@ -250,6 +236,9 @@ SCUMView : SCUMObject
 	// PRIVATE
 	// events coming from the window system
 	prHandleFocus {
+		if (this.hasFocus) {
+			this.window.showFocusFor(1);
+		};
 		this.changed(\focus);
 	}
 	prHandleMouseDown { | state, x, y |
