@@ -32,6 +32,7 @@ SCUM_Rendezvous.hh \
 SCUM_ScrollView.hh \
 SCUM_Shm.hh \
 SCUM_Slider.hh \
+SCUM_Socket.hh \
 SCUM_System.hh \
 SCUM_Text.hh \
 SCUM_Util.hh \

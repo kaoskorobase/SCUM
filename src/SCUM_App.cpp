@@ -26,13 +26,9 @@
 #include "SCUM_Class.hh"
 #include "SCUM_GC.hh"
 #include "SCUM_Rendezvous.hh"
+#include "SCUM_Socket.hh"
 
-#include <Fl/Fl.h>
-
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <FL/Fl.H>
 
 #define SCUM_APP_IDLE_TIMEOUT 3.1415926535898
 
@@ -79,7 +75,7 @@ SCUM_App::~SCUM_App()
 void SCUM_App::dataAvailableCB(int fd, void* data)
 {
     struct sockaddr_in addr;
-    int addrlen = sizeof(addr);
+    socklen_t addrlen = sizeof(addr);
     int sock = accept(fd, (struct sockaddr*)&addr, &addrlen);
     if (sock == -1) {
         perror("accept");

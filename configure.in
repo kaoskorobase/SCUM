@@ -1,4 +1,5 @@
 AC_INIT(configure.in)
+AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(scum,0.0.2)
 AM_CONFIG_HEADER(config.h)
 
@@ -94,8 +95,18 @@ else
 fi
 FLTK_LIBS="$(${FLTK_CONFIG} ${fltk_config_args} ${fltk_config_ld_args})"
 
+PLATFORM_LIBS=""
+case $target_os in
+    darwin*)
+	PLATFORM_LIBS="-lpthread"
+	;;
+    linux*)
+	PLATFORM_LIBS="-lrt"
+	;;
+esac
+
 PACKAGE_CFLAGS="${PACKAGE_CFLAGS} -D_REENTRANT -Wno-unknown-pragmas ${PACKAGE_DEBUG_CFLAGS} ${FLTK_CFLAGS}"
-PACKAGE_LIBS="${PACKAGE_LIBS} ${FLTK_LIBS}"
+PACKAGE_LIBS="${PACKAGE_LIBS} ${FLTK_LIBS} ${PLATFORM_LIBS}"
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 AC_SUBST(FLTK_CONFIG)

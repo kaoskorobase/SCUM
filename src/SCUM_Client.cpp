@@ -22,19 +22,16 @@
 */
 
 
+#include "SCUM_App.hh"
 #include "SCUM_Client.hh"
 #include "SCUM_Class.hh"
-#include "SCUM_App.hh"
+#include "SCUM_Socket.hh"
 #include "SCUM_Util.hh"
 //#include "SCUM_ViewFactory.hh"
 #include "st.h"
 
 #include <Fl/Fl.H>
 #include <stdexcept>
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 
 typedef SCUM_ObjectList::iterator SCUM_ObjectIter;
 using namespace SCUM;
@@ -109,7 +106,7 @@ SCUM_Client::~SCUM_Client()
 uint16_t SCUM_Client::getPort() const
 {
 	struct sockaddr_in saddr;
-	int len = sizeof(saddr);
+	socklen_t len = sizeof(saddr);
 	if ((getsockname(getSocket(), (sockaddr*)&saddr, &len) == -1) || (len != sizeof(saddr)))
 		return 0;
 	return ntohs(saddr.sin_port);
@@ -118,7 +115,7 @@ uint16_t SCUM_Client::getPort() const
 uint16_t SCUM_Client::getPeerPort() const
 {
 	struct sockaddr_in saddr;
-	int len = sizeof(saddr);
+	socklen_t len = sizeof(saddr);
 	if ((getpeername(getSocket(), (sockaddr*)&saddr, &len) == -1) || (len != sizeof(saddr)))
 		return 0;
 	return ntohs(saddr.sin_port);
