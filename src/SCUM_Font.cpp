@@ -1,0 +1,311 @@
+/*	-*- mode: c++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
+	vi: ts=4 noet sw=4:
+
+	SCUM. copyright (c) 2004 stefan kersten.
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation; either version 2 of the
+	License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+	02111-1307 USA
+
+	$Id: SCUM_Font.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+*/
+
+
+#include "SCUM_Font.hh"
+#include "SCUM_System.hh"
+
+using namespace SCUM;
+
+// =====================================================================
+// SCUM_FontHandle
+
+SCUM_FontHandle::SCUM_FontHandle()
+{
+}
+
+SCUM_FontHandle::~SCUM_FontHandle()
+{
+}
+
+// =====================================================================
+// SCUM_Font
+
+SCUM_Font::SCUM_Font(const char* name, float size)
+	: m_name(name), m_size(size), m_handle(0)
+{
+	setFont(name, size);
+}
+
+SCUM_Font::SCUM_Font(const SCUM_Font& font)
+	: m_name(font.name()), m_size(font.size())
+{
+	setFont(name().c_str(), size());
+}
+
+SCUM_Font::~SCUM_Font()
+{
+	delete m_handle;
+}
+
+void SCUM_Font::setFont(const char* name, float size)
+{
+	delete m_handle;
+	m_handle = makeFontHandle(name, size > 0.f ? size : m_size);
+}
+
+void SCUM_Font::draw(const SCUM_Rect& bounds, const char* str, int align)
+{
+	if (m_handle) {
+		SCUM::setFont(m_handle);
+		SCUM_Size size = m_handle->measure(str);
+		SCUM_Point pos(bounds.origin() + bounds.size().layout(size, align));
+		pos.y += height() - descent();
+		drawText(pos, str);
+	}
+}
+
+#if 0
+// GL fonts
+#include <fontconfig/fontconfig.h>
+#include <FTGLTextureFont.h>
+#include <FTGLOutlineFont.h>
+#include <FTGLPixmapFont.h>
+#include <FTGLBitmapFont.h>
+#include <FTGLPolygonFont.h>
+
+#include <math.h>
+#include <string.h>
+#include <string>
+#include <iostream>
+using namespace std;
+
+#define SCUM_TEXTURE_FONT 0
+#define SCUM_POLYGON_FONT 1
+#define SCUM_PIXMAP_FONT  2
+#define SCUM_BITMAP_FONT  3
+
+#define SCUM_FONT_TYPE 2
+
+#define SCUM_FONT_RENDER_1(POINT, STRING) \
+		glPushAttrib(GL_ENABLE_BIT); \
+		glEnable(GL_TEXTURE_2D); \
+		glMatrixMode(GL_MODELVIEW); \
+		glPushMatrix(); \
+		glTranslate(POINT); \
+		m_handle->Render(STRING); \
+		glPopMatrix(); \
+		glPopAttrib()
+
+
+#define SCUM_FONT_RENDER_2(POINT, STRING) \
+		glRasterPos(POINT); \
+		m_handle->Render(STRING)
+
+#if SCUM_FONT_TYPE == SCUM_TEXTURE_FONT
+# define SCUM_FONT_CLASS FTGLTextureFont
+# define SCUM_FONT_RENDER(p, s) SCUM_FONT_RENDER_1(p, s)
+#endif
+
+#if SCUM_FONT_TYPE == SCUM_POLYGON_FONT
+# define SCUM_FONT_CLASS FTGLPolygonFont
+# define SCUM_FONT_RENDER(p, s) SCUM_FONT_RENDER_1(p, s)
+#endif
+
+#if SCUM_FONT_TYPE == SCUM_PIXMAP_FONT
+# define SCUM_FONT_CLASS FTGLPixmapFont
+# define SCUM_FONT_RENDER(p, s) SCUM_FONT_RENDER_2(p, s)
+#endif
+
+#if SCUM_FONT_TYPE == SCUM_BITMAP_FONT
+# define SCUM_FONT_CLASS FTGLBitmapFont
+# define SCUM_FONT_RENDER(p, s) SCUM_FONT_RENDER_2(p, s)
+#endif
+
+class SCUM_FontManager
+{
+public:
+	SCUM_FontManager();
+
+	static SCUM_FontManager& instance();
+
+	FTFont* getFont(const char* name);
+	void initGL();
+
+private:
+	FcPattern* matchName(const char* name);
+
+	typedef std::map<std::string,FTFont*> Cache;
+	typedef Cache::iterator CacheIter;
+
+	Cache m_cache;
+};
+
+SCUM_Font::SCUM_Font(const char* name, size_t size)
+	: m_name(name), m_size(size), m_handle(0)
+{
+	char buffer[strlen(name)+32];
+	sprintf(buffer, "%s-%d", name, size);
+	m_handle = SCUM_FontManager::instance().getFont(buffer);
+}
+
+SCUM_Font::SCUM_Font(const SCUM_Font& font)
+	: m_name(font.m_name), m_size(font.m_size), m_handle(font.m_handle)
+{
+}
+
+bool SCUM_Font::isValid() const
+{
+	return m_handle != 0;
+}
+
+SCUM_Size SCUM_Font::sizeOf(const char* str)
+{
+	if (m_handle) {
+		float h = m_handle->Ascender() - m_handle->Descender();
+		float w = 0.0f;
+		float x0, x1, f;
+		m_handle->BBox(str, x0, f, f, x1, f, f);
+		// TODO: get rid of initial lead?
+		w = x1; //- x0;
+		return SCUM_Size(ceilf(w), ceilf(h));
+	}
+	return SCUM_Size();
+}
+
+void SCUM_Font::draw(const char* str, const SCUM_Rect& bounds, int align)
+{
+	if (m_handle) {
+		SCUM_Point delta = bounds.origin + bounds.size().layout(sizeOf(str), align);
+		delta.y = delta.y - m_handle->Descender();
+		SCUM_FONT_RENDER(delta, str);
+	}
+}
+
+SCUM_Font SCUM_Font::parse(const char* spec)
+{
+	char* sizeStr = strchr(spec, ':');
+	std::string name(spec, sizeStr ? sizeStr - spec : strlen(spec));
+	size_t size = sizeStr ? abs(atoi(sizeStr+1)) : 0;
+	if (size == 0) size = 12;
+	cout << "SCUM_Font::parse: " << name << " " << size << "\n";
+	return SCUM_Font(name.c_str(), size);
+}
+
+// =====================================================================
+// SCUM_FontManager
+
+SCUM_FontManager::SCUM_FontManager()
+{
+	FcInit();
+}
+
+SCUM_FontManager& SCUM_FontManager::instance()
+{
+	static SCUM_FontManager s_instance;
+	return s_instance;
+}
+
+FTFont* SCUM_FontManager::getFont(const char* name)
+{
+	FcPattern* match = matchName(name);
+	if (!match)	return 0;
+
+	char* keyStr = (char*)FcNameUnparse(match);
+	std::string key(keyStr);
+	free(keyStr);
+
+	CacheIter iter = m_cache.find(key);
+	if (iter != m_cache.end()) {
+#ifndef NDEBUG
+		cout << "SCUM_FontManager::getFont: using cached font\n";
+#endif
+		FcPatternDestroy(match);
+		return iter->second;
+	}
+	
+	FcResult res;
+	const char* fileName;
+	int size;
+	double dpi;
+
+	res = FcPatternGetString(match, FC_FILE, 0, (FcChar8**)&fileName);
+	if (res != FcResultMatch) {
+		FcPatternDestroy(match);
+		return 0;
+	}
+
+	res = FcPatternGetInteger(match, FC_SIZE, 0, &size);
+	if (res != FcResultMatch) {
+		FcPatternDestroy(match);
+		return 0;
+	}
+
+	res = FcPatternGetDouble(match, FC_DPI, 0, &dpi);
+	if (res != FcResultMatch) {
+		FcPatternDestroy(match);
+		return 0;
+	}
+
+#ifndef NDEBUG
+	printf("SCUM_FontManager::getFont: fileName %s size %d dpi %f\n",
+		   fileName, size, dpi);
+#endif
+
+	FTFont* font = new SCUM_FONT_CLASS(fileName);
+	FcPatternDestroy(match);
+
+	if (!(font
+		  && (font->Error() == FT_Err_Ok)
+		  && font->FaceSize(size, (unsigned int)dpi)))
+	{
+		delete font;
+		return 0;
+	}
+	
+	m_cache[key] = font;
+
+	return font;
+}
+
+FcPattern* SCUM_FontManager::matchName(const char* name)
+{
+	FcConfig* conf = FcConfigGetCurrent();
+	FcPattern* pat = FcNameParse((const FcChar8*)name);
+
+	FcDefaultSubstitute(pat);
+
+	if (!FcConfigSubstitute(conf, pat, FcMatchPattern)) {
+#ifndef NDEBUG
+		printf("SCUM_FontManager::matchName: FcConfigSubstitute failed\n");
+#endif
+		FcPatternDestroy(pat);
+		return 0;
+	}
+
+	FcResult res;
+	FcPattern* match = FcFontMatch(conf, pat, &res);
+	//if (res != FcResultMatch) {
+	//printf("FcFontMatch failed %d\n", res);
+	//FcPatternDestroy(match);
+	//FcPatternDestroy(pat);
+	//return 0;
+	//}
+
+	FcPatternDestroy(pat);
+
+	return match;
+}
+#endif // 0
+
+// EOF

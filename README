@@ -1,0 +1,64 @@
+------------------------------------------------------------------------
+sclangx -- SuperCollider3 language client
+------------------------------------------------------------------------
+
+this is a preview release of a SuperCollider3 interface with means for
+GUI creation on linux and other platforms. it can be used as a drop-in
+replacement for sclang on linux.
+
+------------------------------------------------------------------------
+requirements
+------------------------------------------------------------------------
+
+* libscsynth, libsclang
+* fltk 1.1
+* opengl
+
+------------------------------------------------------------------------
+compilation
+------------------------------------------------------------------------
+
+compilation boils down to the usual
+
+$ ./configure && make && make install
+
+you need fltk 1.1 which ships with an fltk-config script. if this
+script is not in your PATH, you can point the configure script to its
+location with the --with-fltk-config option.
+
+fltk needs to be built with opengl support, which is the case in most
+distributions. on debian/unstable you can apt-get install
+libfltk1.1-dev and should be set.
+
+------------------------------------------------------------------------
+usage
+------------------------------------------------------------------------
+
+the lib subdirectory in the distribution needs to be included in
+sclang's library configuration, by adding a line like the following to
+~/.sclang.cfg:
+
++$HOME/path/to/sclangx/lib
+
+in order to access the online help files, either copy the help
+subdirectory to the directory where you keep the SuperCollider help
+files or just make a symbolic link.
+
+in order to use sclangx from emacs, customize the variable
+sclang-program, e.g.:
+
+(setq sclang-program "sclangx")
+
+------------------------------------------------------------------------
+examples
+------------------------------------------------------------------------
+
+nothing much yet, have a look at the help files and the implementation
+of ServerWindow/ServerPanel.
+
+------------------------------------------------------------------------
+disclaimer
+------------------------------------------------------------------------
+
+the GUI classes are far from complete, but they provide a decent
+overview of what might be possible.
