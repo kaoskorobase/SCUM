@@ -1,16 +1,14 @@
 ------------------------------------------------------------------------
-sclangx -- SuperCollider3 language client
+SCUM -- graphical user interface server
 ------------------------------------------------------------------------
 
-this is a preview release of a SuperCollider3 interface with means for
-GUI creation on linux and other platforms. it can be used as a drop-in
-replacement for sclang on linux.
+SCUM is a graphical user interface server that can be controlled from
+any client program via OSC.
 
 ------------------------------------------------------------------------
 requirements
 ------------------------------------------------------------------------
 
-* libscsynth, libsclang
 * fltk 1.1
 * opengl
 
@@ -31,7 +29,7 @@ distributions. on debian/unstable you can apt-get install
 libfltk1.1-dev and should be set.
 
 ------------------------------------------------------------------------
-usage
+usage (linux)
 ------------------------------------------------------------------------
 
 the lib subdirectory in the distribution needs to be included in
@@ -48,6 +46,14 @@ in order to use sclangx from emacs, customize the variable
 sclang-program, e.g.:
 
 (setq sclang-program "sclangx")
+
+------------------------------------------------------------------------
+usage (osx)
+------------------------------------------------------------------------
+
+put the lib and help subdirectories where the compiler can find it:
+
+ln -s /path/to/scum-src ~/Library/Application\ Support/SuperCollider/Extensions/SCUM
 
 ------------------------------------------------------------------------
 examples
