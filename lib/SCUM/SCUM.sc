@@ -12,9 +12,9 @@ SCUM {
 
 	classvar <borderNone, <borderFlat, <borderRaised, <borderSunken;
 
-	classvar <addr, <desktop, <objectTable, objectIDStream, resources;
-	classvar <>defaultServerAddress;
+	classvar <>addr, <desktop, <objectTable, objectIDStream, resources;
 	classvar <>serverProgramPath = "/usr/local/bin/scum";
+	classvar <>serverAddress;
 	
 	*initClass {
 		modShift			= (1 << 0);
@@ -56,6 +56,7 @@ SCUM {
 		
 		objectTable = IdentityDictionary.new;
 		objectIDStream = {: x, x <- (0..inf), x != 0 };
+		serverAddress = NetAddr("127.0.0.1", 57130);
 	}
 
 	// messages (might go to window)	
@@ -66,7 +67,11 @@ SCUM {
 		this.class.message(obj);
 	}
 	// connection
-	*connect { | completionFunc |
+	*isConnected {
+		^addr.notNil and: { addr.isConnected }
+	}
+	/*
+	*connectRendezvous { | completionFunc |
 		var booted = false;
 		if (addr.isNil or: {Êaddr.isConnected.not }) {
 			Routine.run {
@@ -98,6 +103,36 @@ SCUM {
 			}
 		}
 	}
+	*/
+	*connect { | completionFunc |
+		var theAddr;
+		if (this.isConnected.not) {
+			theAddr = serverAddress;
+			Routine.run {
+				this.message("booting server");
+				this.prBoot(theAddr);
+				0.5.wait;
+				10.do { |i|
+					try {
+						theAddr.connect {
+							addr = nil;
+							this.prOnDisconnect(theAddr)
+						};
+						addr = theAddr;
+						try {
+							this.prOnConnect(theAddr);
+							completionFunc.value;
+						}{ |e|
+							this.message(e.errorString);
+						};
+						nil.alwaysYield;
+					};
+					0.5.wait
+				};
+				this.message("couldn't connect to server");
+			}
+		}
+	}
 	*disconnect {
 		if (addr.notNil) {
 			addr.disconnect;
@@ -105,6 +140,9 @@ SCUM {
 	}
 	*kill {
 		"killall -HUP scum".systemCmd
+	}
+	*do { | function |
+		if (this.isConnected, function, { this.connect(function) })
 	}
 	// OSC messages + bundles
 	*sendMsg { | ... msg |
@@ -157,12 +195,16 @@ SCUM {
 		}).add
 	}
 	// PRIVATE
-	*prBoot {
+	*prBoot { | addr |
+		var args = "";
 		if (serverProgramPath.notNil) {
-			(serverProgramPath ++ "&").systemCmd;
+			if (addr.notNil) {
+				args = addr.ip + addr.port;
+			};
+			"% % &".format(serverProgramPath, args).systemCmd;
 		}
 	}
-	*prOnConnect {
+	*prOnConnect { | addr |
 		this.message("connected");
 		desktop = SCUMDesktop.new;
 		OSCresponder(addr, "/message", { | time, resp, msg |
@@ -173,7 +215,7 @@ SCUM {
 		}).add;
 		this.changed(\connected);
 	}
-	*prOnDisconnect {
+	*prOnDisconnect { | addr |
 		this.message("disconnected");
 		if (desktop.notNil) {
 			desktop.prDestroyed;

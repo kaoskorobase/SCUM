@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA
 
-    $Id: SCUM_Button.cpp 13 2005-03-10 17:21:31Z sk $
+    $Id$
 */
 
 
@@ -45,7 +45,7 @@ static sw_discovery g_howlSession = 0;
 
 static void howlTickCB(void* data)
 {
-    sw_ulong msecs = 10;
+    sw_ulong msecs = 0;
     sw_salt_step((sw_salt)data, &msecs);
     Fl::repeat_timeout(1.0, &howlTickCB, data);
 }
@@ -107,6 +107,8 @@ bool SCUM_RendezvousPublish(const char* name, int proto, uint16_t port)
             howlPublishReplyFunc, 0,	// reply func
             &oid			// request id
             );
+
+    fprintf(stderr, "SCUM_RendezvousPublish(howl): %s %s %d : %d\n", name, type, port, res == SW_OKAY);
 
     return res == SW_OKAY;
 }
@@ -185,7 +187,7 @@ bool SCUM_RendezvousPublish(const char* cname, int proto, uint16_t port)
 #else
 bool SCUM_RendezvousStart()
 {
-    return false;
+    return true;
 }
 
 void SCUM_RendezvousStop()
@@ -194,7 +196,7 @@ void SCUM_RendezvousStop()
 
 bool SCUM_RendezvousPublish(const char*, int, uint16_t)
 {
-    return false;
+    return true;
 }
 #endif
 

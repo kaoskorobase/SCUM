@@ -28,7 +28,6 @@ SCUM_Handle.hh \
 SCUM_Menu.hh \
 SCUM_NSKey.h \
 SCUM_Object.hh \
-SCUM_Rendezvous.hh \
 SCUM_ScrollView.hh \
 SCUM_Shm.hh \
 SCUM_Slider.hh \
@@ -54,7 +53,6 @@ SCUM_Graph.cpp \
 SCUM_Handle.cpp \
 SCUM_Menu.cpp \
 SCUM_Object.cpp \
-SCUM_Rendezvous.cpp \
 SCUM_ScrollView.cpp \
 SCUM_Shm.cpp \
 SCUM_Slider.cpp \

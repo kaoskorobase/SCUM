@@ -18,14 +18,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA
 
-    $Id: SCUM_FLApp.hh 8 2004-08-15 14:42:24Z steve $
+    $Id$
 */
 
 
 #include "SCUM_App.hh"
 #include "SCUM_Class.hh"
 #include "SCUM_GC.hh"
+#if 0
 #include "SCUM_Rendezvous.hh"
+#endif
 #include "SCUM_Socket.hh"
 
 #include <FL/Fl.H>
@@ -38,9 +40,11 @@ static SCUM_ClassRegistry* gClassRegistry = 0;
 SCUM_App::SCUM_App()
     : m_socket(-1)
 {
+#if 0
     if (!SCUM_RendezvousStart()) {
         throw std::runtime_error("couldn't start rendezvous");
     }
+#endif
     if (!gClassRegistry) {
         SCUM_ClassRegistry* reg = gClassRegistry = new SCUM_ClassRegistry();
         extern void SCUM_Object_Init(SCUM_ClassRegistry*);
@@ -69,7 +73,9 @@ SCUM_App::SCUM_App()
 SCUM_App::~SCUM_App()
 {
     close(m_socket);
+#if 0
     SCUM_RendezvousStop();
+#endif
 }
 
 void SCUM_App::dataAvailableCB(int fd, void* data)
@@ -93,11 +99,45 @@ void SCUM_App::timeoutCB(void* data)
     self->m_shouldBeRunning = !self->m_clients.empty();
 }
 
-void SCUM_App::initOSC(const char* address, uint16_t portStart)
+static int bind_port(int socket, uint16_t port)
+{
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_LOOPBACK;
+    addr.sin_port = htons(port);
+    int err = bind(socket, (struct sockaddr*)&addr, sizeof(addr));
+    return (err == -1) ? errno : 0;
+}
+
+static int bind_port_range(int socket, uint16_t portStart, uint16_t portMax, bool wrap)
+{
+    uint16_t port;
+    int err;
+
+    if (portStart > portMax)
+        return bind_port_range(socket, portMax, portStart, wrap);
+
+    for (port = portStart; port < portMax; port++) {
+        struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = INADDR_LOOPBACK;
+        addr.sin_port = htons(port);
+        err = bind(socket, (struct sockaddr*)&addr, sizeof(addr));
+        if (err != -1) break;
+    }
+
+    if (err == -1) {
+        return wrap ? bind_port_range(socket, 1025, portStart, false) : errno;
+    }
+
+    return 0;
+}
+
+void SCUM_App::initOSC(const char* address, uint16_t port)
 {
     if (m_socket != -1) return;
-    const uint16_t portMax = 0xFFFF;
-    uint16_t port;
     int ret;
     ret = socket(AF_INET, SOCK_STREAM, 0);
     if (ret == -1) {
@@ -105,15 +145,16 @@ void SCUM_App::initOSC(const char* address, uint16_t portStart)
         exit(1);
     }
     m_socket = ret;
-    for (port = portStart; port < portMax; port++) {
-        struct sockaddr_in addr;
-        memset(&addr, 0, sizeof(addr));
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = INADDR_ANY;
-        addr.sin_port = htons(port);
-        ret = bind(m_socket, (struct sockaddr*)&addr, sizeof(addr));
-        if (ret != -1) break;
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(port);
+    if (address) {
+        struct hostent* he = gethostbyname(address);
+        if (he) addr.sin_addr.s_addr = *(int32_t*)he->h_addr;
     }
+    ret = bind(m_socket, (struct sockaddr*)&addr, sizeof(addr));
     if (ret == -1) {
         perror("bind");
         exit(1);
@@ -124,10 +165,12 @@ void SCUM_App::initOSC(const char* address, uint16_t portStart)
         exit(1);
     }
     Fl::add_fd(m_socket, &dataAvailableCB, this);
+#if 0
     if (!SCUM_RendezvousPublish("SCUM", kSCUM_ProtoTCP, port)) {
         fprintf(stderr, "publishing OSC service failed\n");
         exit(1);
     }
+#endif
 }
 
 void SCUM_App::addClient(SCUM_Client* client)
@@ -177,11 +220,16 @@ int main(int argc, char** argv)
      *       port
      *       idle timeout
      */
+    char* address = 0;
+    uint16_t port = 57130;
     if (argc > 1) {
-        gIdleTimeout = atof(argv[1]);
+        address = argv[1];
+    }
+    if (argc > 2) {
+        port = atoi(argv[2]);
     }
     SCUM::GCInit();
-    SCUM_App::instance().initOSC(0, 57130);
+    SCUM_App::instance().initOSC(address, port);
     SCUM_App::instance().run();
     exit(0);
 }
