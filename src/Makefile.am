@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-AM_CXXFLAGS	= $(PACKAGE_CFLAGS) -I../oscio/
+AM_CXXFLAGS	= $(PACKAGE_CFLAGS) -I../oscpp/
 SCUM_APP = scum
 bin_PROGRAMS = $(SCUM_APP)
 
