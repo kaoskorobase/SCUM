@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Window.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Window.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -26,8 +26,9 @@
 #define SCUM_WINDOW_HH_INCLUDED
 
 #include "SCUM_Container.hh"
-#include <list>
-#include <vector>
+// #include "SCUM_Handle.hh"
+
+#include <FL/Fl_Double_Window.H>
 
 class SCUM_Window;
 
@@ -36,7 +37,7 @@ namespace SCUM
 	// =====================================================================
 	// SCUM_WindowHandle -- system window interface
 
-	class WindowHandle
+	class WindowHandle : public SCUM_Handle
 	{
 	public:
 		struct Flags
@@ -90,7 +91,7 @@ namespace SCUM
    methods purely virtual in SCUM_WindowHandle are called in view
    destructors; these cannot be called in the handle's destructor.
  */
-class SCUM_Window : public SCUM_Bin
+class SCUM_Window : public SCUM_Bin, protected Fl_Double_Window
 {
 	struct DeferredCommands
 	{
@@ -111,30 +112,16 @@ public:
 	SCUM_Window(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_Window();
 
-	SCUM::WindowHandle* handle() { return m_handle; }
+	inline Fl_Group* asGroup();
 
 	virtual void destroy(bool now);
-	void raise();
-	void lower();
+	virtual void raise();
+	virtual void lower();
 
 	// drawing
-	void draw();
-
-	// system events
-	virtual void closeEvent();
-	virtual void showEvent();
-	virtual void hideEvent();
-	virtual void resizeEvent(const SCUM_Rect& bounds);
-	virtual void focusEvent(bool hasFocus);
-// 	void pasteEvent(const std::string& data);
-
-#if 0
-	virtual void evtClose();
-	virtual void evtShow();
-	virtual void evtHide();
-	virtual void evtResize(const SCUM_Rect& bounds);
-	virtual void evtFocus(bool hasFocus);
-#endif // 0
+	virtual void refresh(const SCUM_Rect& damage);
+	virtual void refresh();
+	virtual void draw(const SCUM_Rect& damage);
 
 	virtual void mouseMove(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
@@ -142,22 +129,35 @@ public:
 	virtual void keyUp(int state, wint_t key);
 
 	// mouse, focus
-	bool hasMouse(const SCUM_View* view) const { return view == m_mouseMoveView; }
-	bool hasFocus(const SCUM_View* view) const { return view == m_focusView; }
+	inline bool hasMouse(const SCUM_View* view) const;
+	inline bool hasFocus(const SCUM_View* view) const;
 	void unsetFocus(bool send);
 	void resetFocus(bool send);
-	bool shouldDrawFocus() const { return flags().wHasFocus; }
 	void tabNextFocus();
 	void tabPrevFocus();
 
 	// layout
 	virtual void updateLayout();
 	void updateLayout(bool xFit, bool yFit);
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 	// properties
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+
+protected:
+	// overrides
+	virtual int handle(int evt);
+	virtual void resize(int x, int y, int w, int h);
+	virtual void draw();
+	
+	// system events
+	virtual void closeEvent();
+	virtual void showEvent();
+	virtual void hideEvent();
+	virtual void resizeEvent(const SCUM_Rect& bounds);
+	virtual void focusEvent(bool hasFocus);
+// 	void pasteEvent(const std::string& data);
 
 protected:
 	// mouse events
@@ -173,17 +173,35 @@ protected:
 
 private:
 	void deferredAction(SCUM_Timer*);
+	static void closeCB(Fl_Widget*, void*);
 
 private:
-	SCUM::WindowHandle*			m_handle;
+	std::string					m_title;
 	SCUM_Timer*					m_deferredTimer;
 	DeferredCommands			m_deferredCommands;
 	SCUM_Size					m_initialSize;
 	SCUM_Rect					m_screenBounds;
 	SCUM_View*					m_mouseMoveView;
-	SCUM_View*					m_belowMouseView;
-	ChildList					m_mouseOverViews;
 	SCUM_View*					m_focusView;
+	SCUM_View*					m_saveFocusView;
 };
+
+// =====================================================================
+// SCUM_Window (inline functions)
+
+inline Fl_Group* SCUM_Window::asGroup()
+{
+	return static_cast<Fl_Group*>(this);
+}
+
+inline bool SCUM_Window::hasMouse(const SCUM_View* view) const
+{
+	return view == m_mouseMoveView;
+}
+
+inline bool SCUM_Window::hasFocus(const SCUM_View* view) const
+{
+	return view == m_focusView;
+}
 
 #endif // SCUM_WINDOW_HH_INCLUDED

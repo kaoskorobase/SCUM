@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Button.hh,v 1.2 2004/08/04 11:48:25 steve Exp $
+	$Id: SCUM_Button.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
@@ -66,7 +66,6 @@ public:
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
-	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
@@ -90,7 +89,7 @@ class SCUM_Button : public SCUM_View
 public:
 	struct State
 	{
-		std::string		text;
+		SCUM_Text		text;
 		SCUM_Color		fgColor;
 		SCUM_Color		bgColor;
 	};
@@ -101,7 +100,6 @@ public:
 	SCUM_Button(SCUM_Container* parent, PyrObject* obj);
 
 	virtual void drawView(const SCUM_Rect& damage);
-	virtual void drawFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
@@ -109,7 +107,7 @@ public:
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 private:
 	void stateValue(PyrSlot* slot, StateArray& array);
@@ -138,13 +136,12 @@ public:
 	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
-	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 	virtual void contextMenu(int state, const SCUM_Point& where);
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 private:
 	bool setValue(int value, bool send);
@@ -152,7 +149,7 @@ private:
 private:
 	SCUM_Font					m_font;
 	SCUM_Point					m_padding;
-	std::vector<std::string>	m_states;
+	std::vector<SCUM_Text>		m_states;
 	int							m_value;
 	SCUM_Menu*					m_menu;
 	uint8_t						m_textAlign;

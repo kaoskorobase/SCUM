@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.hh,v 1.2 2004/08/04 11:48:25 steve Exp $
+	$Id: SCUM_Container.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
@@ -28,32 +28,33 @@
 #include "SCUM_View.hh"
 
 #include <stdint.h>
-#include <algorithm>
-#include <vector>
+
+// =====================================================================
+// SCUM_Container
 
 class SCUM_Container : public SCUM_View
 {
 	friend class SCUM_View;
 
 public:
-	typedef std::vector<SCUM_View*> ChildList;
-	typedef ChildList::iterator ChildIter;
-	typedef ChildList::reverse_iterator ChildRIter;
-
-public:
 	SCUM_Container(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_Container();
 
-	const ChildList& children() const { return m_children; }
-	size_t numChildren() const { return m_children.size(); }
-	bool isEmpty() const { return m_children.empty(); }
+	// hierarchy access
+	inline const SCUM_View* firstChild() const;
+	inline SCUM_View* firstChild();
+	inline const SCUM_View* lastChild() const;
+	inline SCUM_View* lastChild();
+
+	inline size_t numChildren() const;
+	inline bool isEmpty() const;
+
 	SCUM_View* childAtPoint(const SCUM_Point& where);
 	virtual SCUM_View* viewAtPoint(const SCUM_Point& where);
+
 	void dumpChildren();
 
-	void raise(SCUM_View* view);
-	void lower(SCUM_View* view);
-
+	// events
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
 	virtual void contextMenu(int state, const SCUM_Point& where);
@@ -67,16 +68,12 @@ public:
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	SCUM_Point padding() const { return m_padding; }
+	inline bool isHomogenous() const { return flags().cHomogenous; }
+	inline SCUM_Point padding() const { return m_padding; }
 
 protected:
-	ChildList& children() { return m_children; }
-	ChildIter begin() { return children().begin(); }
-	ChildIter end() { return children().end(); }
-	ChildRIter rbegin() { return children().rbegin(); }
-	ChildRIter rend() { return children().rend(); }
-	SCUM_View* front() { return children().front(); }
-	SCUM_View* back() { return children().back(); }
+	void raise(SCUM_View* view, int n=1);
+	void lower(SCUM_View* view, int n=1);
 
 	SCUM_View* nextFocus(bool canFocus, bool& foundFocus);
 	SCUM_View* prevFocus(bool canFocus, bool& foundFocus);
@@ -89,26 +86,43 @@ private:
 	void removeChild(SCUM_View* view);
 
 private:
-	ChildList	m_children;
+	SCUM_View*	m_firstChild;
+	SCUM_View*	m_lastChild;
+	size_t		m_numChildren;
 	SCUM_Point	m_padding;
 };
 
-// container with single child
-// can actually contain several children, but only the topmost visible
-// view is drawn
+// =====================================================================
+// SCUM_Bin
+//
+//     container with single visible child (topmost view is drawn)
+
 class SCUM_Bin : public SCUM_Container
 {
 public:
 	SCUM_Bin(SCUM_Container* parent, PyrObject* obj);
 
+	inline SCUM_View* visibleChild();
 	SCUM_View* firstVisibleChild();
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void drawChildren(const SCUM_Rect& damage);
+	virtual SCUM_Size getMinSize();
 
 protected:
-	virtual SCUM_Size preferredSize();
 	virtual void boundsChanged(const SCUM_Rect& bounds);
+	virtual void childAdded(SCUM_View* view);
+	virtual void childRemoved(SCUM_View* view);
+
+private:
+	SCUM_View*	m_visibleChild;
+	uint8_t		m_border;
 };
 
-// container with dynamic layout of children
+// =====================================================================
+// SCUM_Box
+//
+//     container with dynamic layout of children
+
 class SCUM_Box : public SCUM_Container
 {
 public:
@@ -117,52 +131,55 @@ public:
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	bool isHomogenous() const { return flags().cHomogenous; }
 	float spacing() const { return m_spacing; }
 
-protected:
-// 	virtual SCUM_Size preferredSize();
-// 	virtual void boundsChanged(const SCUM_Rect& bounds);
-
-// 	virtual SCUM_Size preferredChildrenSize();
-// 	virtual void layoutChildren(const SCUM_Size& lastPreferredSize, const SCUM_Rect& bounds);
-	
 protected:
 	float		m_spacing;
 	uint16_t	m_numExpand;
 	float		m_totalExpand;
 };
 
-// horizontal layout
+// =====================================================================
+// SCUM_HBox
+//
+//     horizontal layout
+
 class SCUM_HBox : public SCUM_Box
 {
 public:
 	SCUM_HBox(SCUM_Container* parent, PyrObject* obj);
 
+	virtual SCUM_Size getMinSize();
+
 protected:
 	void boundsChanged(const SCUM_Rect& bounds);
-	SCUM_Size preferredSize();
 };
 
-// vertical layout
+// =====================================================================
+// SCUM_VBox
+//
+//     vertical layout
+
 class SCUM_VBox : public SCUM_Box
 {
 public:
 	SCUM_VBox(SCUM_Container* parent, PyrObject* obj);
 
+	virtual SCUM_Size getMinSize();
+
 protected:
-	void boundsChanged(const SCUM_Rect& bounds);
-	SCUM_Size preferredSize();
+	virtual void boundsChanged(const SCUM_Rect& bounds);
 };
 
-// tabular layout
+// =====================================================================
+// SCUM_Grid
+//
+//     tabular layout
+
 class SCUM_Grid : public SCUM_Container
 {
 	struct Info
 	{
-		Info();
-		Info(const Info& info);
-
 		float			preferredSize;
 		float			size;
 		float			expand;
@@ -173,33 +190,34 @@ public:
 	SCUM_Grid(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_Grid();
 
-	size_t cols() const { return m_cols; }
-	size_t rows() const { return m_rows; }
-	size_t wrap() const { return m_wrap; }
-
-	bool isHomogenous() const { return flags().cHomogenous; }
+	size_t numRows() const { return m_numRows; }
+	size_t numCols() const { return m_numCols; }
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual void getDimensions(size_t& rows, size_t& cols) = 0;
-	virtual SCUM_View* childAt(size_t row, size_t col) = 0;
+	inline SCUM_View* childAt(size_t row, size_t col);
+	inline void childPut(size_t row, size_t col, SCUM_View* view);
+
+	virtual size_t childIndex(size_t row, size_t col) = 0;
 
 protected:
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 	virtual void boundsChanged(const SCUM_Rect& bounds);
 
 	virtual void childAdded(SCUM_View*);
 	virtual void childRemoved(SCUM_View*);
 
 private:
-	void updateDimensions();
+	void updateGrid();
+	void dimensionsChanged();
 
 private:
 	SCUM_Point			m_spacing;
-	uint16_t			m_wrap;
-	uint16_t			m_cols;
-	uint16_t			m_rows;
+// 	uint16_t			m_wrap;
+	uint16_t			m_numRows;
+	uint16_t			m_numCols;
+	SCUM_View**			m_grid;
 	Info*				m_rowInfo;
 	Info*				m_colInfo;
 	SCUM_Point			m_totalExpand;
@@ -207,24 +225,28 @@ private:
 	uint16_t			m_colsExpand;
 };
 
-// columns first
+// =====================================================================
+// SCUM_HGrid
+//
+//     columns first
+
 class SCUM_HGrid : public SCUM_Grid
 {
 public:
 	SCUM_HGrid(SCUM_Container* parent, PyrObject* obj);
-
-	virtual void getDimensions(size_t& rows, size_t& cols);
-	virtual SCUM_View* childAt(size_t row, size_t col);
+	virtual size_t childIndex(size_t row, size_t col);
 };
 
-// rows first
+// =====================================================================
+// SCUM_VGrid
+//
+//     rows first
+
 class SCUM_VGrid : public SCUM_Grid
 {
 public:
 	SCUM_VGrid(SCUM_Container* parent, PyrObject* obj);
-
-	virtual void getDimensions(size_t& rows, size_t& cols);
-	virtual SCUM_View* childAt(size_t row, size_t col);
+	virtual size_t childIndex(size_t row, size_t col);
 };
 
 // more containers to come:
@@ -234,5 +256,106 @@ public:
 //  Frame -- frame with optional label (may be in Bin, actually)
 
 // TODO: move border to Bin, add label to Bin (window uses label as title)
+
+// =====================================================================
+// SCUM_Scroll
+//
+//     scrollable bin
+#if 0
+class SCUM_Scroll : public SCUM_Bin
+{
+public:
+	SCUM_Scroll(SCUM_Container* parent, PyrObject* obj);
+
+protected:
+	virtual SCUM_Size getMinSize();
+	virtual void boundsChanged(const SCUM_Rect& bounds);
+
+private:
+	int			m_thumbSize;
+	SCUM_Rect	m_viewPortBounds;
+	SCUM_Rect	m_contentBounds;
+	SCUM_Rect	m_vThumbBounds;
+	SCUM_Rect	m_hThumbBounds;
+	SCUM_Point	m_scrollRatio;
+	float		m_mouseMoveStart;
+	uint8_t		m_mouseMoveOrient;
+	uint8_t		m_hThumb;
+	uint8_t		m_vThumb;
+	SCUM_View*	m_current;
+};
+
+// =====================================================================
+// SCUM_Place
+//
+//     absolute placement of child views
+
+class SCUM_Place : public SCUM_Container
+{
+public:
+	SCUM_Place(SCUM_Container* parent, PyrObject* obj);
+
+protected:
+	virtual SCUM_Size getMinSize();
+	virtual void boundsChanged(const SCUM_Rect& bounds);
+
+private:
+	uint8_t		m_adapt;
+};
+#endif // 0
+
+// =====================================================================
+// SCUM_Container (inline functions)
+
+inline const SCUM_View* SCUM_Container::firstChild() const
+{
+	return m_firstChild;
+}
+
+inline SCUM_View* SCUM_Container::firstChild()
+{
+	return m_firstChild;
+}
+
+inline const SCUM_View* SCUM_Container::lastChild() const
+{
+	return m_lastChild;
+}
+
+inline SCUM_View* SCUM_Container::lastChild()
+{
+	return m_lastChild;
+}
+
+inline size_t SCUM_Container::numChildren() const
+{
+	return m_numChildren;
+}
+
+inline bool SCUM_Container::isEmpty() const
+{
+	return numChildren() == 0;
+}
+
+// =====================================================================
+// SCUM_Bin (inline functions)
+
+SCUM_View* SCUM_Bin::visibleChild()
+{
+	return m_visibleChild;
+}
+
+// =====================================================================
+// SCUM_Grid (inline functions)
+
+inline SCUM_View* SCUM_Grid::childAt(size_t row, size_t col)
+{
+	return m_grid[childIndex(row, col)];
+}
+
+inline void SCUM_Grid::childPut(size_t row, size_t col, SCUM_View* view)
+{
+	m_grid[childIndex(row, col)] = view;
+}
 
 #endif // SCUM_CONTAINER_HH_INCLUDED

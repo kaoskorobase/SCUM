@@ -18,13 +18,13 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ScrollView.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_ScrollView.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
+#include "SCUM_GC.hh"
 #include "SCUM_ScrollView.hh"
 #include "SCUM_Symbol.hh"
-#include "SCUM_System.hh"
 
 using namespace SCUM;
 
@@ -256,7 +256,7 @@ void SCUM_ScrollView::scrollWheelInContent(int, const SCUM_Point&, const SCUM_Po
 {
 }
 
-SCUM_Size SCUM_ScrollView::preferredSize()
+SCUM_Size SCUM_ScrollView::getMinSize()
 {
 	SCUM_Size size = preferredViewPortSize();
 	size.w += 1.f;

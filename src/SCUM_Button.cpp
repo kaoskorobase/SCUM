@@ -18,13 +18,13 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Button.cpp,v 1.2 2004/08/04 11:48:25 steve Exp $
+	$Id: SCUM_Button.cpp,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #include "SCUM_Button.hh"
-#include "SCUM_Container.hh"
 #include "SCUM_Desktop.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Menu.hh"
 #include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
@@ -50,11 +50,11 @@ void SCUM_Toggle::drawView(const SCUM_Rect& damage)
 	GCSave();
 	if (m_pushed) {
 		GCSetColor(fgColor());
-		GCFillRect(damage);
+		GCFillRect(bounds());
 		GCDrawBeveledRect(bounds(), 1, true);
 	} else {
 		GCSetColor(bgColor());
-		GCFillRect(damage);
+		GCFillRect(bounds());
 		GCDrawBeveledRect(bounds(), 1, false);
 	}
 	GCRestore();
@@ -142,7 +142,7 @@ void SCUM_Bang::drawView(const SCUM_Rect& damage)
 {
 	GCSave();
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 	GCDrawBeveledRect(bounds(), 1, false);
 	SCUM_Rect r(bounds().inset(2));
 	GCSetColor(fgColor());
@@ -158,11 +158,6 @@ bool SCUM_Bang::mouseDown(int, const SCUM_Point&)
 {
 	bang(true);
 	return false;
-}
-
-void SCUM_Bang::scrollWheel(int, const SCUM_Point&, const SCUM_Point&)
-{
-	bang(true);
 }
 
 void SCUM_Bang::setProperty(const PyrSymbol* key, PyrSlot* slot)
@@ -225,7 +220,7 @@ void SCUM_Button::drawView(const SCUM_Rect& damage)
 
 	if (m_states.empty()) {
 		GCSetColor(bgColor());
-		GCFillRect(damage);
+		GCFillRect(bounds());
 		GCDrawBeveledRect(bounds(), 1, m_pushed);
 	} else {
 		State& state = m_states[m_value];
@@ -233,23 +228,16 @@ void SCUM_Button::drawView(const SCUM_Rect& damage)
 			GCSetColor(bgColor());
 		else
 			GCSetColor(state.bgColor);
-		GCFillRect(damage);
+		GCFillRect(bounds());
 		GCDrawBeveledRect(bounds(), 1, m_pushed);
-		if (!state.text.empty()) {
-			if (state.fgColor.isTransparent())
-				GCSetColor(fgColor());
-			else
-				GCSetColor(state.fgColor);
-			m_font.draw(bounds().inset(m_padding), state.text, m_textAlign);
-		}
+		if (state.fgColor.isTransparent())
+			GCSetColor(fgColor());
+		else
+			GCSetColor(state.fgColor);
+		state.text.draw(bounds().inset(m_padding), makeAlign(m_textAlign));
 	}
 
 	GCRestore();
-}
-
-void SCUM_Button::drawFocus(const SCUM_Rect& damage)
-{
-	SCUM_View::drawFocus(bounds().inset(1));
 }
 
 bool SCUM_Button::mouseDown(int, const SCUM_Point&)
@@ -272,6 +260,9 @@ void SCUM_Button::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		setBoolValue(slot, setValue(intValue(slot), false));
 	} else if (equal(key, "font")) {
 		m_font = fontValue(slot);
+		for (int i=0; i < m_states.size(); i++) {
+			m_states[i].text.setFont(m_font);
+		}
 		updateLayout();
 	} else if (equal(key, "xPadding")) {
 		m_padding.x = max(3., floatValue(slot));
@@ -280,7 +271,7 @@ void SCUM_Button::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		m_padding.y = max(3., floatValue(slot));
 		updateLayout();
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = checkAlign(intValue(slot));
+		m_textAlign = intValue(slot);
 		refresh();
 	} else if (equal(key, "states")) {
 		checkKindOf(slot, class_array);
@@ -310,11 +301,11 @@ void SCUM_Button::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	}
 }
 
-SCUM_Size SCUM_Button::preferredSize()
+SCUM_Size SCUM_Button::getMinSize()
 {
 	SCUM_Size size;
 	for (int i=0; i < m_states.size(); i++) {
-		size = size.max(m_font.measure(m_states[i].text));
+		size = size.max(m_states[i].text.extents().size);
 	}
 	return size.padded(m_padding);
 }
@@ -328,13 +319,19 @@ void SCUM_Button::stateValue(PyrSlot* slot, StateArray& array)
 
 	array.push_back(State());
 	State& state = array.back();
+	state.text.setFont(m_font);
 
-	if ((size > 0) && !IsNil(slots+0))
-		state.text = stringValue(slots+0);
-	if ((size > 1) && !IsNil(slots+1))
+	if ((size > 0) && !IsNil(slots+0)) {
+		size_t size;
+		const char* str = stringValue(slots+0, size);
+		state.text.setText(str, size);
+	}
+	if ((size > 1) && !IsNil(slots+1)) {
 		state.fgColor = colorValue(slots+1);
-	if ((size > 2) && !IsNil(slots+2))
+	}
+	if ((size > 2) && !IsNil(slots+2)) {
 		state.bgColor = colorValue(slots+2);
+	}
 }
 
 bool SCUM_Button::setValue(int value, bool send)
@@ -343,11 +340,11 @@ bool SCUM_Button::setValue(int value, bool send)
 		if (value < 0) value = m_states.size() - 1;
 		else if (value >= m_states.size()) value = 0;
 		//if (m_value != value) {
-			m_value = value;
-			if (send) doAction();
-			refresh();
-			return true;
-			//}
+		m_value = value;
+		if (send) doAction();
+		refresh();
+		return true;
+		//}
 	}
 	return false;
 }
@@ -380,7 +377,7 @@ void SCUM_Choice::drawView(const SCUM_Rect& damage)
 	GCSave();
 
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 	GCDrawBeveledRect(r, 1, false);
 
 	// draw triangular indicator
@@ -395,7 +392,7 @@ void SCUM_Choice::drawView(const SCUM_Rect& damage)
 	
 	if (!m_states.empty()) {
 		r.w -= kIndicatorSize.w;
-		m_font.draw(r.inset(m_padding), m_states[m_value], m_textAlign);
+		m_states[m_value].draw(r.inset(m_padding), makeAlign(m_textAlign));
 	}
 
 	GCRestore();
@@ -405,11 +402,6 @@ bool SCUM_Choice::mouseDown(int state, const SCUM_Point& where)
 {
 	if (m_menu) setValue(m_menu->popup(where, m_value, true), true);
 	return false;
-}
-
-void SCUM_Choice::scrollWheel(int, const SCUM_Point&, const SCUM_Point& delta)
-{
-	setValue(m_value + (int)delta.y, true);
 }
 
 void SCUM_Choice::contextMenu(int state, const SCUM_Point& where)
@@ -431,16 +423,23 @@ void SCUM_Choice::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		m_padding.y = max(3., floatValue(slot));
 		updateLayout();
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = checkAlign(intValue(slot));
+		m_textAlign = intValue(slot);
 		refresh();
 	} else if (equal(key, "states")) {
-		stringValues(slot, m_states);
+		PyrIterator iter(slot);
+		m_states.clear();
+		m_states.reserve(iter.remain());
+		while (!iter.atEnd()) {
+			size_t size;
+			const char* str = stringValue(iter.next(), size);
+			m_states.push_back(SCUM_Text(str, size));
+		}
 		delete m_menu; m_menu = 0;
 		if (!m_states.empty()) {
 			SCUM_MenuItems items;
 			items.reserve(m_states.size());
 			for (size_t i=0; i < m_states.size(); i++) {
-				items.push_back(SCUM_MenuItem(MenuAction, m_states[i]));
+				items.push_back(SCUM_MenuItem(MenuAction, m_states[i].text()));
 			}
 			m_menu = new SCUM_Menu(0, items);
 		}
@@ -463,12 +462,12 @@ void SCUM_Choice::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	}
 }
 
-SCUM_Size SCUM_Choice::preferredSize()
+SCUM_Size SCUM_Choice::getMinSize()
 {
 	SCUM_Size size;
 
 	for (size_t i=0; i < m_states.size(); i++) {
-		size = size.max(m_font.measure(m_states[i]));
+		size = size.max(m_states[i].extents().size);
 	}
 
 	size = size.padded(m_padding);

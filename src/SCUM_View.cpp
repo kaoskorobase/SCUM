@@ -18,19 +18,20 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_View.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_View.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
 #include "SCUM_View.hh"
 #include "SCUM_Container.hh"
 #include "SCUM_Desktop.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Menu.hh"
 #include "SCUM_Window.hh"
-#include "SCUM_System.hh"
 #include "SCUM_Symbol.hh"
+#include "SCUM_System.hh"
+#include "SCUM_Util.hh"
 
-#include <assert.h>
 #include <iostream>
 
 #include <PyrSlot.h>
@@ -43,8 +44,8 @@ using namespace SCUM;
 
 SCUM_View::SCUM_View(SCUM_Container* parent, PyrObject* pyrObj)
 	: SCUM_Object(pyrObj),
-	  m_parent(0),
-	  m_window(0),
+	  m_window(0), m_parent(0),
+	  m_prevView(0), m_nextView(0),
 	  m_animateTimer(0)
 {
 	memset(&m_flags, 0, sizeof(Flags));
@@ -55,7 +56,7 @@ SCUM_View::SCUM_View(SCUM_Container* parent, PyrObject* pyrObj)
 
 	if (parent) {
 		parent->addChild(this);
-		assert(m_window != 0);
+		SCUM_ASSERT(m_window != 0);
 	}
 }
 
@@ -108,8 +109,9 @@ void SCUM_View::mouseUp(int /* state */, const SCUM_Point& /* where */)
 {
 }
 
-void SCUM_View::scrollWheel(int /* state */, const SCUM_Point& /* where */, const SCUM_Point& /* delta */)
+void SCUM_View::scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta)
 {
+	sendScrollWheel(state, where, delta);
 }
 
 void SCUM_View::contextMenu(int state, const SCUM_Point& where)
@@ -141,8 +143,8 @@ void SCUM_View::keyUp(int state, wint_t key)
 
 void SCUM_View::refresh(const SCUM_Rect& damage)
 {
-	assert(m_window != 0);
-	m_window->handle()->refresh(damage);
+	SCUM_ASSERT(m_window != 0);
+	m_window->refresh(damage);
 }
 
 void SCUM_View::refresh()
@@ -150,13 +152,17 @@ void SCUM_View::refresh()
 	refresh(bounds());
 }
 
+void SCUM_View::refreshFocus()
+{
+// 	refresh(bounds().inset(-4));
+	refresh(bounds());
+}
+
 void SCUM_View::draw(const SCUM_Rect& damage)
 {
-	if (isVisible() && !GCIsClipped(bounds())) {
-		SCUM_Rect myDamage(bounds() & damage);
-		drawView(myDamage);
-		drawDisabled(myDamage);
-		drawFocus(myDamage);
+	if (isVisible() && damage.intersects(bounds())) {
+		drawView(damage);
+		drawDisabled(damage);
 	}
 }
 
@@ -165,7 +171,7 @@ void SCUM_View::drawView(const SCUM_Rect& damage)
 	if (!bgColor().isTransparent()) {
 		GCSave();
 		GCSetColor(bgColor());
-		GCFillRect(damage);
+		GCFillRect(bounds());
 		GCRestore();
 	}
 }
@@ -173,7 +179,9 @@ void SCUM_View::drawView(const SCUM_Rect& damage)
 void SCUM_View::drawDisabled(const SCUM_Rect& damage)
 {
 	if (!isEnabled()) {
+		GCSave();
 		GCSetColor(bgColor().blend(SCUM_Color(0, 0, 0), 0.15));
+		GCSetLineStyle(kLineStyleDot);
 		float x1 = bounds().minX() + 1;
 		float x2 = bounds().maxX() - 1;
 		float y1 = bounds().minY() + 1;
@@ -182,35 +190,31 @@ void SCUM_View::drawDisabled(const SCUM_Rect& damage)
 			GCDrawLine(x1, y1, x2, y1);
 			y1 += 2.f;
 		}
+		GCRestore();
 	}
 }
 
 void SCUM_View::drawFocus(const SCUM_Rect& damage)
 {
-	drawFocusInBounds(bounds().inset(1));
-}
-
-void SCUM_View::initGL()
-{
-}
-
-void SCUM_View::drawGL()
-{
-}
-
-void SCUM_View::resizeGL(int w, int h)
-{
+	if (hasFocus()) {
+		GCSave();
+		GCSetColor(desktop()->focusColor());
+		GCSetLineWidth(2);
+// 		GCSetLineStyle(kLineStyleDash);
+		GCDrawRect(bounds().inset(1));
+		GCRestore();
+	}
 }
 
 bool SCUM_View::hasMouse() const
 {
-	assert(m_window != 0);
+	SCUM_ASSERT(m_window != 0);
 	return m_window->hasMouse(this);
 }
 
 bool SCUM_View::hasFocus() const
 {
-	assert(m_window != 0);
+	SCUM_ASSERT(m_window != 0);
 	return m_window->hasFocus(this);
 }
 
@@ -221,20 +225,20 @@ bool SCUM_View::canFocus() const
 
 void SCUM_View::makeFocus(bool flag, bool send)
 {
-	assert(m_window != 0);
+	SCUM_ASSERT(m_window != 0);
 
 	if (flag) {
 		if (canFocus() && !hasFocus()) {
 			m_window->unsetFocus(true);
 			m_window->setFocusView(this);
 			if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
-			refresh();
+			refreshFocus();
 		}
 	} else {
 		if (hasFocus()) {
 			m_window->setFocusView(0);
 			if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
-			refresh();
+			refreshFocus();
 		}
 	}
 }
@@ -261,30 +265,29 @@ SCUM_View* SCUM_View::prevFocus(bool canFocus, bool& foundFocus)
 	return 0;
 }
 
-bool SCUM_View::layoutNeedsUpdate(const SCUM_Size& newSize) const
-{
-	return (newSize.w > bounds().w) || (newSize.h > bounds().h);
-}
-
 void SCUM_View::updateLayout()
 {
-	if (parent()) parent()->updateLayout();
+	SCUM_ASSERT(parent() != 0);
+	layout().changed = true;
+	parent()->updateLayout();
 }
 
-const SCUM_Size& SCUM_View::updatePreferredSize()
+const SCUM_Size& SCUM_View::minSize()
 {
-	layout().lastPreferredSize = preferredSize().max(layout().minSize);
-	return layout().lastPreferredSize;
+	if (layout().changed) {
+		m_minSize = getMinSize().max(layout().minSize);
+	}
+	return m_minSize;
 }
 
-SCUM_Size SCUM_View::preferredSize()
+SCUM_Size SCUM_View::getMinSize()
 {
 	return layout().minSize;
 }
 
 void SCUM_View::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
-	assert(m_window != 0);
+	SCUM_ASSERT(m_window != 0);
 
 	if (equal(key, "visible")) {
 		bool flag = boolValue(slot);
@@ -332,7 +335,7 @@ void SCUM_View::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		layout().minSize = sizeValue(slot);
 		updateLayout();
 	} else if (equal(key, "alignment")) {
-		layout().alignment = checkAlign(intValue(slot));
+		layout().alignment = clipAlign(intValue(slot));
 		updateLayout();
 	} else if (equal(key, "xExpand")) {
 		layout().expand.x = max(0., floatValue(slot));
@@ -391,6 +394,29 @@ void SCUM_View::boundsChanged(const SCUM_Rect& /* bounds */)
 {
 }
 
+SCUM_Point SCUM_View::scrollOffset()
+{
+	return SCUM_Point();
+}
+
+void SCUM_View::setScrollOffset(const SCUM_Point& /* offset */)
+{
+}
+
+SCUM_Point SCUM_View::scrollRatio()
+{
+	return SCUM_Point(1.f, 1.f);
+}
+
+void SCUM_View::setScrollRatio(const SCUM_Point& /* ratio */)
+{
+}
+
+void SCUM_View::scrollChanged()
+{
+	changed(getsym("scroll"));
+}
+
 void SCUM_View::doAction(PyrSymbol* message)
 {
 	sendMessage(message, 0, 0);
@@ -425,18 +451,6 @@ void SCUM_View::stopAnimation()
 
 void SCUM_View::animate()
 {
-}
-
-void SCUM_View::drawFocusInBounds(const SCUM_Rect& bounds)
-{
-	if (hasFocus() && window()->shouldDrawFocus()) {
-		GCSave();
-		GCSetColor(desktop()->focusColor());
-		GCSetLineWidth(1);
-		GCSetLineStyle(kLineStyleDot);
-		GCDrawRect(bounds);
-		GCRestore();
-	}
 }
 
 bool SCUM_View::sendMouseDown(int state, const SCUM_Point& where)

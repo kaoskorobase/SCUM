@@ -18,31 +18,24 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id: SCUM_Handle.cpp,v 1.1 2004/08/15 14:42:23 steve Exp $
 */
 
 
-#ifndef SCUM_SYSTEM_HH_INCLUDED
-#define SCUM_SYSTEM_HH_INCLUDED
+#include "SCUM_Handle.hh"
 
-#include "SCUM_Geometry.hh"
-#include "SCUM_Timer.hh"
-
-namespace SCUM
+SCUM_Handle::SCUM_Handle()
+	: m_refcount(1)
 {
-	enum ModMask
-	{
-		kModMaskShift	= (1 << 0),
-		kModMaskControl	= (1 << 1),
-		kModMaskCommand	= (1 << 2),
-		kModMaskKeypad	= (1 << 3)
-	};
+}
 
-	SCUM_Size screenSize();
-	double time();
+SCUM_Handle::~SCUM_Handle()
+{
+}
 
-	// actions
-	void addTimer(SCUM_Timer* timer);
-};
+void SCUM_Handle::destroy()
+{
+	delete this;
+}
 
-#endif // SCUM_SYSTEM_HH_INCLUDED
+// EOF

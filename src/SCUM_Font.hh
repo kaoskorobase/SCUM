@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Font.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Font.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
@@ -26,99 +26,148 @@
 #define SCUM_FONT_HH_INCLUDED
 
 #include "SCUM_Geometry.hh"
+#include "SCUM_Handle.hh"
 
-#include <map>
-#include <string>
+// =====================================================================
+// SCUM_Font
 
-// class SCUM_FontHandle
-// {
-// public:
-// 	SCUM_FontHandle();
-// 	virtual ~SCUM_FontHandle();
-
-// 	virtual float height() = 0;
-// 	virtual float ascent() = 0;
-// 	virtual float descent() = 0;
-// 	virtual SCUM_Size measure(const char* str) = 0;
-// };
-
-// namespace SCUM
-// {
-// 	SCUM_FontHandle* makeFontHandle(const char* name, float size);
-// };
-
-namespace SCUM
+struct SCUM_TextExtents
 {
-	class FontHandle
-	{
-	public:
-		static FontHandle* create(const char* name, float size);
+	SCUM_Size	size;
+};
 
-		virtual float height() = 0;
-		virtual float ascent() = 0;
-		virtual float descent() = 0;
+struct SCUM_FontExtents
+{
+	SCUM_FontExtents()
+		: ascent(0.f), descent(0.f), height(0.f)
+	{ }
 
-		virtual SCUM_Size measure(const char* str) = 0;
-	};
+	float		ascent;
+	float		descent;
+	float		height;
 };
 
 class SCUM_Font
 {
 public:
-	SCUM_Font(const char* name="Arial", float size=12.f);
+	SCUM_Font(const char* name="Helvetica", double size=12.f);
 	SCUM_Font(const SCUM_Font& font);
-	~SCUM_Font();
 
-	SCUM::FontHandle* handle() { return m_handle; }
-	const std::string& name() const { return m_name; }
-	float size() const { return m_size; }
-	bool isValid() const { return m_handle != 0; }
+	inline int id() const;
+	inline int size() const;
+	inline bool isValid() const;
 
-	float height() { return m_handle ? m_handle->height() : 0; }
-	float ascent() { return m_handle ? m_handle->ascent() : 0; }
-	float descent() { return m_handle ? m_handle->descent() : 0; }
+	inline const SCUM_FontExtents& extents() const;
+	SCUM_TextExtents measure(const char* str) const;
 
-	void setFont(const char* name, float size=0.f);
-	inline void setFont(const std::string& name, float size=0.f);
+	void draw(const SCUM_Point& pos, const char* str);
+	void draw(const SCUM_Rect& bounds, SCUM::Align align, const char* str);
 
-	inline SCUM_Size measure(const char* str);
-	inline SCUM_Size measure(const std::string& str);
-
-	void draw(const SCUM_Rect& bounds, const char* str, int align);
-	inline void draw(const SCUM_Rect& bounds, const std::string& str, int align);
-
-	inline SCUM_Font& operator = (const SCUM_Font& font);
+	void drawGL(const SCUM_Point& pos, const char* str);
+	void drawGL(const SCUM_Rect& bounds, SCUM::Align align, const char* str);
 
 private:
-	std::string			m_name;
-	float				m_size;
-	SCUM::FontHandle*	m_handle;
+	int					m_id;
+	int					m_size;
+	SCUM_FontExtents	m_extents;
 };
 
-inline void SCUM_Font::setFont(const std::string& name, float size)
+// =====================================================================
+// SCUM_Text
+
+class SCUM_Text
 {
-	setFont(name.c_str(), size);
+public:
+	SCUM_Text();
+	SCUM_Text(const char* text, size_t size);
+	SCUM_Text(const char* text);
+	SCUM_Text(const SCUM_Text& other);
+	~SCUM_Text();
+
+	inline const char* text() const;
+	inline const SCUM_Font& font() const;
+	inline const SCUM_TextExtents& extents() const;
+
+	void setText(const char* text, size_t size);
+	void setText(const char* text);
+	void setFont(const SCUM_Font& font);
+	SCUM_Text& operator = (const SCUM_Text& other);
+
+	inline void draw(const SCUM_Point& pos);
+	inline void draw(const SCUM_Rect& bounds, SCUM::Align align);
+
+	inline void drawGL(const SCUM_Point& pos);
+	inline void drawGL(const SCUM_Rect& bounds, SCUM::Align align);
+
+private:
+	void changed();
+	void copyText(const char* text, size_t size);
+
+private:
+	char*				m_text;
+	SCUM_Font			m_font;
+	SCUM_TextExtents	m_extents;
+};
+
+// =====================================================================
+// SCUM_Font (inline functions)
+
+inline int SCUM_Font::id() const
+{
+	return m_id;
 }
 
-inline SCUM_Size SCUM_Font::measure(const char* str)
+inline int SCUM_Font::size() const
 {
-	return m_handle ? m_handle->measure(str) : SCUM_Size();
+	return m_size;
 }
 
-inline SCUM_Size SCUM_Font::measure(const std::string& str)
+inline bool SCUM_Font::isValid() const
 {
-	return measure(str.c_str());
+	return m_id != -1;
 }
 
-inline void SCUM_Font::draw(const SCUM_Rect& bounds, const std::string& str, int align)
+inline const SCUM_FontExtents& SCUM_Font::extents() const
 {
-	draw(bounds, str.c_str(), align);
+	return m_extents;
 }
 
-inline SCUM_Font& SCUM_Font::operator = (const SCUM_Font& font)
+// =====================================================================
+// SCUM_Text (inline functions)
+
+inline const char* SCUM_Text::text() const
 {
-	setFont(font.name(), font.size());
-	return *this;
+	return m_text ? m_text : "";
+}
+
+inline const SCUM_Font& SCUM_Text::font() const
+{
+	return m_font;
+}
+
+inline const SCUM_TextExtents& SCUM_Text::extents() const
+{
+	return m_extents;
+}
+
+inline void SCUM_Text::draw(const SCUM_Point& pos)
+{
+	if (m_text) m_font.draw(pos, m_text);
+}
+
+inline void SCUM_Text::draw(const SCUM_Rect& bounds, SCUM::Align align)
+{
+	if (m_text) m_font.draw(bounds, align, m_text);
+}
+
+inline void SCUM_Text::drawGL(const SCUM_Point& pos)
+{
+	if (m_text) m_font.drawGL(pos, m_text);
+}
+
+inline void SCUM_Text::drawGL(const SCUM_Rect& bounds, SCUM::Align align)
+{
+	if (m_text) m_font.drawGL(bounds, align, m_text);
 }
 
 #endif // SCUM_FONT_HH_INCLUDED

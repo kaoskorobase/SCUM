@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Text.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -52,12 +52,11 @@ public:
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 protected:
-	SCUM_Font	m_font;
 	SCUM_Point	m_padding;
-	char		m_text[SCUM::maxStringSize];
+	SCUM_Text	m_text;
 	uint8_t		m_textAlign;
 };
 
@@ -76,12 +75,8 @@ public:
 	virtual void mouseUp(int state, const SCUM_Point& where);
 	virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
-
-protected:
-	uint8_t		m_sendMouse;
-	uint8_t		m_sendScroll;
+// 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+// 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 };
 
 // =====================================================================

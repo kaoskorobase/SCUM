@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Geometry.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Geometry.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
@@ -51,7 +51,12 @@ namespace SCUM
 		kAlignSE
 	};
 
-	inline int checkAlign(int align);
+	enum Border
+	{
+		kBorderNone,
+		kBorderIn,
+		kBorderOut
+	};
 
 	template <class T> T min(T a, T b)
 	{
@@ -68,6 +73,28 @@ namespace SCUM
 		if (x < min) x = min;
 		else if (x > max) x = max;
 		return x;
+	}
+
+	inline int clipAlign(int align)
+	{
+		return SCUM::clip<int>(align, (int)SCUM::kAlignNW, (int)SCUM::kAlignSE);
+	}
+
+	inline SCUM::Align makeAlign(int align)
+	{
+		return (SCUM::Align)clipAlign(align);
+	}
+
+	inline double quant(double value, double step)
+	{
+		return floor(value / step + 0.5) * step;
+	}
+
+	inline double clipQuant(double value, double min, double max, double step)
+	{
+		return step > 0. ?
+			clip(quant(value, step), min, max) :
+			clip(value, min, max);
 	}
 };
 
@@ -86,6 +113,9 @@ public:
 	SCUM_Point(const SCUM_Point& point)
 		: x(point.x), y(point.y)
 	{ }
+
+	inline int xi() const { return (int)x; }
+	inline int yi() const { return (int)y; }
 
 	inline SCUM_Point abs() const;
 	inline SCUM_Point min(const SCUM_Point& p) const;
@@ -157,14 +187,17 @@ public:
 		: w(size.w), h(size.h)
 	{ }
 
-	bool notEmpty() const { return (w > 0.0f) && (h > 0.0f); }
-	bool isEmpty() const { return !notEmpty(); }
+	inline int wi() const { return (int)w; }
+	inline int hi() const { return (int)h; }
+
+	inline bool notEmpty() const { return (w > 0.0f) && (h > 0.0f); }
+	inline bool isEmpty() const { return !notEmpty(); }
 
 	inline SCUM_Size abs() const;
 	inline SCUM_Size max(const SCUM_Size& s) const;
 	inline SCUM_Size padded(const SCUM_Point& padding) const;
 	inline SCUM_Size padded(float padding) const;
-	inline SCUM_Point layout(const SCUM_Size& box, int align) const;
+	inline SCUM_Point layout(const SCUM_Size& box, SCUM::Align align) const;
 
 	template <class T> void copy(T* dst) const
 	{
@@ -225,7 +258,7 @@ inline SCUM_Size SCUM_Size::padded(float padding) const
 	return SCUM_Size(w + padding2, h + padding2);
 }
 
-inline SCUM_Point SCUM_Size::layout(const SCUM_Size& box, int align) const
+inline SCUM_Point SCUM_Size::layout(const SCUM_Size& box, SCUM::Align align) const
 {
 	SCUM_Point delta;
 
@@ -298,6 +331,11 @@ public:
 	SCUM_Rect(const SCUM_Rect& r)
 		: x(r.x), y(r.y), w(r.w), h(r.h)
 	{ }
+
+	inline int xi() const { return (int)x; }
+	inline int yi() const { return (int)y; }
+	inline int wi() const { return (int)w; }
+	inline int hi() const { return (int)h; }
 
 	float minX() const { return x; }
 	float minY() const { return y; }
@@ -501,11 +539,6 @@ inline std::ostream& operator << (std::ostream& stream, const SCUM_Rect& r)
 {
 	stream << "[" << r.x << ", " << r.y << ", " << r.w << ", " << r.h << "]";
 	return stream;
-}
-
-inline int SCUM::checkAlign(int align)
-{
-	return SCUM::clip<int>(align, SCUM::kAlignNW, SCUM::kAlignSE);
 }
 
 #endif // SCUM_GEOMETRY_HH_INCLUDED

@@ -18,12 +18,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_FLApp.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_FLApp.hh,v 1.2 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #ifndef SCUM_FLAPP_HH_INCLUDED
 #define SCUM_FLAPP_HH_INCLUDED
+
+#include "SCUM_Editor.hh"
 
 #include <stdint.h>
 #include <SC_TerminalClient.h>
@@ -42,6 +44,15 @@ public:
 		return (SCUM_FLApp*)SC_LanguageClient::instance();
 	}
 
+	inline SCUM_DocumentManager* documentManager() { return &m_documentManager; }
+// 	inline SCUM_Document* postView() { return m_postView; }
+// 	inline void setPostView(SCUM_Document* view) { m_postView = view; }
+
+	virtual void post(const char *fmt, va_list ap, bool error);
+	virtual void post(char c);
+	virtual void post(const char* str, size_t len);
+	virtual void flush();
+
 protected:
 	virtual void onInitRuntime();
 	virtual void onLibraryStartup();
@@ -53,16 +64,20 @@ protected:
 
 private:
 	void inputAvailable(int fd);
+	void postDataAvailable(int fd);
 
 	static void tickTimeoutCB(void* arg);
+	static void postDataAvailableCB(int fd, void* arg);
 	static void inputAvailableCB(int fd, void* arg);
 
 private:
+	SCUM_DocumentManager		m_documentManager;
 	int							m_argc;
 	char**						m_argv;
-	bool						m_shouldBeRunning;
-	int							m_returnCode;
 	SC_StringBuffer				m_inputBuffer;
+	int							m_postFifo[2];
+	SC_StringBuffer				m_postBuffer;
+	pthread_mutex_t				m_postMutex;
 };
 
 #endif // SCUM_FLAPP_HH_INCLUDED

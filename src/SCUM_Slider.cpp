@@ -18,16 +18,50 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Slider.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
+#include "SCUM_GC.hh"
 #include "SCUM_Slider.hh"
 #include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
 
 #include <PyrKernel.h>
 #include <PyrObject.h>
+#include <PyrSlot.h>
+
+namespace SCUM
+{
+	static const int kDefaultThumbSize = 10;
+
+// 	inline static double expDelta(double delta)
+// 	{
+// 		double sign;
+		
+// 		if (delta > 0.) sign = 1.;
+// 		else if (delta < 0.) sign = -1.;
+// 		else return 0.;
+		
+// 		return sign * exp(delta * delta) / M_E;
+// 	}
+	inline static Orient orientValue(PyrSlot* slot)
+	{
+		PyrSymbol* sym = symbolValue(slot);
+		if (equal(sym, "h") || equal(sym, "horizontal")) return kOrientHorizontal;
+		if (equal(sym, "v") || equal(sym, "vertical")) return kOrientVertical;
+		throw TypeError();
+	}
+
+	inline static void setOrientValue(PyrSlot* slot, int orient)
+	{
+		switch (orient) {
+			case kOrientHorizontal: SetSymbol(slot, getsym("horizontal")); break;
+			case kOrientVertical: SetSymbol(slot, getsym("vertical")); break;
+			default: SetNil(slot);
+		}
+	}
+};
 
 using namespace SCUM;
 
@@ -36,28 +70,26 @@ using namespace SCUM;
 
 SCUM_Slider::SCUM_Slider(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
-	  m_value(0.0),
+	  m_value(1.0),
 	  m_step(0.0),
-	  m_thumbSize(10),
-	  m_steady(false)
-{ }
+	  m_thumbSize(kDefaultThumbSize),
+	  m_steady(false),
+	  m_orient(SCUM::kOrientVertical)
+{
+	setValue(0.0, false);
+}
 
 void SCUM_Slider::drawView(const SCUM_Rect& damage)
 {
 	m_thumbRect = thumbRect();
 	GCSave();
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 	GCDrawBeveledRect(bounds(), 1, true);
 	GCSetColor(fgColor());
 	GCFillRect(m_thumbRect);
 	GCDrawBeveledRect(m_thumbRect, 1, false);
 	GCRestore();
-}
-
-void SCUM_Slider::drawFocus(const SCUM_Rect& damage)
-{
-	SCUM_View::drawFocusInBounds(m_thumbRect.inset(1));
 }
 
 bool SCUM_Slider::mouseDown(int state, const SCUM_Point& where)
@@ -79,35 +111,36 @@ void SCUM_Slider::mouseMove(int state, const SCUM_Point& where)
 	}
 }
 
-void SCUM_Slider::scrollWheel(int state, const SCUM_Point&, const SCUM_Point& delta)
-{
-	double offset;
+// void SCUM_Slider::scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta)
+// {
+// 	double scale;
+	
+// 	if (m_step > 0.0) {
+// 		scale = m_step;
+// 	} else if (bounds().w > bounds().h) {
+// 		scale = 1.0 / (bounds().w - m_thumbSize - 2);
+// 	} else {
+// 		scale = 1.0 / (bounds().h - m_thumbSize - 2);
+// 	}
 
-	if (m_step > 0.0) {
-		offset = m_step;
-	} else if (bounds().w > bounds().h) {
-		offset = 1.0 / (bounds().w - m_thumbSize - 2);
-	} else {
-		offset = 1.0 / (bounds().h - m_thumbSize - 2);
-	}
-		
-	if (state & kModMaskShift) offset *= 10;
-
-	setValue(m_value - delta.y * offset, true);
-}
+// 	setValue(m_value - expDelta(delta.y) * scale, true);
+// }
 
 void SCUM_Slider::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (key == SCUM_Symbol::value) {
 		setBoolValue(slot, setValue(floatValue(slot), false));
 	} else if (equal(key, "step")) {
-		m_step = floatValue(slot);
+		m_step = clip(floatValue(slot), 0., 1.);
 		setBoolValue(slot, setValue(m_value, false));
 	} else if (equal(key, "thumbSize")) {
-		m_thumbSize = max(3, intValue(slot));
+		m_thumbSize = max(1, intValue(slot));
 		updateLayout();
 	} else if (equal(key, "steady")) {
 		m_steady = boolValue(slot);
+	} else if (equal(key, "orientation")) {
+		m_orient = orientValue(slot);
+		updateLayout();
 	} else {
 		SCUM_View::setProperty(key, slot);
 	}
@@ -123,20 +156,23 @@ void SCUM_Slider::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		setIntValue(slot, m_thumbSize);
 	} else if (equal(key, "steady")) {
 		setBoolValue(slot, m_steady);
+	} else if (equal(key, "orientation")) {
+		setOrientValue(slot, m_orient);
 	} else {
 		SCUM_View::getProperty(key, slot);
 	}
 }
 
-SCUM_Size SCUM_Slider::preferredSize()
+SCUM_Size SCUM_Slider::getMinSize()
 {
-	return SCUM_Size(m_thumbSize);
+	return m_orient == kOrientHorizontal ?
+		SCUM_Size(m_thumbSize, 0) : SCUM_Size(0, m_thumbSize);
 }
 
 SCUM_Rect SCUM_Slider::thumbRect()
 {
-	bool horiz = (bounds().w > bounds().h);
-	double range = (horiz ? bounds().w : bounds().h) - m_thumbSize - 2;
+	const bool horiz = m_orient == kOrientHorizontal;
+	const double range = (horiz ? bounds().w : bounds().h) - m_thumbSize - 2;
 	SCUM_Rect r(bounds().inset(1));
 
 	if (horiz) {
@@ -152,12 +188,8 @@ SCUM_Rect SCUM_Slider::thumbRect()
 
 bool SCUM_Slider::setValue(double value, bool send)
 {
-	value = clip(value, 0.0, 1.0);
+	value = clipQuant(value, 0., 1., m_step);
 	
-	if (m_step > 0.0) {
-		value = floor(value / m_step + 0.5) * m_step;
-	}
-
 	if (value != m_value) {
 		m_value = value;
 		refresh();
@@ -170,14 +202,14 @@ bool SCUM_Slider::setValue(double value, bool send)
 
 double SCUM_Slider::valueFromPoint(const SCUM_Point& p)
 {
-    double range, value;
+    double value;
     
-    if (bounds().w > bounds().h) {
-        range = bounds().w - m_thumbSize - 2;
-        value = (p.x - bounds().x - 1 - m_thumbSize/2) / range;
+    if (m_orient == kOrientHorizontal) {
+        const double range = bounds().w - m_thumbSize - 2.;
+        value = (p.x - bounds().x - 1. - (m_thumbSize >> 1)) / range;
     } else {
-        range = bounds().h - m_thumbSize - 2;
-        value = 1.0 - (p.y - bounds().y - 1 - m_thumbSize/2) / range;
+        const double range = bounds().h - m_thumbSize - 2.;
+        value = 1.0 - (p.y - bounds().y - 1. - (m_thumbSize >> 1)) / range;
     }
 
 	return value;
@@ -190,23 +222,20 @@ SCUM_Pad::SCUM_Pad(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
 	  m_x(.5), m_y(.5),
 	  m_xStep(0.), m_yStep(0.),
+	  m_thumbSize(kDefaultThumbSize),
 	  m_steady(false)
 { }
 
 void SCUM_Pad::drawView(const SCUM_Rect& damage)
 {
+	m_thumbRect = thumbRect();
 	GCSave();
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 	GCDrawBeveledRect(bounds(), 1, true);
 	GCSetColor(fgColor());
-	GCSetLineWidth(1);
-	SCUM_Rect r(bounds().inset(1));
-	float x, y;
-	x = min(r.x + (r.w * m_x), r.maxX() - 1.);
-	y = min(r.y + (r.h * m_y), r.maxY() - 1.);
-	GCDrawLine(x, r.y, x, r.maxY());
-	GCDrawLine(r.x, y, r.maxX(), y);
+	GCFillRect(m_thumbRect);
+	GCDrawBeveledRect(m_thumbRect, 1, false);
 	GCRestore();
 }
 
@@ -222,6 +251,7 @@ bool SCUM_Pad::mouseDown(int state, const SCUM_Point& where)
 	} else {
 		setValue(x, y, true);
 	}
+
 	return true;
 }
 
@@ -238,13 +268,9 @@ void SCUM_Pad::mouseMove(int state, const SCUM_Point& where)
 	}
 }
 
-void SCUM_Pad::scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta)
+SCUM_Size SCUM_Pad::getMinSize()
 {
-}
-
-SCUM_Size SCUM_Pad::preferredSize()
-{
-	return SCUM_Size(10, 10);
+	return SCUM_Size(m_thumbSize + 1.);
 }
 
 void SCUM_Pad::setProperty(const PyrSymbol* key, PyrSlot* slot)
@@ -259,6 +285,9 @@ void SCUM_Pad::setProperty(const PyrSymbol* key, PyrSlot* slot)
 	} else if (equal(key, "yStep")) {
 		m_yStep = floatValue(slot);
 		setBoolValue(slot, setValue(m_x, m_y, false));
+	} else if (equal(key, "thumbSize")) {
+		m_thumbSize = max(1, intValue(slot));
+		updateLayout();
 	} else if (equal(key, "steady")) {
 		m_steady = boolValue(slot);
 	} else {
@@ -271,11 +300,13 @@ void SCUM_Pad::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	if (key == SCUM_Symbol::x) {
 		setFloatValue(slot, m_x);
 	} else if (key == SCUM_Symbol::y) {
-		setFloatValue(slot, 1.-m_y);
+		setFloatValue(slot, m_y);
 	} else if (equal(key, "xStep")) {
 		setFloatValue(slot, m_xStep);
 	} else if (equal(key, "yStep")) {
 		setFloatValue(slot, m_yStep);
+	} else if (equal(key, "thumbSize")) {
+		setIntValue(slot, m_thumbSize);
 	} else if (equal(key, "steady")) {
 		setBoolValue(slot, m_steady);
 	} else {
@@ -283,15 +314,27 @@ void SCUM_Pad::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	}
 }
 
+SCUM_Rect SCUM_Pad::thumbRect()
+{
+	const double xRange = bounds().w - m_thumbSize - 2.;
+	const double yRange = bounds().h - m_thumbSize - 2.;
+
+	SCUM_Rect r(bounds().inset(1));
+
+	r.x += m_x * xRange;
+	r.y += (1. - m_y) * yRange;
+	r.w = m_thumbSize;
+	r.h = m_thumbSize;
+
+	return r;
+}
+
 bool SCUM_Pad::setValue(double ix, double iy, bool send)
 {
 	bool changed = false;
 
-	ix = clip(ix, 0., 1.);
-	iy = clip(iy, 0., 1.);
-
-	if (m_xStep > 0.) ix = floor(ix / m_xStep + 0.5) * m_xStep;
-	if (m_yStep > 0.) iy = floor(iy / m_yStep + 0.5) * m_yStep;
+	ix = clipQuant(ix, 0., 1., m_xStep);
+	iy = clipQuant(iy, 0., 1., m_yStep);
 
 	if (ix != m_x) {
 		m_x = ix;
@@ -314,8 +357,15 @@ bool SCUM_Pad::setValue(double ix, double iy, bool send)
 
 void SCUM_Pad::valueFromPoint(const SCUM_Point& p, double& ox, double& oy)
 {
-	ox = (p.x - bounds().x - 1.f) / (bounds().w - 2.f);
-	oy = (p.y - bounds().y - 1.f) / (bounds().h - 2.f);
+	const double xRange = bounds().w - m_thumbSize - 2.;
+	const double yRange = bounds().h - m_thumbSize - 2.;
+
+	const double range = bounds().w - m_thumbSize - 2.;
+	ox = (p.x - bounds().x - 1. - (m_thumbSize >> 1)) / xRange;
+	oy = 1. - (p.y - bounds().y - 1. - (m_thumbSize >> 1)) / yRange;
+
+// 	ox = (p.x - bounds().x - 1.f) / (bounds().w - 2.f);
+// 	oy = (p.y - bounds().y - 1.f) / (bounds().h - 2.f);
 }
 
 // =====================================================================
@@ -337,7 +387,7 @@ void SCUM_Table::drawView(const SCUM_Rect& damage)
 	GCSave();
 
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 	GCDrawBeveledRect(bounds(), 1, true);
 
 	GCSetColor(fgColor());
@@ -372,16 +422,27 @@ void SCUM_Table::drawView(const SCUM_Rect& damage)
 			}
 
 			if (m_style == kLines) {
-				GCDrawLine(x, y, x+w1, y);
+				SCUM_Rect block(x, y, w1, 2.f);
+// 				GCDrawLine(x, y, x+w1, y);
+				GCFillRect(block);
+				if (w1 > 2) GCDrawBeveledRect(block, 1, false);
 			} else if (m_style == kFilled) {
-				GCFillRect(x, y, w1, ceil(values[i] * r.h));
+				SCUM_Rect block(x, y, w1, ceil(values[i] * r.h));
+				GCFillRect(block);
+				GCDrawBeveledRect(block, 1, false);
 			} else if (m_style == kWaveform) {
 				double value = values[i];
 				double h2 = r.h * 0.5;
 				if (value > 0.5) {
-					GCFillRect(x, r.y + r.h * (1. - value), w1, r.h * (value - 0.5));
+					SCUM_Rect block(x, r.y + r.h * (1. - value), w1, r.h * (value - 0.5));
+					GCFillRect(block);
+					GCDrawBeveledRect(block, 1, false);
+// 					GCFillRect(x, r.y + r.h * (1. - value), w1, r.h * (value - 0.5));
 				} else {
-					GCFillRect(x, r.y + r.h * 0.5, w1, r.h * (0.5 - value));
+					SCUM_Rect block(x, r.y + r.h * 0.5, w1, r.h * (0.5 - value));
+					GCFillRect(block);
+					GCDrawBeveledRect(block, 1, false);
+// 					GCFillRect(x, r.y + r.h * 0.5, w1, r.h * (0.5 - value));
 				}
 			}
 
@@ -435,7 +496,7 @@ void SCUM_Table::mouseMove(int state, const SCUM_Point& where)
 	m_prevPoint = where;
 }
 
-SCUM_Size SCUM_Table::preferredSize()
+SCUM_Size SCUM_Table::getMinSize()
 {
 	return SCUM_Size(m_size, 10).padded(1);
 }

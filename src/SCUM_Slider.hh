@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Slider.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -26,6 +26,7 @@
 #define SCUM_SLIDER_HH_INCLUDED
 
 #include "SCUM_View.hh"
+#include <stdint.h>
 #include <vector>
 
 // =====================================================================
@@ -37,17 +38,15 @@ public:
 	SCUM_Slider(SCUM_Container* parent, PyrObject* obj);
 
 	virtual void drawView(const SCUM_Rect& damage);
-	virtual void drawFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
-	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 	SCUM_Rect thumbRect();
 	bool setValue(double value, bool send);
@@ -60,6 +59,7 @@ private:
 	int			m_thumbSize;
 	bool		m_steady;
 	double		m_steadyOffset;
+	uint8_t		m_orient;
 };
 
 // class SCUM_FillSlider : public SCUM_View
@@ -103,14 +103,14 @@ public:
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
-	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 protected:
+	SCUM_Rect thumbRect();
 	bool setValue(double ix, double iy, bool send);
 	void valueFromPoint(const SCUM_Point& p, double& ox, double& oy);
 
@@ -119,6 +119,8 @@ private:
 	double		m_y;
 	double		m_xStep;
 	double		m_yStep;
+	int			m_thumbSize;
+	SCUM_Rect	m_thumbRect;
 	bool		m_steady;
 	SCUM_Point	m_steadyOffset;
 };
@@ -156,7 +158,7 @@ public:
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 
 protected:
 	int indexFromPoint(const SCUM_Point& p);

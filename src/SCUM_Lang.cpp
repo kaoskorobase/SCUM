@@ -18,13 +18,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Lang.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Lang.cpp,v 1.2 2004/08/15 14:42:24 steve Exp $
 */
 
 
 #include "SCUM_Lang.hh"
 #include "SCUM_Font.hh"
 #include "SCUM_Symbol.hh"
+#include "SCUM_Util.hh"
 
 #include <string.h>
 
@@ -66,7 +67,7 @@ void SCUM_Object::setPyrObj(PyrObject* obj)
 
 void SCUM_Object::sendMessage(PyrSymbol* method, size_t argc, PyrSlot* argv, PyrSlot* result)
 {
-    if (pyrObj()) {
+    if (pyrObj() && compiledOK) {
 		lang()->lock();
         VMGlobals* g = lang()->getVMGlobals();
         g->canCallOS = true;
@@ -78,20 +79,31 @@ void SCUM_Object::sendMessage(PyrSymbol* method, size_t argc, PyrSlot* argv, Pyr
         g->canCallOS = false;
         if (result) result->ucopy = g->result.ucopy;
 		lang()->unlock();
-    }
+    } else if (result) {
+		SetNil(result);
+	}
 }
 
-// void SCUM_Object::changed(PyrSymbol* what, PyrSlot* result)
-// {
-// 	PyrSlot args[1];
-// 	SetSymbol(args+0, what);
-// 	sendMessage(SCUM_Symbol::changed, 1, args, result);
-// }
+void SCUM_Object::sendMessage(const char* method, size_t argc, PyrSlot* argv, PyrSlot* result)
+{
+	if (compiledOK) {
+		sendMessage(getsym(method), argc, argv, result);
+	} else if (result) {
+		SetNil(result);
+	}
+}
 
-// void SCUM_Object::changed(const char* what, PyrSlot* result)
-// {
-// 	changed(getsym(what), result);
-// }
+void SCUM_Object::changed(PyrSymbol* what)
+{
+	PyrSlot args[1];
+	SetSymbol(args+0, what);
+	sendMessage(SCUM_Symbol::changed, 1, args, 0);
+}
+
+void SCUM_Object::changed(const char* what)
+{
+	changed(getsym(what));
+}
 
 void SCUM_Object::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
@@ -210,15 +222,30 @@ char SCUM::charValue(PyrSlot* slot)
 	throw TypeError();
 }
 
-std::string SCUM::stringValue(PyrSlot* slot)
+PyrSymbol* SCUM::symbolValue(PyrSlot* slot)
+{
+	if (IsSym(slot)) return slot->us;
+	throw TypeError();
+}
+
+const char* SCUM::stringValue(PyrSlot* slot, size_t& outSize)
 {
 	if (IsSym(slot)) {
-		return std::string(slot->us->name);
+		outSize = slot->us->length;
+		return slot->us->name;
 	}
 	if (isKindOfSlot(slot, class_string)) {
-		return std::string(slot->uos->s, slot->uo->size);
+		outSize = slot->uo->size;
+		return slot->uos->s;
 	}
 	throw TypeError();
+}
+
+std::string SCUM::stringValue(PyrSlot* slot)
+{
+	size_t size;
+	const char* str = stringValue(slot, size);
+	return std::string(str, size);
 }
 
 void SCUM::stringValues(PyrSlot* slot, std::vector<std::string>& array)
@@ -281,10 +308,32 @@ SCUM_Font SCUM::fontValue(PyrSlot* slot)
 	if (isKindOfSlot(slot, SCUM_Symbol::Font->u.classobj)) {
 		PyrSlot* slots = slot->uo->slots;
 		std::string name(stringValue(slots+0));
-		float size = floatValue(slots+1);
-		return SCUM_Font(name.c_str(), SCUM::max(1, (int)size));
+		double size = floatValue(slots+1);
+		return SCUM_Font(name.c_str(), SCUM::max(1., size));
 	}
 	throw TypeError();
+}
+
+SCUM::Border SCUM::borderValue(PyrSlot* slot)
+{
+	using namespace SCUM;
+	if (IsNil(slot)) return kBorderNone;
+	PyrSymbol* sym = symbolValue(slot);
+	if (equal(sym, "none")) return kBorderNone;
+	if (equal(sym, "in")) return kBorderIn;
+	if (equal(sym, "out")) return kBorderOut;
+	throw TypeError();
+}
+
+void SCUM::setBorderValue(PyrSlot* slot, SCUM::Border border)
+{
+	using namespace SCUM;
+	switch (border) {
+		case kBorderNone: SetSymbol(slot, getsym("none")); break;
+		case kBorderIn: SetSymbol(slot, getsym("in")); break;
+		case kBorderOut: SetSymbol(slot, getsym("out")); break;
+		default: SetNil(slot);
+	}
 }
 
 void SCUM::setNilValue(PyrSlot* slot)
@@ -349,6 +398,32 @@ void SCUM::setColorValue(PyrSlot* slot, const SCUM_Color& v)
 	} else {
 		throw TypeError();
 	}
+}
+
+SCUM::PyrIterator::PyrIterator(PyrSlot* slot)
+{
+    if (!isKindOfSlot(slot, class_array))
+		throw TypeError();
+
+	m_ptr = slot->uo->slots;
+	m_end = m_ptr + slot->uo->size;
+}
+
+bool SCUM::PyrIterator::atEnd() const
+{
+	SCUM_ASSERT(m_ptr <= m_end);
+	return m_ptr == m_end;
+}
+
+size_t SCUM::PyrIterator::remain() const
+{
+	SCUM_ASSERT((m_end - m_ptr) >= 0);
+	return m_end - m_ptr;
+}
+
+PyrSlot* SCUM::PyrIterator::next()
+{
+	return atEnd() ? 0 : m_ptr++;
 }
 
 // EOF

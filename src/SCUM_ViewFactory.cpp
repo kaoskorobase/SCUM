@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ViewFactory.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_ViewFactory.cpp,v 1.2 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -44,8 +44,9 @@ SCUM_View* SCUM_ViewFactory::makeView(const char* className, SCUM_Container* par
 	return iter->second->makeView(parent, obj);
 }
 
-#include "SCUM_Container.hh"
 #include "SCUM_Button.hh"
+#include "SCUM_Canvas.hh"
+#include "SCUM_Container.hh"
 #include "SCUM_Graph.hh"
 #include "SCUM_Text.hh"
 #include "SCUM_View.hh"
@@ -59,6 +60,7 @@ void SCUM_ViewFactory::init()
 	f.add("SCUMBang", new SCUM_ViewMaker<SCUM_Bang>());
 	f.add("SCUMBin", new SCUM_ViewMaker<SCUM_Bin>());
 	f.add("SCUMButton", new SCUM_ViewMaker<SCUM_Button>());
+	f.add("SCUMCanvasView", new SCUM_ViewMaker<SCUM_CanvasView>());
 	f.add("SCUMChoice", new SCUM_ViewMaker<SCUM_Choice>());
 	f.add("SCUMHBox", new SCUM_ViewMaker<SCUM_HBox>());
 	f.add("SCUMHGrid", new SCUM_ViewMaker<SCUM_HGrid>());

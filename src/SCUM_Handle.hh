@@ -18,31 +18,48 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id: SCUM_Handle.hh,v 1.1 2004/08/15 14:42:23 steve Exp $
 */
 
 
-#ifndef SCUM_SYSTEM_HH_INCLUDED
-#define SCUM_SYSTEM_HH_INCLUDED
+#ifndef SCUM_HANDLE_HH_INCLUDED
+#define SCUM_HANDLE_HH_INCLUDED
 
-#include "SCUM_Geometry.hh"
-#include "SCUM_Timer.hh"
+#ifdef SCUM_DEBUG
+# include <stdio.h>
+# include <stdlib.h>
+#endif
 
-namespace SCUM
+class SCUM_Handle
 {
-	enum ModMask
-	{
-		kModMaskShift	= (1 << 0),
-		kModMaskControl	= (1 << 1),
-		kModMaskCommand	= (1 << 2),
-		kModMaskKeypad	= (1 << 3)
-	};
+public:
+	SCUM_Handle();
 
-	SCUM_Size screenSize();
-	double time();
+	inline void retain();
+	inline void release();
 
-	// actions
-	void addTimer(SCUM_Timer* timer);
+protected:
+	virtual ~SCUM_Handle() = 0;
+	virtual void destroy();
+
+private:
+	int m_refcount;
 };
 
-#endif // SCUM_SYSTEM_HH_INCLUDED
+inline void SCUM_Handle::retain()
+{
+	m_refcount++;
+}
+
+inline void SCUM_Handle::release()
+{
+#ifdef SCUM_DEBUG
+	if (m_refcount <= 0) {
+		fprintf(stderr, "SCUM_Handle::release: invalid reference count %d\n", m_refcount);
+		abort();
+	}
+#endif // SCUM_DEBUG
+	if (--m_refcount == 0) destroy();
+}
+
+#endif // SCUM_HANDLE_HH_INCLUDED

@@ -18,15 +18,18 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_FLApp.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_FLApp.cpp,v 1.2 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #include "SCUM_FLApp.hh"
 #include "SCUM_Desktop.hh"
+#include "SCUM_Editor.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Prim.hh"
 #include "SCUM_Symbol.hh"
 #include "SCUM_System.hh"
+#include "SCUM_Util.hh"
 #include "SCUM_ViewFactory.hh"
 
 #if HAVE_CONFIG_H
@@ -44,17 +47,40 @@
 #include <PyrObject.h>
 #include <VMGlobals.h>
 
-const float SCUM_TICK_INTERVAL = 0.05;
 
 // =====================================================================
 // SCUM_FLApp
 
+namespace SCUM
+{
+	static const float kTickInterval = 0.005;
+	extern void showSplash(const char*, double);
+};
+
 SCUM_FLApp::SCUM_FLApp(const char* name)
 	: SC_TerminalClient(name)
-{ }
+{
+	if (pipe(m_postFifo) == -1) {
+		perror(getName());
+		exit(1);
+	}
+	if (fcntl(m_postFifo[0], F_SETFL, O_NONBLOCK) != 0) {
+		perror(getName());
+		exit(1);
+	}
+	if (fcntl(m_postFifo[1], F_SETFL, O_NONBLOCK) != 0) {
+		perror(getName());
+		exit(1);
+	}
+	pthread_mutex_init(&m_postMutex, 0);
+	Fl::add_fd(m_postFifo[0], &postDataAvailableCB, this);
+
+	m_documentManager.output()->makeWindow()->show();
+}
 
 SCUM_FLApp::~SCUM_FLApp()
-{ }
+{
+}
 
 void SCUM_FLApp::commandLoop()
 {
@@ -68,6 +94,8 @@ void SCUM_FLApp::commandLoop()
 
 	Fl::add_fd(fd, inputAvailableCB, this);
 
+// 	SCUM::showSplash("SCUM", 0);
+
 	daemonLoop();
 }
 
@@ -77,10 +105,47 @@ void SCUM_FLApp::daemonLoop()
 	while (shouldBeRunning()) Fl::wait();
 }
 
+void SCUM_FLApp::post(const char *fmt, va_list ap, bool error)
+{
+	pthread_mutex_lock(&m_postMutex);
+	m_postBuffer.vappendf(fmt, ap);
+	pthread_mutex_unlock(&m_postMutex);
+}
+
+void SCUM_FLApp::post(char c)
+{
+	pthread_mutex_lock(&m_postMutex);
+	m_postBuffer.append(c);
+	pthread_mutex_unlock(&m_postMutex);
+}
+
+void SCUM_FLApp::post(const char* str, size_t len)
+{
+	pthread_mutex_lock(&m_postMutex);
+	m_postBuffer.append(str, len);
+	pthread_mutex_unlock(&m_postMutex);
+}
+
+void SCUM_FLApp::flush()
+{
+// 	SCUM_DEBUG_PRINT("0\n");
+	pthread_mutex_lock(&m_postMutex);
+// 	SCUM_DEBUG_PRINT("1\n");
+	if (!m_postBuffer.isEmpty()) {
+// 		SCUM_DEBUG_PRINT("2\n");
+		write(m_postFifo[1], m_postBuffer.getData(), m_postBuffer.getSize());
+// 		SCUM_DEBUG_PRINT("3\n");
+		m_postBuffer.reset();
+	}
+// 	SCUM_DEBUG_PRINT("4\n");
+	pthread_mutex_unlock(&m_postMutex);	
+// 	SCUM_DEBUG_PRINT("5\n");
+}
+
 void SCUM_FLApp::onInitRuntime()
 {
+	SCUM::GCInit();
 	SC_TerminalClient::onInitRuntime();
-	SCUM::init();
 	SCUM_ViewFactory::init();
 }
 
@@ -89,6 +154,7 @@ void SCUM_FLApp::onLibraryStartup()
 	SC_TerminalClient::onLibraryStartup();
 	SCUM_Symbol::init();
 	SCUM_Prim::init();
+	SCUM_Prim::initDocument();
 }
 
 void SCUM_FLApp::onLibraryShutdown()
@@ -125,15 +191,42 @@ void SCUM_FLApp::inputAvailable(int fd)
 	while (readCmdLine(fd, m_inputBuffer));
 }
 
+void SCUM_FLApp::postDataAvailable(int fd)
+{
+	char buffer[1024];
+
+	SCUM_Document* output = documentManager()->output();
+
+	while (true) {
+		int n = read(fd, buffer, 1023);
+		if (n > 0) {
+			buffer[n] = 0;
+			if (output) {
+				output->insert(buffer);
+				output->show_insert_position();
+			}
+		} else {
+			if ((n == 0) || ((n == -1) && (errno != EAGAIN)))
+				quit(1);
+			break;
+		}
+	}
+}
+
 void SCUM_FLApp::tickTimeoutCB(void* arg)
 {
 	((SCUM_FLApp*)arg)->tick();
-	Fl::repeat_timeout(SCUM_TICK_INTERVAL, tickTimeoutCB, arg);
+	Fl::repeat_timeout(SCUM::kTickInterval, tickTimeoutCB, arg);
 }
 
 void SCUM_FLApp::inputAvailableCB(int fd, void* arg)
 {
 	((SCUM_FLApp*)arg)->inputAvailable(fd);
+}
+
+void SCUM_FLApp::postDataAvailableCB(int fd, void* arg)
+{
+	((SCUM_FLApp*)arg)->postDataAvailable(fd);
 }
 
 int main(int argc, char** argv)

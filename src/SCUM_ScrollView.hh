@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ScrollView.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_ScrollView.hh,v 1.2 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -74,7 +74,7 @@ protected:
 	virtual void mouseUpInContent(int, const SCUM_Point&);
 	virtual void scrollWheelInContent(int, const SCUM_Point&, const SCUM_Point&);
 
-	virtual SCUM_Size preferredSize();
+	virtual SCUM_Size getMinSize();
 	virtual SCUM_Size preferredViewPortSize();
 	virtual void boundsChanged(const SCUM_Rect& bounds);
 	void setContentSize(const SCUM_Size& size);

@@ -18,14 +18,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Text.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
 #include "SCUM_Text.hh"
 #include "SCUM_Desktop.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Symbol.hh"
-#include "SCUM_System.hh"
 
 #include <string.h>
 
@@ -40,10 +40,10 @@ using namespace SCUM;
 
 SCUM_Label::SCUM_Label(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
-	  m_padding(SCUM_Point(4, 2)),
+	  m_padding(SCUM_Point(5, 5)),
 	  m_textAlign(kAlignC)
 {
-	*m_text = 0;
+	m_text.setFont(desktop()->font());
 }
 
 void SCUM_Label::drawView(const SCUM_Rect& damage)
@@ -54,13 +54,11 @@ void SCUM_Label::drawView(const SCUM_Rect& damage)
 
 	if (!bgColor().isTransparent()) {
 		GCSetColor(bgColor());
-		GCFillRect(damage);
+		GCFillRect(bounds());
 	}
 
-	if (*m_text) {
-		GCSetColor(fgColor());
-		m_font.draw(r.inset(m_padding), m_text, m_textAlign);
-	}
+	GCSetColor(fgColor());
+	m_text.draw(r.inset(m_padding), makeAlign(m_textAlign));
 
 	GCRestore();
 }
@@ -68,17 +66,19 @@ void SCUM_Label::drawView(const SCUM_Rect& damage)
 void SCUM_Label::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "text")) {
-		checkError(slotStrVal(slot, m_text, maxStringSize));
-		if (layoutNeedsUpdate(preferredSize())) {
+		size_t size;
+		const char* str = stringValue(slot, size);
+		m_text.setText(str, size);
+		if (layoutNeedsUpdate(getMinSize())) {
 			updateLayout();
 		} else {
 			refresh();
 		}
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = checkAlign(intValue(slot));
+		m_textAlign = intValue(slot);
 		refresh();
 	} else if (equal(key, "font")) {
-		m_font = fontValue(slot);
+		m_text.setFont(fontValue(slot));
 		updateLayout();
 	} else if (equal(key, "xPadding")) {
 		m_padding.x = max(2., floatValue(slot));
@@ -104,20 +104,16 @@ void SCUM_Label::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	}
 }
 
-SCUM_Size SCUM_Label::preferredSize()
+SCUM_Size SCUM_Label::getMinSize()
 {
-	if (*m_text) {
-		return m_font.measure(m_text).padded(m_padding);
-	}
-	return SCUM_Size();
+	return m_text.extents().size.padded(m_padding);
 }
 
 // =====================================================================
 // SCUM_StringEntry
 
 SCUM_StringEntry::SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Label(parent, obj),
-	  m_sendMouse(false), m_sendScroll(false)
+	: SCUM_Label(parent, obj)
 { }
 
 void SCUM_StringEntry::drawView(const SCUM_Rect& damage)
@@ -125,60 +121,57 @@ void SCUM_StringEntry::drawView(const SCUM_Rect& damage)
 	GCSave();
 
 	GCSetColor(bgColor());
-	GCFillRect(damage);
+	GCFillRect(bounds());
 
 	GCDrawBeveledRect(bounds(), 1, true);
 
-	if (m_text) {
-		GCSetColor(fgColor());
-		m_font.draw(bounds().inset(m_padding), m_text, m_textAlign);
-	}
+	GCSetColor(fgColor());
+	m_text.draw(bounds().inset(m_padding), makeAlign(m_textAlign));
 
 	GCRestore();
 }
 
 bool SCUM_StringEntry::mouseDown(int state, const SCUM_Point& where)
 {
-	if (m_sendMouse) return sendMouseDown(state, where);
-	return false;
+	return sendMouseDown(state, where);
 }
 
 void SCUM_StringEntry::mouseMove(int state, const SCUM_Point& where)
 {
-	if (m_sendMouse) sendMouseMove(state, where);
+	sendMouseMove(state, where);
 }
 
 void SCUM_StringEntry::mouseUp(int state, const SCUM_Point& where)
 {
-	if (m_sendMouse) sendMouseUp(state, where);
+	sendMouseUp(state, where);
 }
 
 void SCUM_StringEntry::scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta)
 {
-	if (m_sendScroll) sendScrollWheel(state, where, delta);
+	sendScrollWheel(state, where, delta);
 }
 
-void SCUM_StringEntry::setProperty(const PyrSymbol* key, PyrSlot* slot)
-{
-	if (equal(key, "sendMouse")) {
-		m_sendMouse = boolValue(slot);
-	} else if (equal(key, "sendScroll")) {
-		m_sendScroll = boolValue(slot);
-	} else {
-		SCUM_Label::setProperty(key, slot);
-	}
-}
+// void SCUM_StringEntry::setProperty(const PyrSymbol* key, PyrSlot* slot)
+// {
+// 	if (equal(key, "sendMouse")) {
+// 		m_sendMouse = boolValue(slot);
+// 	} else if (equal(key, "sendScroll")) {
+// 		m_sendScroll = boolValue(slot);
+// 	} else {
+// 		SCUM_Label::setProperty(key, slot);
+// 	}
+// }
 
-void SCUM_StringEntry::getProperty(const PyrSymbol* key, PyrSlot* slot)
-{
-	if (equal(key, "sendMouse")) {
-		setBoolValue(slot, m_sendMouse);
-	} else if (equal(key, "sendScroll")) {
-		setBoolValue(slot, m_sendScroll);
-	} else {
-		SCUM_Label::getProperty(key, slot);
-	}
-}
+// void SCUM_StringEntry::getProperty(const PyrSymbol* key, PyrSlot* slot)
+// {
+// 	if (equal(key, "sendMouse")) {
+// 		setBoolValue(slot, m_sendMouse);
+// 	} else if (equal(key, "sendScroll")) {
+// 		setBoolValue(slot, m_sendScroll);
+// 	} else {
+// 		SCUM_Label::getProperty(key, slot);
+// 	}
+// }
 
 // =====================================================================
 // SCUM_List
@@ -190,7 +183,7 @@ SCUM_List::SCUM_List(SCUM_Container* parent, PyrObject* obj)
 	  m_padding(4, 1)
 {
 	m_font = desktop()->font();
-	m_itemSize.h = m_font.height() + 2.f * m_padding.y;
+	m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
 }
 
 void SCUM_List::drawContent()
@@ -226,7 +219,7 @@ void SCUM_List::drawContent()
 			GCSetColor(fgColor());
 		}
 
-		m_font.draw(itemBounds.inset(m_padding), m_items[i].c_str(), m_textAlign);
+		m_font.draw(itemBounds.inset(m_padding), makeAlign(m_textAlign), m_items[i].c_str());
 
 		if (GCIsClipped(itemBounds)) break;
 		itemBounds.y += h;
@@ -258,17 +251,17 @@ void SCUM_List::setProperty(const PyrSymbol* key, PyrSlot* slot)
 		stringValues(slot, m_items);
 		m_itemSize.w = 0.f;
 		for (int i=0; i < m_items.size(); i++) {
-			m_itemSize.w = max(m_itemSize.w, m_font.measure(m_items[i]).w);
+			m_itemSize.w = max(m_itemSize.w, m_font.measure(m_items[i].c_str()).size.w);
 		}
 		m_itemSize.w += 2.f * m_padding.x;
 		m_scrollStep = SCUM_Point(1, m_itemSize.h);
 		updateContentSize();
 	} else if (equal(key, "font")) {
 		m_font = fontValue(slot);
-		m_itemSize.h = m_font.height() + 2.f * m_padding.y;
+		m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
 		updateContentSize();
 	} else if (equal(key, "textAlignment")) {
-		m_textAlign = checkAlign(intValue(slot));
+		m_textAlign = clipAlign(intValue(slot));
 		refresh();
 	} else if (equal(key, "fgColorSel")) {
 		m_fgColorSel = colorValue(slot);

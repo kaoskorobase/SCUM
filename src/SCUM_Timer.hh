@@ -18,31 +18,48 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id: SCUM_Timer.hh,v 1.1 2004/08/15 14:42:24 steve Exp $
 */
 
 
-#ifndef SCUM_SYSTEM_HH_INCLUDED
-#define SCUM_SYSTEM_HH_INCLUDED
+#ifndef SCUM_TIMER_HH_INCLUDED
+#define SCUM_TIMER_HH_INCLUDED
 
-#include "SCUM_Geometry.hh"
-#include "SCUM_Timer.hh"
-
-namespace SCUM
+class SCUM_Timer
 {
-	enum ModMask
-	{
-		kModMaskShift	= (1 << 0),
-		kModMaskControl	= (1 << 1),
-		kModMaskCommand	= (1 << 2),
-		kModMaskKeypad	= (1 << 3)
-	};
+public:
+	SCUM_Timer(float timeout)
+		: m_valid(true), m_timeout(timeout)
+	{ }
 
-	SCUM_Size screenSize();
-	double time();
+	bool isValid() const { return m_valid; }
+	void remove() { m_valid = false; }
 
-	// actions
-	void addTimer(SCUM_Timer* timer);
+	float timeout() const { return m_timeout; }
+	void setTimeout(float timeout) { m_timeout = timeout; }
+
+	virtual void operator () () = 0;
+
+private:
+	bool				m_valid;
+	float				m_timeout;
 };
 
-#endif // SCUM_SYSTEM_HH_INCLUDED
+template <class T> class SCUM_MemTimer : public SCUM_Timer
+{
+public:
+	typedef void (T::*Callback)(SCUM_Timer* timer);
+
+	SCUM_MemTimer(float timeout, Callback cb, T* obj)
+		: SCUM_Timer(timeout),
+		  m_cb(cb), m_obj(obj)
+	{ }
+
+	virtual void operator () () { (m_obj->*m_cb)(this); }
+
+private:
+	Callback			m_cb;
+	T*					m_obj;
+};
+
+#endif // SCUM_TIMER_HH_INCLUDED

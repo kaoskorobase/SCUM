@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Prim.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Prim.cpp,v 1.2 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -165,6 +165,23 @@ namespace SCUM_Prim
 		return errNone;
 	}
 
+	int Window_AdvanceFocus(struct VMGlobals *g, int /* numArgsPushed */)
+	{
+		if (!g->canCallOS) return errCantCallOS;
+
+		// window, direction
+		PyrSlot* args = g->sp - 1;
+
+		SCUM_Window* window = (SCUM_Window*)SCUM_Object::getObject(args[0].uo);
+		if (!window) return errFailed;
+
+		int dir = SCUM::intValue(args+1);
+		if (dir < 0) window->tabPrevFocus();
+		else if (dir > 0) window->tabNextFocus();
+
+		return errNone;
+	}
+
 	int Menu_New(struct VMGlobals *g, int /* numArgsPushed */)
 	{
 		if (!g->canCallOS) return errCantCallOS;
@@ -222,8 +239,8 @@ namespace SCUM_Prim
 		try {
 			SCUM_Font font(SCUM::fontValue(args+0));
 			std::string str(SCUM::stringValue(args+1));
-			SCUM_Size size = font.measure(str);
-			SCUM::setSizeValue(args+2, size);
+			SCUM_TextExtents extents(font.measure(str.c_str()));
+			SCUM::setSizeValue(args+2, extents.size);
 		} catch (SCUM::Error& e) {
 			return e.code;
 		}
@@ -250,6 +267,7 @@ void SCUM_Prim::init()
 // 	definePrimitive(base, index++, "_SCUM_View_FindByID", prSCView_FindByID, 2, 0);	
 // 	definePrimitive(base, index++, "_SCUM_View_Focus", prSCView_Focus, 2, 0);	
  	definePrimitive(base, index++, "_SCUM_Window_UpdateLayout", SCUM_Prim::Window_UpdateLayout, 3, 0);
+ 	definePrimitive(base, index++, "_SCUM_Window_AdvanceFocus", SCUM_Prim::Window_AdvanceFocus, 2, 0);
 	definePrimitive(base, index++, "_SCUM_Menu_New", SCUM_Prim::Menu_New, 2, 0);
 	definePrimitive(base, index++, "_SCUM_Menu_Popup", SCUM_Prim::Menu_Popup, 3, 0);
 	definePrimitive(base, index++, "_Font_Measure", SCUM_Prim::Font_Measure, 3, 0);

@@ -18,14 +18,13 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Desktop.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Desktop.cpp,v 1.2 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #include "SCUM_Desktop.hh"
 #include "SCUM_System.hh"
-
-#include <assert.h>
+#include "SCUM_Util.hh"
 
 using namespace SCUM;
 
@@ -87,7 +86,7 @@ void SCUM_Desktop::getProperty(const PyrSymbol* key, PyrSlot* slot)
 
 void SCUM_Desktop::retain(SCUM_Object* obj)
 {
-	assert(std::find(m_resources.begin(), m_resources.end(), obj) == m_resources.end());
+	SCUM_ASSERT(std::find(m_resources.begin(), m_resources.end(), obj) == m_resources.end());
 	m_resources.push_back(obj);
 }
 
@@ -95,7 +94,7 @@ void SCUM_Desktop::release(SCUM_Object* obj)
 {
 	if (!m_resources.empty()) {
 		SCUM_ObjectIter it = find(m_resources.begin(), m_resources.end(), obj);
-		assert(it != m_resources.end());
+		SCUM_ASSERT(it != m_resources.end());
 		m_resources.erase(it);
 	}
 }

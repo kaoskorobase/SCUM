@@ -18,27 +18,24 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Graph.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Graph.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #ifndef SCUM_GRAPH_HH_INCLUDED
 #define SCUM_GRAPH_HH_INCLUDED
 
-#include "SCUM_View.hh"
+#include "SCUM_GL.hh"
 
 // =====================================================================
 // SCUM_Scope
-
-#include "SCUM_GL.hh"
-#include "SCUM_ScrollView.hh"
 
 #include <vector>
 
 #include <SC_Types.h>
 #include <SC_SndBuf.h>
 
-class SCUM_Scope : public SCUM_ScrollView
+class SCUM_Scope : public SCUM_GLView
 {
 public:
 	enum
@@ -51,11 +48,14 @@ public:
 	SCUM_Scope(SCUM_Container* parent, PyrObject* obj);
 	~SCUM_Scope();
 
-	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
+// 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
-	virtual void refresh();
+// 	virtual void refresh();
+// 	virtual void initGL();
+// 	virtual void resizeGL(int w, int h);
+// 	virtual void drawGL();
+// 	virtual void draw(const SCUM_Rect& damage);
 	virtual void initGL();
-	virtual void resizeGL(int w, int h);
 	virtual void drawGL();
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
@@ -64,8 +64,8 @@ public:
 	virtual void animate();
 
 protected:
-	virtual void boundsChanged(const SCUM_Rect& bounds);
-	void updateContentSize();
+// 	virtual void boundsChanged(const SCUM_Rect& bounds);
+// 	void updateContentSize();
 
 	void drawSeparate();
 	void drawOverlay();
@@ -73,7 +73,6 @@ protected:
 	void drawInvalid();
 
 private:
-	SCUM::GLContext*			m_context;
 	int							m_bufNum;
 	SndBuf						m_buf;
 	SCUM_Point					m_zoom;

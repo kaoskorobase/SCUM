@@ -18,20 +18,16 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.cpp,v 1.2 2004/08/04 11:48:25 steve Exp $
+	$Id: SCUM_Container.cpp,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #include "SCUM_Container.hh"
+#include "SCUM_GC.hh"
 #include "SCUM_Window.hh"
-#include "SCUM_System.hh"
-
-#include <assert.h>
-#include <vector>
-#include <iostream>
+#include "SCUM_Util.hh"
 
 #include <PyrSlot.h>
-#include <PyrKernel.h>
 
 using namespace SCUM;
 
@@ -40,25 +36,30 @@ using namespace SCUM;
 
 SCUM_Container::SCUM_Container(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
+	  m_firstChild(0), m_lastChild(0), m_numChildren(0),
 	  m_padding(0.)
 {
 }
 
 SCUM_Container::~SCUM_Container()
 {
-	ChildList l(m_children);
-	m_children.clear();
-	for (ChildIter it=l.begin(); it != l.end(); it++) {
-		delete *it;
+	m_numChildren = 0;
+	SCUM_View* child = firstChild();
+	m_firstChild = m_lastChild = 0;
+	while (child) {
+		SCUM_View* next = child->nextView();
+		delete child;
+		child = next;
 	}
 }
 
 SCUM_View* SCUM_Container::childAtPoint(const SCUM_Point& where)
 {
-	ChildRIter it = rbegin();
-	while (it != rend()) {
-		SCUM_View* hit = (*it++)->viewAtPoint(where);
+	SCUM_View* child = lastChild();
+	while (child) {
+		SCUM_View* hit = child->viewAtPoint(where);
 		if (hit) return hit;
+		child = child->prevView();
 	}
 	return 0;
 }
@@ -70,33 +71,54 @@ SCUM_View* SCUM_Container::viewAtPoint(const SCUM_Point& where)
 
 void SCUM_Container::dumpChildren()
 {
-	ChildIter it = begin();
-	ChildIter itEnd = end();
 	printf("SCUM_Container %p:\n", this);
-	while (it != itEnd) {
-		SCUM_View* view = *it++;
-		printf("    %p\n", view);
+	SCUM_View* child = firstChild();
+	while (child) {
+		printf("    %p\n", child);
+		child = child->nextView();
 	}
 }
 
-void SCUM_Container::raise(SCUM_View* view)
+void SCUM_Container::raise(SCUM_View* view, int n)
 {
-	ChildRIter it1 = std::find(rbegin(), rend(), view);
-	assert(it1 != rend());
-	ChildRIter it2 = it1 + 1;
-	if (it2 != rend()) {
-		std::iter_swap(it1, it2);
+	SCUM_ASSERT(view->parent() == this);
+
+	if (numChildren() > 1) {
+		while ((n != 0) && (view != m_firstChild)) {
+			SCUM_View* prev = view->prevView();
+			SCUM_ASSERT(prev != 0);
+			view->setPrevView(prev->prevView());
+			if (view->prevView()) view->prevView()->setNextView(view);
+			prev->setNextView(view->nextView());
+			if (prev->nextView()) prev->nextView()->setPrevView(prev);
+			view->setNextView(prev);
+			prev->setPrevView(view);
+			if (prev == m_firstChild) m_firstChild = view;
+			if (view == m_lastChild) m_lastChild = prev;
+			n--;
+		}
 		updateLayout();
 	}
 }
 
-void SCUM_Container::lower(SCUM_View* view)
+void SCUM_Container::lower(SCUM_View* view, int n)
 {
-	ChildIter it1 = std::find(begin(), end(), view);
-	assert(it1 != end());
-	ChildIter it2 = it1 + 1;
-	if (it2 != end()) {
-		std::iter_swap(it1, it2);
+	SCUM_ASSERT(view->parent() == this);
+
+	if (numChildren() > 1) {
+		while ((n != 0) && (view != m_lastChild)) {
+			SCUM_View* next = view->nextView();
+			SCUM_ASSERT(next != 0);
+			next->setPrevView(view->prevView());
+			if (next->prevView()) next->prevView()->setNextView(next);
+			view->setPrevView(next);
+			view->setNextView(next->nextView());
+			if (view->nextView()) view->nextView()->setPrevView(view);
+			next->setNextView(view);
+			if (view == m_firstChild) m_firstChild = next;
+			if (next == m_lastChild) m_lastChild = view;
+			n--;
+		}
 		updateLayout();
 	}
 }
@@ -133,20 +155,20 @@ void SCUM_Container::contextMenu(int state, const SCUM_Point& where)
 
 void SCUM_Container::draw(const SCUM_Rect& damage)
 {
-	if (isVisible() && !GCIsClipped(bounds())) {
-		SCUM_Rect myDamage(bounds() & damage);
-		drawView(myDamage);
-		drawChildren(myDamage);
-		drawDisabled(myDamage);
-		drawFocus(myDamage);
+	if (isVisible() && damage.intersects(bounds())) {
+		drawView(damage);
+		drawChildren(damage);
+		drawDisabled(damage);
 	}
 }
 
 void SCUM_Container::drawChildren(const SCUM_Rect& damage)
 {
-	ChildIter it = begin();
-	ChildIter itEnd = end();
-	while (it != itEnd) (*it++)->draw(damage);
+	SCUM_View* child = firstChild();
+	while (child) {
+		child->draw(damage);
+		child = child->nextView();
+	}
 }
 
 void SCUM_Container::setProperty(const PyrSymbol* key, PyrSlot* slot)
@@ -179,11 +201,11 @@ bool SCUM_Container::canFocus() const
 SCUM_View* SCUM_Container::nextFocus(bool canFocus, bool& foundFocus)
 {
 	canFocus = canFocus && isEnabled() && isVisible();
-	ChildIter it = begin();
-	while (it != end()) {
-		SCUM_View* child = *it++;
+	SCUM_View* child = firstChild();
+	while (child) {
 		SCUM_View* focus = child->nextFocus(canFocus, foundFocus);
 		if (focus) return focus;
+		child = child->nextView();
 	}
 	return 0;
 }
@@ -191,11 +213,11 @@ SCUM_View* SCUM_Container::nextFocus(bool canFocus, bool& foundFocus)
 SCUM_View* SCUM_Container::prevFocus(bool canFocus, bool& foundFocus)
 {
 	canFocus = canFocus && isEnabled() && isVisible();
-	ChildRIter it = rbegin();
-	while (it != rend()) {
-		SCUM_View* child = *it++;
+	SCUM_View* child = lastChild();
+	while (child) {
 		SCUM_View* focus = child->prevFocus(canFocus, foundFocus);
 		if (focus) return focus;
+		child = child->prevView();
 	}
 	return 0;
 }
@@ -210,64 +232,154 @@ void SCUM_Container::childRemoved(SCUM_View* view)
 
 void SCUM_Container::addChild(SCUM_View* view)
 {
+	SCUM_ASSERT(
+		(view != 0) && (view->parent() == 0) &&
+		(view->nextView() == 0) && (view->prevView() == 0)
+		);
 	view->m_parent = this;
 	view->m_window = window();
-	children().push_back(view);
+
+	if (m_lastChild) m_lastChild->setNextView(view);
+	view->setPrevView(m_lastChild);
+	view->setNextView(0);
+	m_lastChild = view;
+	if (!m_firstChild) m_firstChild = view;
+	m_numChildren++;
+
+#ifdef SCUM_DEBUG
+	SCUM_ASSERT(m_numChildren > 0);
+	if (m_numChildren == 1) {
+		SCUM_ASSERT(m_firstChild == m_lastChild);
+		SCUM_ASSERT(m_firstChild == view);
+	} else {
+		SCUM_ASSERT(m_firstChild != m_lastChild);
+	}
+	SCUM_ASSERT((m_firstChild->prevView() == 0) && (m_lastChild->nextView() == 0));
+#endif
+
 	childAdded(view);
 	updateLayout();
 }
 
 void SCUM_Container::removeChild(SCUM_View* view)
 {
-	if (!isEmpty()) {
-		ChildIter it = std::find(begin(), end(), view);
-		if (it != end()) {
-			view->makeFocus(false, false);
-			view->m_parent = 0;
-			view->m_window = 0;
-			children().erase(it);
-			childRemoved(view);
-			updateLayout();
-		}
+	SCUM_ASSERT(
+		(view != 0) && (view->parent() == this)
+		);
+
+#ifdef SCUM_DEBUG__
+	fprintf(stderr, "SCUM_Container::removeChild: %p %p %p\n",
+			this, view, view->parent());
+#endif
+
+	if (isEmpty()) return;
+
+	SCUM_View* prev = view->prevView();
+	SCUM_View* next = view->nextView();
+
+	if (prev) {
+		prev->setNextView(next);
+	} else {
+		SCUM_ASSERT(view == m_firstChild);
+		m_firstChild = next;
 	}
+
+	if (next) {
+		next->setPrevView(prev);
+	} else {
+		SCUM_ASSERT(view == m_lastChild);
+		m_lastChild = prev;
+	}
+
+	m_numChildren--;
+
+	view->m_window = 0;
+	view->m_parent = 0;
+	view->setPrevView(0);
+	view->setNextView(0);
+
+#ifdef SCUM_DEBUG
+	if (m_numChildren == 0) {
+		SCUM_ASSERT((m_firstChild == 0) && (m_lastChild == 0));
+	} else if (m_numChildren == 1) {
+		SCUM_ASSERT(m_firstChild == m_lastChild);
+	} else {
+		SCUM_ASSERT(m_firstChild != m_lastChild);
+	}
+	if (m_numChildren > 0) {
+		SCUM_ASSERT((m_firstChild->prevView() == 0) && (m_lastChild->nextView() == 0));
+	}
+#endif
+
+#ifdef SCUM_DEBUG
+	dumpChildren();
+#endif
+
+	childRemoved(view);
+	updateLayout();
 }
 
 // =====================================================================
 // SCUM_Bin
 
 SCUM_Bin::SCUM_Bin(SCUM_Container* parent, PyrObject* obj)
-	: SCUM_Container(parent, obj)
+	: SCUM_Container(parent, obj),
+	  m_visibleChild(0),
+	  m_border(kBorderNone)
 {
-}
-
-SCUM_Size SCUM_Bin::preferredSize()
-{
-	SCUM_Size size;
-	SCUM_View* child = firstVisibleChild();
-	if (child) {
-		size = child->updatePreferredSize().padded(padding());
-	}
-	return size;
-}
-
-void SCUM_Bin::boundsChanged(const SCUM_Rect& bounds)
-{
-	SCUM_View* child = firstVisibleChild();
-	if (child) child->setBounds(bounds.inset(padding()));
 }
 
 SCUM_View* SCUM_Bin::firstVisibleChild()
 {
-	ChildRIter it = rbegin();
-	ChildRIter itEnd = rend();
-
-	while (it != itEnd) {
-		if ((*it)->isVisible())
-			return *it;
-		it++;
+	SCUM_View* child = lastChild();
+	while (child) {
+		if (child->isVisible()) return child;
+		child = child->prevView();
 	}
-
 	return 0;
+}
+
+void SCUM_Bin::drawView(const SCUM_Rect& damage)
+{
+	SCUM_Container::drawView(damage);
+	if (m_border != kBorderNone) {
+		GCDrawBeveledRect(bounds(), 1, m_border == kBorderIn);
+	}
+}
+
+void SCUM_Bin::drawChildren(const SCUM_Rect& damage)
+{
+	if (visibleChild()) {
+		visibleChild()->draw(damage);
+	}
+}
+
+SCUM_Size SCUM_Bin::getMinSize()
+{
+	SCUM_Size size;
+	if (visibleChild()) {
+		size = visibleChild()->minSize();
+	} else {
+		size = SCUM_Container::getMinSize();
+	}
+	return size.padded(padding() + (m_border == kBorderNone ? 0.f : 1.f));
+}
+
+void SCUM_Bin::boundsChanged(const SCUM_Rect& bounds)
+{
+	if (visibleChild()) {
+		visibleChild()->setBounds(bounds.inset(padding() + (m_border == kBorderNone ? 0.f : 1.f)));
+	}
+}
+
+void SCUM_Bin::childAdded(SCUM_View* view)
+{
+	m_visibleChild = firstVisibleChild();
+}
+
+void SCUM_Bin::childRemoved(SCUM_View* view)
+{
+	m_visibleChild = firstVisibleChild();
 }
 
 // =====================================================================
@@ -315,24 +427,21 @@ SCUM_HBox::SCUM_HBox(SCUM_Container* parent, PyrObject* obj)
 {
 }
 
-SCUM_Size SCUM_HBox::preferredSize()
+SCUM_Size SCUM_HBox::getMinSize()
 {
 	const bool homogenous = isHomogenous();
-	const ChildIter itEnd = end();
 
 	SCUM_Size size;
-	ChildIter it;
 	int numVisible = 0;
 	int numExpand = 0;
 	float totalExpand = 0.f;
 
-	for (it=begin(); it != itEnd; it++) {
-		SCUM_View* child = *it;
-
+	SCUM_View* child = firstChild();
+	while (child) {
 		if (child->isVisible()) {
 			numVisible++;
 
-			SCUM_Size childSize(child->updatePreferredSize());
+			SCUM_Size childSize(child->minSize());
 
 			if (homogenous) {
 				size.w = max(size.w, childSize.w);
@@ -348,6 +457,8 @@ SCUM_Size SCUM_HBox::preferredSize()
 
 			size.h = max(size.h, childSize.h);
 		}
+
+		child = child->nextView();
 	}
 
 	flags().cHasVisible = numVisible > 0;
@@ -366,13 +477,10 @@ void SCUM_HBox::boundsChanged(const SCUM_Rect& newBounds)
 {
 	const SCUM_Rect bounds(newBounds.inset(padding()));
 	const bool homogenous = isHomogenous();
-	const ChildIter itEnd = end();
 
 	bool hasVisible = flags().cHasVisible;
 	int numExpand = m_numExpand;
 	float totalExpand = m_totalExpand;
-
-	ChildIter it;
 
 	if (hasVisible) {
 		double curExtra, uniExtra, totalExtra, expandScale;
@@ -381,19 +489,18 @@ void SCUM_HBox::boundsChanged(const SCUM_Rect& newBounds)
 			curExtra = bounds.w - (numExpand - 1) * spacing();
 			uniExtra = floor(curExtra / numExpand);
 		} else if (numExpand > 0) {
-			curExtra = totalExtra = bounds.w - layout().lastPreferredSize.w + 2. * padding().x;
+			curExtra = totalExtra = bounds.w - minSize().w + 2. * padding().x;
 			expandScale = 1. / totalExpand;
 		}
 		
 		SCUM_Point pen(bounds.x, bounds.y);
 		SCUM_Size availSize(0.0f, bounds.h);
 
-		for (it=begin(); it != itEnd; it++) {
-			SCUM_View* child = *it;
-			
+		SCUM_View* child = firstChild();
+		while (child) {
 			if (child->isVisible()) {
 				SCUM_Layout childLayout(child->layout());
-				SCUM_Size wantSize = childLayout.lastPreferredSize;
+				SCUM_Size wantSize = child->minSize();
 
 				if (homogenous) {
 					if (numExpand == 1) {
@@ -432,7 +539,7 @@ void SCUM_HBox::boundsChanged(const SCUM_Rect& newBounds)
 				
 				if ((availSize.w > wantSize.w) || (availSize.h > wantSize.h)) {
 					// need to align
-					origin = pen + availSize.layout(wantSize, childLayout.alignment);
+					origin = pen + availSize.layout(wantSize, makeAlign(childLayout.alignment));
 				} else {
 					origin = pen;
 				}
@@ -441,6 +548,8 @@ void SCUM_HBox::boundsChanged(const SCUM_Rect& newBounds)
 
 				pen.x += availSize.w + spacing();
 			}
+
+			child = child->nextView();
 		}
 	}
 }
@@ -453,24 +562,21 @@ SCUM_VBox::SCUM_VBox(SCUM_Container* parent, PyrObject* obj)
 {
 }
 
-SCUM_Size SCUM_VBox::preferredSize()
+SCUM_Size SCUM_VBox::getMinSize()
 {
 	const bool homogenous = isHomogenous();
-	const ChildIter itEnd = end();
 
 	SCUM_Size size;
-	ChildIter it;
 	int numVisible = 0;
 	int numExpand = 0;
 	float totalExpand = 0.f;
 
-	for (ChildIter it=begin(); it != itEnd; it++) {
-		SCUM_View* child = *it;
-
+	SCUM_View* child = firstChild();
+	while (child) {
 		if (child->isVisible()) {
 			numVisible++;
 
-			SCUM_Size childSize(child->updatePreferredSize());
+			SCUM_Size childSize(child->minSize());
 
 			if (homogenous) {
 				size.h = max(size.h, childSize.h);
@@ -486,6 +592,8 @@ SCUM_Size SCUM_VBox::preferredSize()
 
 			size.w = max(size.w, childSize.w);
 		}
+		
+		child = child->nextView();
 	}
 
 	flags().cHasVisible = numVisible > 0;
@@ -504,13 +612,10 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 {
 	const SCUM_Rect bounds(newBounds.inset(padding()));
 	const bool homogenous = isHomogenous();
-	const ChildIter itEnd = end();
 
 	bool hasVisible = flags().cHasVisible;
 	int numExpand = m_numExpand;
 	float totalExpand = m_totalExpand;
-
-	ChildIter it;
 
 	if (hasVisible) {
 		double curExtra, uniExtra, totalExtra, expandScale;
@@ -519,19 +624,18 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 			curExtra = bounds.h - (numExpand - 1) * spacing();
 			uniExtra = floor(curExtra / numExpand);
 		} else if (numExpand > 0) {
-			curExtra = totalExtra = bounds.h - layout().lastPreferredSize.h + 2. * padding().y;
+			curExtra = totalExtra = bounds.h - minSize().h + 2. * padding().y;
 			expandScale = 1. / totalExpand;
 		}
 
 		SCUM_Point pen(bounds.x, bounds.y);
 		SCUM_Size availSize(bounds.w, 0.0f);
 
-		for (it=begin(); it != itEnd; it++) {
-			SCUM_View* child = *it;
-			
+		SCUM_View* child = firstChild();
+		while (child) {
 			if (child->isVisible()) {
 				SCUM_Layout childLayout(child->layout());
-				SCUM_Size wantSize = childLayout.lastPreferredSize;
+				SCUM_Size wantSize = child->minSize();
 
 				if (homogenous) {
 					if (numExpand == 1) {
@@ -570,7 +674,7 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 
 				if ((availSize.w > wantSize.w) || (availSize.h > wantSize.h)) {
 					// need to align
-					origin = pen + availSize.layout(wantSize, childLayout.alignment);
+					origin = pen + availSize.layout(wantSize, makeAlign(childLayout.alignment));
 				} else {
 					origin = pen;
 				}
@@ -579,6 +683,8 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 
 				pen.y += availSize.h + spacing();
 			}
+
+			child = child->nextView();
 		}
 	}
 }
@@ -586,25 +692,11 @@ void SCUM_VBox::boundsChanged(const SCUM_Rect& newBounds)
 // =====================================================================
 // SCUM_Grid
 
-SCUM_Grid::Info::Info()
-	: preferredSize(0.f),
-	  size(0.f),
-	  expand(0.f),
-	  visible(false)
-{ }
-
-SCUM_Grid::Info::Info(const SCUM_Grid::Info& info)
-	: preferredSize(info.preferredSize),
-	  size(info.size),
-	  expand(info.expand),
-	  visible(info.visible)
-{ }
-
 SCUM_Grid::SCUM_Grid(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_Container(parent, obj),
-	  m_wrap(2),
-	  m_cols(0), m_rows(0),
-	  m_rowInfo(0), m_colInfo(0),
+// 	  m_wrap(1),
+	  m_numRows(0), m_numCols(0),
+	  m_grid(0), m_rowInfo(0), m_colInfo(0),
 	  m_colsExpand(0), m_rowsExpand(0)
 {
 	flags().cHomogenous = false;
@@ -613,8 +705,9 @@ SCUM_Grid::SCUM_Grid(SCUM_Container* parent, PyrObject* obj)
 
 SCUM_Grid::~SCUM_Grid()
 {
-	delete [] m_rowInfo;
-	delete [] m_colInfo;
+	free(m_grid);
+	free(m_rowInfo);
+	free(m_colInfo);
 }
 
 void SCUM_Grid::setProperty(const PyrSymbol* key, PyrSlot* slot)
@@ -628,9 +721,15 @@ void SCUM_Grid::setProperty(const PyrSymbol* key, PyrSlot* slot)
 	} else if (equal(key, "ySpacing")) {
 		m_spacing.y = max(0., floatValue(slot));
 		updateLayout();
-	} else if (equal(key, "wrap")) {
-		m_wrap = (size_t)max(2, intValue(slot));
+	} else if (equal(key, "dimensions")) {
+		SCUM_Size size = sizeValue(slot);
+		m_numRows = max(0, (int)size.h);
+		m_numCols = max(0, (int)size.w);
+		dimensionsChanged();
 		updateLayout();
+// 	} else if (equal(key, "wrap")) {
+// 		m_wrap = (uint16_t)max(1, intValue(slot));
+// 		updateGrid(true);
 	} else {
 		SCUM_Container::setProperty(key, slot);
 	}
@@ -642,18 +741,20 @@ void SCUM_Grid::getProperty(const PyrSymbol* key, PyrSlot* slot)
 		setBoolValue(slot, isHomogenous());
 	} else if (equal(key, "spacing")) {
 		setPointValue(slot, m_spacing);
-	} else if (equal(key, "wrap")) {
-		setIntValue(slot, m_wrap);
+	} else if (equal(key, "dimensions")) {
+		setSizeValue(slot, SCUM_Size(numCols(), numRows()));
+// 	} else if (equal(key, "wrap")) {
+// 		setIntValue(slot, m_wrap);
 	} else {
 		SCUM_Container::getProperty(key, slot);
 	}
 }
 
-SCUM_Size SCUM_Grid::preferredSize()
+SCUM_Size SCUM_Grid::getMinSize()
 {
 	const bool homogenous = isHomogenous();
-	const size_t nr = rows();
-	const size_t nc = cols();
+	const size_t nr = numRows();
+	const size_t nc = numCols();
 	size_t r, c;
 
 	size_t rowsVisible = 0;
@@ -672,10 +773,12 @@ SCUM_Size SCUM_Grid::preferredSize()
 
 		for (c=0; c < nc; c++) {
 			SCUM_View* child = childAt(r, c);
+			if (child == 0) break;
+
 			if (child->isVisible()) {
 				info->visible = true;
 				info->preferredSize
-					= max(info->preferredSize, child->updatePreferredSize().h);
+					= max(info->preferredSize, child->minSize().h);
 				info->expand = homogenous ? 1.f : max(info->expand, child->layout().expand.y);
 			}
 		}
@@ -698,10 +801,12 @@ SCUM_Size SCUM_Grid::preferredSize()
 
 		for (r=0; r < nr; r++) {
 			SCUM_View* child = childAt(r, c);
+			if (child == 0) break;
+
 			if (child->isVisible()) {
 				info->visible = true;
 				info->preferredSize
-					= max(info->preferredSize, child->layout().lastPreferredSize.w);
+					= max(info->preferredSize, child->minSize().w);
 				info->expand = homogenous ? 1.f : max(info->expand, child->layout().expand.x);
 			}
 		}
@@ -741,8 +846,8 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 	if (flags().cHasVisible) {
 		const SCUM_Rect bounds(newBounds.inset(padding()));
 		const bool homogenous = isHomogenous();
-		const size_t nc = cols();
-		const size_t nr = rows();
+		const size_t nr = numRows();
+		const size_t nc = numCols();
 
 		size_t numExpand, c, r;
 		double curExtra, uniExtra, totalExtra, expandScale;
@@ -754,7 +859,7 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 			curExtra = bounds.w - (numExpand - 1) * m_spacing.x;
 			uniExtra = floor(curExtra / numExpand);
 		} else {
-			curExtra = totalExtra = bounds.w - layout().lastPreferredSize.w + 2. * padding().x;
+			curExtra = totalExtra = bounds.w - minSize().w + 2. * padding().x;
 			expandScale = 1. / m_totalExpand.x;
 		}
 
@@ -794,7 +899,7 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 			curExtra = bounds.h - (numExpand - 1) * m_spacing.y;
 			uniExtra = floor(curExtra / numExpand);
 		} else {
-			curExtra = totalExtra = bounds.h - layout().lastPreferredSize.h + 2. * padding().y;
+			curExtra = totalExtra = bounds.h - minSize().h + 2. * padding().y;
 			expandScale = 1. / m_totalExpand.y;
 		}
 
@@ -835,11 +940,13 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 
 			for (r=0; r < nr; r++) {
 				SCUM_View* child = childAt(r, c);
+				if (child == 0) break;
+
 				SCUM_Layout childLayout(child->layout());
 				Info* rowInfo = m_rowInfo + r;
 
 				SCUM_Size availSize(colInfo->size, rowInfo->size);
-				SCUM_Size wantSize = childLayout.lastPreferredSize;
+				SCUM_Size wantSize = child->minSize();
 
 				// fill packing space
 				if (childLayout.fill.x > 0.f) {
@@ -855,7 +962,7 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 				
 				if ((availSize.w > wantSize.w) || (availSize.h > wantSize.h)) {
 					// need to align
-					origin = pen + availSize.layout(wantSize, childLayout.alignment);
+					origin = pen + availSize.layout(wantSize, makeAlign(childLayout.alignment));
 				} else {
 					origin = pen;
 				}
@@ -873,33 +980,48 @@ void SCUM_Grid::boundsChanged(const SCUM_Rect& newBounds)
 
 void SCUM_Grid::childAdded(SCUM_View*)
 {
-	updateDimensions();
+	updateGrid();
 }
 
 void SCUM_Grid::childRemoved(SCUM_View*)
 {
-	updateDimensions();
+	updateGrid();
 }
 
-void SCUM_Grid::updateDimensions()
+void SCUM_Grid::dimensionsChanged()
 {
-	size_t rows = 0;
-	size_t cols = 0;
+	const size_t rows = numRows();
+	const size_t cols = numCols();
+	const size_t gridSize = rows * cols;
+	size_t bytes;
 
-	getDimensions(rows, cols);
+	bytes = sizeof(SCUM_View*) * gridSize;
+	m_grid = (SCUM_View**)realloc(m_grid, bytes);
+	updateGrid();
 
-	if (rows != m_rows) {
-		Info* info = new Info[rows];
-		delete [] m_rowInfo;
-		m_rowInfo = info;
-		m_rows = rows;
-	}
+	bytes = sizeof(Info) * rows;
+	m_rowInfo = (Info*)realloc(m_rowInfo, bytes);
+	memset(m_rowInfo, 0, bytes);
+	
+	bytes = sizeof(Info) * cols;
+	m_colInfo = (Info*)realloc(m_colInfo, bytes);
+	memset(m_colInfo, 0, bytes);
+}
 
-	if (cols != m_cols) {
-		Info* info = new Info[cols];
-		delete [] m_colInfo;
-		m_colInfo = info;
-		m_cols = cols;
+void SCUM_Grid::updateGrid()
+{
+	const size_t rows = numRows();
+	const size_t cols = numCols();
+
+	memset(m_grid, 0, sizeof(SCUM_View*) * rows * cols);
+
+	SCUM_View* child = firstChild();
+	for (size_t r=0; r < rows; r++) {
+		for (size_t c=0; c < cols; c++) {
+			if (child == 0) return;
+			childPut(r, c, child);
+			child = child->nextView();
+		}
 	}
 }
 
@@ -910,22 +1032,9 @@ SCUM_HGrid::SCUM_HGrid(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_Grid(parent, obj)
 { }
 
-void SCUM_HGrid::getDimensions(size_t& rows, size_t& cols)
+size_t SCUM_HGrid::childIndex(size_t row, size_t col)
 {
-	const size_t n = children().size();
-	const size_t w = wrap();
-
-	if (n < w) {
-		rows = cols = 0;
-	} else {
-		cols = w;
-		rows = n / cols;
-	}
-}
-
-SCUM_View* SCUM_HGrid::childAt(size_t row, size_t col)
-{
-	return children()[row*cols()+col];
+	return row * numCols() + col;
 }
 
 // =====================================================================
@@ -935,22 +1044,114 @@ SCUM_VGrid::SCUM_VGrid(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_Grid(parent, obj)
 { }
 
-void SCUM_VGrid::getDimensions(size_t& rows, size_t& cols)
+size_t SCUM_VGrid::childIndex(size_t row, size_t col)
 {
-	const size_t n = children().size();
-	const size_t w = wrap();
+	return col * numRows() + row;
+}
 
-	if (n < w) {
-		rows = cols = 0;
+// =====================================================================
+// SCUM_Place
+
+#if 0
+
+SCUM_Place::SCUM_Place(SCUM_Container* parent, PyrObject* obj)
+	: SCUM_Container(parent, obj),
+	  m_adapt(false)
+{ }
+
+SCUM_Size SCUM_Place::preferredSize()
+{
+	if (m_adapt) {
+		SCUM_Rect bounds;
+
+		
 	} else {
-		rows = w;
-		cols = n / rows;
+		return SCUM_Container::preferredSize();
 	}
 }
 
-SCUM_View* SCUM_VGrid::childAt(size_t row, size_t col)
+void SCUM_Place::boundsChanged(const SCUM_Rect& bounds)
 {
-	return children()[col*rows()+row];
 }
+
+// =====================================================================
+// SCUM_Scroll
+
+SCUM_Scroll::SCUM_Scroll(SCUM_Container* parent, PyrObject* obj)
+	: SCUM_Bin(parent, obj)
+{ }
+
+SCUM_Size SCUM_Scroll::preferredSize()
+{
+	if (m_current) m_current->updatePreferredSize();
+	return layout().minSize + padding() + m_thumbSize;
+}
+
+void SCUM_Scroll::boundsChanged(const SCUM_Rect& bounds)
+{
+	m_viewportBounds = bounds().inset(padding() + m_thumbSize);
+	if (m_current) {
+		m_current->setBounds(
+			SCUM_Rect(m_viewportBounds.origin(), m_current->layout().lastPreferredSize)
+			);
+		m_current->setScrollOffset(m_scroll);
+	}
+}
+
+void SCUM_Scroll::setScrollOffset(const SCUM_Point& scroll)
+{
+	if (scroll != m_scroll) {
+		m_scroll = scroll;
+		if (m_current) m_current->setScrollOffset(m_scroll);
+		refresh();
+	}
+}
+
+void SCUM_Scroll::drawView(const SCUM_Rect& damage)
+{
+	// draw scrollbars
+	GCSave();
+	GCSetColor(bgColor());
+	GCFillRect(bounds());
+	GCDrawBeveledRect(m_hThumbBounds, 1, true);
+	GCDrawBeveledRect(m_vThumbBounds, 1, true);
+	GCRestore();
+}
+
+void SCUM_Scroll::drawChildren(const SCUM_Rect& damage)
+{
+	if (m_current) {
+		GCSave();
+		GCClip(m_viewPortBounds);
+		m_current->draw(damage);
+		GCRestore();
+	}
+}
+
+SCUM_View* SCUM_Scroll::viewAtPoint(const SCUM_Point& where)
+{
+	return m_current ? m_current->viewAtPoint(where) : 0;
+}
+
+bool SCUM_Scroll::mouseDown(int state, const SCUM_Point& where)
+{
+	if (m_viewportBounds.contains(where)) {
+		SCUM_Bin::mouseDown(state, where);
+	} else if (m_hThumbBounds.contains(where)) {
+	} else if (m_vThumbBounds.contains(where)) {
+	} else {
+	}
+}
+
+void SCUM_Scroll::updateLayout()
+{
+	if (m_current) {
+		SCUM_Size csize(m_current->updatePreferredSize());
+		// recompute scroll ratio
+		size().w / csize.w;
+		size().h / csize.h;
+	}
+}
+#endif // 0
 
 // EOF

@@ -18,31 +18,53 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
+	$Id: SCUM_Invocation.hh,v 1.1 2004/08/15 14:42:24 steve Exp $
 */
 
 
-#ifndef SCUM_SYSTEM_HH_INCLUDED
-#define SCUM_SYSTEM_HH_INCLUDED
+#ifndef SCUM_INVOCATION_HH_INCLUDED
+#define SCUM_INVOCATION_HH_INCLUDED
 
-#include "SCUM_Geometry.hh"
-#include "SCUM_Timer.hh"
+#include <list>
 
-namespace SCUM
+class SCUM_Invocation
 {
-	enum ModMask
-	{
-		kModMaskShift	= (1 << 0),
-		kModMaskControl	= (1 << 1),
-		kModMaskCommand	= (1 << 2),
-		kModMaskKeypad	= (1 << 3)
-	};
+	friend class SCUM_InvocationManager;
 
-	SCUM_Size screenSize();
-	double time();
+public:
+	typedef void (*Callback)(SCUM_Invocation* self);
 
-	// actions
-	void addTimer(SCUM_Timer* timer);
+	SCUM_Invocation(Callback cb, void* obj)
+		: m_cb(cb), m_obj(obj)
+	{ }
+
+	void* obj() { return m_obj; }
+	void defer();
+
+private:
+	void invoke();
+
+private:
+	void*		m_obj;
+	Callback	m_cb;
 };
 
-#endif // SCUM_SYSTEM_HH_INCLUDED
+class SCUM_InvocationManager
+{
+	typedef std::list<SCUM_Invocation*> Queue;
+
+public:
+	static SCUM_InvocationManager& instance();
+
+	void add(SCUM_Invocation* inv);
+	void remove(SCUM_Invocation::Callback cb, void* obj);
+
+private:
+	static void workCB(void* arg);
+	void work();
+
+private:
+	Queue m_queue;
+};
+
+#endif // SCUM_INVOCATION_HH_INCLUDED

@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Lang.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Lang.hh,v 1.2 2004/08/15 14:42:24 steve Exp $
 */
 
 
@@ -39,6 +39,8 @@ struct PyrObject;
 struct PyrSymbol;
 typedef union pyrslot PyrSlot;
 
+extern "C" PyrSymbol* getsym(const char*);
+
 class SCUM_Object
 {
 public:
@@ -49,7 +51,6 @@ public:
 	SC_LanguageClient* lang() { return SC_LanguageClient::instance(); }
 	PyrObject* pyrObj() { return m_pyrObj; }
 	void setPyrObj(PyrObject* obj);
-	void sendMessage(PyrSymbol* method, size_t argc, PyrSlot* argv, PyrSlot* result=0);
 
 	// property access
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
@@ -58,8 +59,21 @@ public:
 	static SCUM_Object* getObject(PyrObject* pyrObj);
 	static SCUM_Object* getObject(PyrSlot* slot);
 
+	template <class T> static T* getObject(PyrObject* obj)
+	{
+		return dynamic_cast<T*>(getObject(obj));
+	}
+	template <class T> static T* getObject(PyrSlot* slot)
+	{
+		return dynamic_cast<T*>(getObject(slot));
+	}
+
 protected:
 	virtual void pyrObjChanged(PyrObject* oldObj);
+	void sendMessage(PyrSymbol* method, size_t argc, PyrSlot* argv, PyrSlot* result=0);
+	void sendMessage(const char* method, size_t argc, PyrSlot* argv, PyrSlot* result=0);
+	void changed(PyrSymbol* what);
+	void changed(const char* what);
 
 private:
 	PyrObject* m_pyrObj;
@@ -97,6 +111,8 @@ namespace SCUM
 	int intValue(PyrSlot* slot);
 	bool boolValue(PyrSlot* slot);
 	char charValue(PyrSlot* slot);
+	PyrSymbol* symbolValue(PyrSlot* slot);
+	const char* stringValue(PyrSlot* slot, size_t& outSize);
 	std::string stringValue(PyrSlot* slot);
 	void stringValues(PyrSlot* slot, std::vector<std::string>& array);
 	SCUM_Point pointValue(PyrSlot* slot);
@@ -104,6 +120,7 @@ namespace SCUM
 	SCUM_Rect rectValue(PyrSlot* slot);
 	SCUM_Color colorValue(PyrSlot* slot);
 	SCUM_Font fontValue(PyrSlot* slot);
+	Border borderValue(PyrSlot* slot);
 
 	void setNilValue(PyrSlot* slot);
 	void setFloatValue(PyrSlot* slot, double v);
@@ -113,6 +130,21 @@ namespace SCUM
 	void setSizeValue(PyrSlot* slot, const SCUM_Size& v);
 	void setRectValue(PyrSlot* slot, const SCUM_Rect& v);
 	void setColorValue(PyrSlot* slot, const SCUM_Color& v);
+	void setBorderValue(PyrSlot* slot, Border v);
+
+	class PyrIterator
+	{
+	public:
+		PyrIterator(PyrSlot* slot);
+
+		bool atEnd() const;
+		size_t remain() const;
+		PyrSlot* next();
+
+	private:
+		PyrSlot*		m_ptr;
+		PyrSlot*		m_end;
+	};
 };
 
 #endif // SCUM_LANG_HH_INCLUDED

@@ -18,13 +18,14 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Menu.hh,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
 #ifndef SCUM_MENU_HH_INCLUDED
 #define SCUM_MENU_HH_INCLUDED
 
+#include "SCUM_Handle.hh"
 #include "SCUM_Lang.hh"
 
 #include <string>
@@ -72,7 +73,7 @@ namespace SCUM
 		MenuClose		= '<'
 	};
 
-	class MenuHandle
+	class MenuHandle : public SCUM_Handle
 	{
 	public:
 		static MenuHandle* create(const std::vector<SCUM_MenuItem>& items);

@@ -18,16 +18,15 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_Menu.cpp,v 1.3 2004/08/15 14:42:24 steve Exp $
 */
 
 
 #include "SCUM_Menu.hh"
 #include "SCUM_Desktop.hh"
 #include "SCUM_Symbol.hh"
+#include "SCUM_Util.hh"
 #include "SCUM_View.hh"
-
-#include <assert.h>
 
 #include <PyrKernel.h>
 #include <PyrObject.h>
@@ -73,14 +72,14 @@ SCUM_Menu::SCUM_Menu(PyrObject* obj, const SCUM_MenuItems& items)
 	  m_item(-1)
 {
 	m_handle = SCUM::MenuHandle::create(items);
-	assert(m_handle != 0);
+	SCUM_ASSERT(m_handle != 0);
 	SCUM_Desktop::instance().retain(this);
 }
 
 SCUM_Menu::~SCUM_Menu()
 {
 	SCUM_Desktop::instance().release(this);
-	delete m_handle;
+	m_handle->release();
 }
 
 bool SCUM_Menu::value(int item) const

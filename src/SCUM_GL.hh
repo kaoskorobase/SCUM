@@ -18,58 +18,42 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_GL.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
+	$Id: SCUM_GL.hh,v 1.3 2004/08/15 14:42:23 steve Exp $
 */
 
 
 #ifndef SCUM_GL_HH_INCLUDED
 #define SCUM_GL_HH_INCLUDED
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include "SCUM_Color.hh"
 #include "SCUM_Geometry.hh"
 #include "SCUM_View.hh"
-#include "SCUM_Window.hh"
+
+#include <FL/Fl_Gl_Window.H>
+#include <FL/gl.h>
+#include <GL/glu.h>
 
 // =====================================================================
-// SCUM::GLContext
+// SCUM_GLContext
 
 class SCUM_GLView;
 
-// class SCUM_GLContext
-// {
-// public:
-// 	SCUM_GLContext(SCUM_View* view);
-// 	virtual ~SCUM_GLContext();
-
-// 	SCUM_View* view() { return m_view; }
-
-// 	virtual SCUM_Rect bounds() = 0;
-// 	virtual void setBounds(const SCUM_Rect& bounds) = 0;
-// 	virtual void refresh() = 0;
-
-// private:
-// 	SCUM_View*	m_view;
-// };
-
-namespace SCUM
+class SCUM_GLContext : public Fl_Gl_Window
 {
-// 	SCUM_GLContext* makeGLContext(SCUM_WindowHandle* window, SCUM_View* view);
-// 	SCUM_GLContext* makeGLContext(SCUM_View* view);
+public:
+	SCUM_GLContext(SCUM_GLView* view);
+	virtual ~SCUM_GLContext();
 
-	class GLContext
-	{
-	public:
-		static GLContext* create(SCUM::WindowHandle* window, SCUM_View* view);
-		static GLContext* create(SCUM_View* view);
+	inline SCUM_Rect bounds() const;
+	inline void setBounds(const SCUM_Rect& bounds);
+	void refresh();
 
-		virtual SCUM_Rect bounds() = 0;
-		virtual void setBounds(const SCUM_Rect& bounds) = 0;
-		virtual void refresh() = 0;
-// 		virtual void drawText(FontHandle* font, const char* str) = 0;
-	}; // GLContext
+protected:
+	virtual int handle(int);
+	virtual void draw();
+
+private:
+	SCUM_GLView*		m_view;
 };
 
 // =====================================================================
@@ -77,18 +61,82 @@ namespace SCUM
 
 class SCUM_GLView : public SCUM_View
 {
+	friend class SCUM_GLContext;
+
 public:
 	SCUM_GLView(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_GLView();
 
-	void refreshGL();
-	
+	virtual void refresh(const SCUM_Rect& damage);
+	virtual void refresh();
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void setBounds(const SCUM_Rect& bounds);
+	virtual SCUM_Size getMinSize();
+
+	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+
+	virtual void initGL();
+	virtual void drawGL();
+
+	inline SCUM_GLContext* context();
+
+	inline SCUM_Point padding() const;
+	inline void setPadding(const SCUM_Point& padding);
+
+	inline SCUM::Border border() const;
+	inline void setBorder(SCUM::Border border);
+
 protected:
-	SCUM::GLContext* context() { return m_context; }
+	void releaseContext() { m_context = 0; }
 
 private:
-	SCUM::GLContext*	m_context;
+	SCUM_GLContext*		m_context;
+	SCUM_Point			m_padding;
+	uint8_t				m_border;
 };
+
+// =====================================================================
+// SCUM_GLContext (inline functions)
+
+inline SCUM_Rect SCUM_GLContext::bounds() const
+{
+	return SCUM_Rect(x(), y(), w(), h());
+}
+
+inline void SCUM_GLContext::setBounds(const SCUM_Rect& bounds)
+{
+	resize(bounds.xi(), bounds.yi(), bounds.wi(), bounds.hi());
+}
+
+// =====================================================================
+// SCUM_GLView (inline functions)
+
+inline SCUM_GLContext* SCUM_GLView::context()
+{
+	return m_context;
+}
+
+inline SCUM_Point SCUM_GLView::padding() const
+{
+	return m_padding;
+}
+
+inline void SCUM_GLView::setPadding(const SCUM_Point& padding)
+{
+	m_padding = padding;
+	updateLayout();
+}
+
+inline SCUM::Border SCUM_GLView::border() const
+{
+	return (SCUM::Border)m_border;
+}
+
+inline void SCUM_GLView::setBorder(SCUM::Border border)
+{
+	m_border = border;
+	updateLayout();
+}
 
 // =====================================================================
 // Util
@@ -114,26 +162,6 @@ namespace SCUM
 	{
 		::glRectf(r.minX(), r.minY(), r.maxX(), r.maxY());
 	}
-
-// inline void glStrokeRect(const SCUM_Rect& r)
-// {
-// 	GLfloat lw;
-// 	glGetFloatv(GL_LINE_WIDTH, &lw);
-// 	glRectf(r.origin.x, r.origin.y, r.extent.x, r.origin.y+lw);   // s
-// 	glRectf(r.origin.x, r.origin.y + lw, r.origin.x + lw, r.extent.y - lw); // w
-// 	glRectf(r.extent.x - lw, r.origin.y + lw, r.extent.x, r.extent.y - lw); // e
-// 	glRectf(r.origin.x, r.extent.y - lw, r.extent.x, r.extent.y); // n
-// }
-
-// inline void glLineLoop(const SCUM_Rect& r)
-// {
-// 	glBegin(GL_LINE_LOOP);
-// 	glVertex2f(r.origin.x, r.origin.y);
-// 	glVertex2f(r.extent.x, r.origin.y);
-// 	glVertex2f(r.extent.x, r.extent.y);
-// 	glVertex2f(r.origin.x, r.extent.y);
-// 	glEnd();
-// }
 
 	inline static void glTranslate(const SCUM_Point& p)
 	{
