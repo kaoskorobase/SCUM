@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Container.hh,v 1.2 2004/08/04 11:48:25 steve Exp $
 */
 
 
@@ -48,6 +48,7 @@ public:
 	size_t numChildren() const { return m_children.size(); }
 	bool isEmpty() const { return m_children.empty(); }
 	SCUM_View* childAtPoint(const SCUM_Point& where);
+	virtual SCUM_View* viewAtPoint(const SCUM_Point& where);
 	void dumpChildren();
 
 	void raise(SCUM_View* view);
@@ -57,8 +58,8 @@ public:
 	virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
 	virtual void contextMenu(int state, const SCUM_Point& where);
 
-	virtual void draw();
-	virtual void drawChildren();
+	virtual void draw(const SCUM_Rect& damage);
+	virtual void drawChildren(const SCUM_Rect& damage);
 
 	virtual bool canFocus() const;
 
@@ -79,8 +80,6 @@ protected:
 
 	SCUM_View* nextFocus(bool canFocus, bool& foundFocus);
 	SCUM_View* prevFocus(bool canFocus, bool& foundFocus);
-
-	void drawChildren(const SCUM_Rect& clip);
 
 	virtual void childAdded(SCUM_View* view);
 	virtual void childRemoved(SCUM_View* view);

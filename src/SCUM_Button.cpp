@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Button.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Button.cpp,v 1.2 2004/08/04 11:48:25 steve Exp $
 */
 
 
@@ -45,19 +45,19 @@ SCUM_Toggle::SCUM_Toggle(SCUM_Container* parent, PyrObject* obj)
 	layout().minSize = SCUM_Size(15, 15);
 }
 
-void SCUM_Toggle::drawView()
+void SCUM_Toggle::drawView(const SCUM_Rect& damage)
 {
-	saveGCState();
+	GCSave();
 	if (m_pushed) {
-		setColor(fgColor());
-		fillRect(bounds());
-		drawBeveledRect(bounds(), 1, true);
+		GCSetColor(fgColor());
+		GCFillRect(damage);
+		GCDrawBeveledRect(bounds(), 1, true);
 	} else {
-		setColor(bgColor());
-		fillRect(bounds());
-		drawBeveledRect(bounds(), 1, false);
+		GCSetColor(bgColor());
+		GCFillRect(damage);
+		GCDrawBeveledRect(bounds(), 1, false);
 	}
-	restoreGCState();
+	GCRestore();
 // 	if (m_value) {
 // 		float x1 = bounds().minX();
 // 		float y1 = bounds().minY();
@@ -138,20 +138,20 @@ SCUM_Bang::SCUM_Bang(SCUM_Container* parent, PyrObject* obj)
 	startAnimation();
 }
 
-void SCUM_Bang::drawView()
+void SCUM_Bang::drawView(const SCUM_Rect& damage)
 {
-	saveGCState();
-	setColor(bgColor());
-	fillRect(bounds());
-	drawBeveledRect(bounds(), 1, false);
+	GCSave();
+	GCSetColor(bgColor());
+	GCFillRect(damage);
+	GCDrawBeveledRect(bounds(), 1, false);
 	SCUM_Rect r(bounds().inset(2));
-	setColor(fgColor());
-	drawArc(r, 0, 360);
+	GCSetColor(fgColor());
+	GCDrawArc(r, 0, 360);
 	if (m_active) {
-		setColor(fgColor());
-		fillArc(r, 0, 360);
+		GCSetColor(fgColor());
+		GCFillArc(r, 0, 360);
 	}
-	restoreGCState();
+	GCRestore();
 }
 
 bool SCUM_Bang::mouseDown(int, const SCUM_Point&)
@@ -212,44 +212,42 @@ void SCUM_Bang::bang(bool send)
 SCUM_Button::SCUM_Button(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
 	  m_padding(SCUM_Point(2, 2)),
-	  m_textAlign(AlignC),
+	  m_textAlign(kAlignC),
 	  m_value(0),
 	  m_pushed(false)
 {
 	m_font = desktop()->font();
 }
 
-void SCUM_Button::drawView()
+void SCUM_Button::drawView(const SCUM_Rect& damage)
 {
-	SCUM_Rect r(bounds());
-
-	saveGCState();
+	GCSave();
 
 	if (m_states.empty()) {
-		setColor(bgColor());
-		fillRect(r);
-		drawBeveledRect(r, 1, m_pushed);
+		GCSetColor(bgColor());
+		GCFillRect(damage);
+		GCDrawBeveledRect(bounds(), 1, m_pushed);
 	} else {
 		State& state = m_states[m_value];
 		if (state.bgColor.isTransparent())
-			setColor(bgColor());
+			GCSetColor(bgColor());
 		else
-			setColor(state.bgColor);
-		fillRect(r);
-		drawBeveledRect(r, 1, m_pushed);
+			GCSetColor(state.bgColor);
+		GCFillRect(damage);
+		GCDrawBeveledRect(bounds(), 1, m_pushed);
 		if (!state.text.empty()) {
 			if (state.fgColor.isTransparent())
-				setColor(fgColor());
+				GCSetColor(fgColor());
 			else
-				setColor(state.fgColor);
-			m_font.draw(r.inset(m_padding), state.text, m_textAlign);
+				GCSetColor(state.fgColor);
+			m_font.draw(bounds().inset(m_padding), state.text, m_textAlign);
 		}
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
-void SCUM_Button::drawFocus()
+void SCUM_Button::drawFocus(const SCUM_Rect& damage)
 {
 	SCUM_View::drawFocus(bounds().inset(1));
 }
@@ -363,7 +361,7 @@ static const SCUM_Size kIndicatorPadding(6, 4);
 SCUM_Choice::SCUM_Choice(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
 	  m_padding(SCUM_Point(2, 2)),
-	  m_textAlign(AlignC),
+	  m_textAlign(kAlignC),
 	  m_value(0),
 	  m_menu(0)
 {
@@ -375,15 +373,15 @@ SCUM_Choice::~SCUM_Choice()
 	delete m_menu;
 }
 
-void SCUM_Choice::drawView()
+void SCUM_Choice::drawView(const SCUM_Rect& damage)
 {
 	SCUM_Rect r(bounds());
 
-	saveGCState();
+	GCSave();
 
-	setColor(bgColor());
-	fillRect(r);
-	drawBeveledRect(r, 1, false);
+	GCSetColor(bgColor());
+	GCFillRect(damage);
+	GCDrawBeveledRect(r, 1, false);
 
 	// draw triangular indicator
 	SCUM_Point p1(r.x + r.w - kIndicatorSize.w - kIndicatorPadding.w,
@@ -392,15 +390,15 @@ void SCUM_Choice::drawView()
 	SCUM_Point p3(p1.x + floorf(.5f * kIndicatorSize.w),
 				  p1.y + kIndicatorSize.h);
 	
-	setColor(fgColor());
-	drawPolygon(p1, p2, p3);
+	GCSetColor(fgColor());
+	GCDrawPolygon(p1, p2, p3);
 	
 	if (!m_states.empty()) {
 		r.w -= kIndicatorSize.w;
 		m_font.draw(r.inset(m_padding), m_states[m_value], m_textAlign);
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
 bool SCUM_Choice::mouseDown(int state, const SCUM_Point& where)

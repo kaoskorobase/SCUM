@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Window.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Window.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -29,62 +29,54 @@
 #include <list>
 #include <vector>
 
-class SCUM_WindowHandle;
 class SCUM_Window;
 
 namespace SCUM
 {
-	SCUM_WindowHandle* makeWindowHandle(SCUM_Window* view);
-};
+	// =====================================================================
+	// SCUM_WindowHandle -- system window interface
 
-// =====================================================================
-// SCUM_WindowHandle -- system window interface
+	class WindowHandle
+	{
+	public:
+		struct Flags
+		{
+			unsigned	shown : 1;
+			unsigned	visible : 1;
+			unsigned	focused : 1;
+			unsigned	decorated : 1;
+			unsigned	modal : 1;
+			unsigned	fullscreen : 1;
+		};
 
-class SCUM_WindowHandle
-{
-public:
-	SCUM_WindowHandle(SCUM_Window* view);
-	virtual ~SCUM_WindowHandle();
+		static WindowHandle* create(SCUM_Window* view);
 
-	SCUM_Window* view() { return m_view; }
-	void destroyView();
+		// return bounds in screen coordinates
+		virtual SCUM_Rect bounds() = 0;
 
-	// return bounds in screen coordinates
-	virtual SCUM_Rect bounds() = 0;
-	// return state flags
-	virtual bool isFullscreen() = 0;
-	virtual bool isDecorated() = 0;
-	virtual bool isModal() = 0;
+		// return state flags
+		virtual Flags flags() = 0;
+		virtual void setFlags(const Flags& flags) = 0;
 
-	// set window title
-	virtual void setTitle(const char* str) = 0;
-	// set window position in screen coordinates
-	virtual void setPos(const SCUM_Point& pos) = 0;
-	// set window size
-	virtual void setSize(const SCUM_Size& size) = 0;
-	// set minimum resizability constraint
-	virtual void setMinSize(const SCUM_Size& size) = 0;
-	// set maximum resizability constraint
-	virtual void setMaxSize(const SCUM_Size& size) = 0;
-	// make window fullscreen
-	virtual void setFullscreen(bool flag) = 0;
-	// turn on/off window manager decoration
-	virtual void setDecorated(bool flag) = 0;
-	// make window modal/non-modal
-	virtual void setModal(bool flag) = 0;
-
-	// close and destroy window
-	virtual void destroy() = 0;
-	// show/raise window
-	virtual void show() = 0;
-	// hide window
-	virtual void hide() = 0;
-
-	// refresh damage rect
-	virtual void refresh(const SCUM_Rect& damage) = 0;
-
-private:
-	SCUM_Window*		m_view;
+		// set window title
+		virtual void setTitle(const char* str) = 0;
+		// set window position in screen coordinates
+		virtual void setPos(const SCUM_Point& pos) = 0;
+		// set window size
+		virtual void setSize(const SCUM_Size& size) = 0;
+		// set minimum resizability constraint
+		virtual void setMinSize(const SCUM_Size& size) = 0;
+		// set maximum resizability constraint
+		virtual void setMaxSize(const SCUM_Size& size) = 0;
+		
+		// show/raise window
+		virtual void show() = 0;
+		// hide window
+		virtual void hide() = 0;
+		
+		// refresh damage rect
+		virtual void refresh(const SCUM_Rect& damage) = 0;
+	};
 };
 
 // =====================================================================
@@ -119,16 +111,14 @@ public:
 	SCUM_Window(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_Window();
 
-	SCUM_WindowHandle* handle() { return m_handle; }
+	SCUM::WindowHandle* handle() { return m_handle; }
 
 	virtual void destroy(bool now);
 	void raise();
 	void lower();
 
-	bool wasShown() const { return flags().wWasShown; }
-
 	// drawing
-	virtual void drawView();
+	void draw();
 
 	// system events
 	virtual void closeEvent();
@@ -137,6 +127,14 @@ public:
 	virtual void resizeEvent(const SCUM_Rect& bounds);
 	virtual void focusEvent(bool hasFocus);
 // 	void pasteEvent(const std::string& data);
+
+#if 0
+	virtual void evtClose();
+	virtual void evtShow();
+	virtual void evtHide();
+	virtual void evtResize(const SCUM_Rect& bounds);
+	virtual void evtFocus(bool hasFocus);
+#endif // 0
 
 	virtual void mouseMove(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
@@ -177,7 +175,7 @@ private:
 	void deferredAction(SCUM_Timer*);
 
 private:
-	SCUM_WindowHandle*			m_handle;
+	SCUM::WindowHandle*			m_handle;
 	SCUM_Timer*					m_deferredTimer;
 	DeferredCommands			m_deferredCommands;
 	SCUM_Size					m_initialSize;

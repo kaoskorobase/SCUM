@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Text.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -41,35 +41,35 @@ using namespace SCUM;
 SCUM_Label::SCUM_Label(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
 	  m_padding(SCUM_Point(4, 2)),
-	  m_textAlign(AlignC)
+	  m_textAlign(kAlignC)
 {
 	*m_text = 0;
 }
 
-void SCUM_Label::drawView()
+void SCUM_Label::drawView(const SCUM_Rect& damage)
 {
 	const SCUM_Rect r(bounds());
 
-	saveGCState();
+	GCSave();
 
 	if (!bgColor().isTransparent()) {
-		setColor(bgColor());
-		fillRect(r);
+		GCSetColor(bgColor());
+		GCFillRect(damage);
 	}
 
 	if (*m_text) {
-		setColor(fgColor());
+		GCSetColor(fgColor());
 		m_font.draw(r.inset(m_padding), m_text, m_textAlign);
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
 void SCUM_Label::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
 	if (equal(key, "text")) {
 		checkError(slotStrVal(slot, m_text, maxStringSize));
-		if (true /*layoutNeedsUpdate(preferredSize())*/) {
+		if (layoutNeedsUpdate(preferredSize())) {
 			updateLayout();
 		} else {
 			refresh();
@@ -120,21 +120,21 @@ SCUM_StringEntry::SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj)
 	  m_sendMouse(false), m_sendScroll(false)
 { }
 
-void SCUM_StringEntry::drawView()
+void SCUM_StringEntry::drawView(const SCUM_Rect& damage)
 {
-	saveGCState();
+	GCSave();
 
-	setColor(bgColor());
-	fillRect(bounds());
+	GCSetColor(bgColor());
+	GCFillRect(damage);
 
-	drawBeveledRect(bounds(), 1, true);
+	GCDrawBeveledRect(bounds(), 1, true);
 
 	if (m_text) {
-		setColor(fgColor());
+		GCSetColor(fgColor());
 		m_font.draw(bounds().inset(m_padding), m_text, m_textAlign);
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
 bool SCUM_StringEntry::mouseDown(int state, const SCUM_Point& where)
@@ -186,7 +186,7 @@ void SCUM_StringEntry::getProperty(const PyrSymbol* key, PyrSlot* slot)
 SCUM_List::SCUM_List(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_ScrollView(parent, obj),
 	  m_value(-1),
-	  m_textAlign(AlignW),
+	  m_textAlign(kAlignW),
 	  m_padding(4, 1)
 {
 	m_font = desktop()->font();
@@ -197,7 +197,7 @@ void SCUM_List::drawContent()
 {
 	if (m_items.empty()) return;
 
-	saveGCState();
+	GCSave();
 
 	SCUM_Rect r(contentBounds());
 	
@@ -209,30 +209,30 @@ void SCUM_List::drawContent()
 
 	// skip clipped items, starting from the first visible
 	for (; i < n; i++) {
-		if (!isClipped(itemBounds)) break;
+		if (!GCIsClipped(itemBounds)) break;
 		itemBounds.y += h;
 	}
 
 	// draw items that are not clipped
 	for (; i < n; i++) {
 		if (i == m_value) {
-			setColor(m_bgColorSel);
-			fillRect(
+			GCSetColor(m_bgColorSel);
+			GCFillRect(
 				itemBounds.x, itemBounds.y,
 				max(viewPortBounds().w, itemBounds.w), itemBounds.h
 				);
-			setColor(m_fgColorSel);
+			GCSetColor(m_fgColorSel);
 		} else {
-			setColor(fgColor());
+			GCSetColor(fgColor());
 		}
 
 		m_font.draw(itemBounds.inset(m_padding), m_items[i].c_str(), m_textAlign);
 
-		if (isClipped(itemBounds)) break;
+		if (GCIsClipped(itemBounds)) break;
 		itemBounds.y += h;
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
 void SCUM_List::drawContentFocus()

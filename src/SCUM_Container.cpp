@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Container.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Container.cpp,v 1.2 2004/08/04 11:48:25 steve Exp $
 */
 
 
@@ -57,11 +57,15 @@ SCUM_View* SCUM_Container::childAtPoint(const SCUM_Point& where)
 {
 	ChildRIter it = rbegin();
 	while (it != rend()) {
-		SCUM_View* child = *it++;
-		if (child->isVisible() && child->contains(where))
-			return child;
+		SCUM_View* hit = (*it++)->viewAtPoint(where);
+		if (hit) return hit;
 	}
 	return 0;
+}
+
+SCUM_View* SCUM_Container::viewAtPoint(const SCUM_Point& where)
+{
+	return childAtPoint(where);
 }
 
 void SCUM_Container::dumpChildren()
@@ -99,10 +103,13 @@ void SCUM_Container::lower(SCUM_View* view)
 
 bool SCUM_Container::mouseDown(int state, const SCUM_Point& where)
 {
-	SCUM_View* view = childAtPoint(where);
+	SCUM_View* view = viewAtPoint(where);
 	if (view) {
-		if (view->canFocus()) view->makeFocus(true, true);
-		else window()->unsetFocus(true);
+		if (view->canFocus()) {
+			if (!view->hasFocus()) view->makeFocus(true, true);
+		} else {
+			window()->unsetFocus(true);
+		}
 		if (view->isEnabled() && view->mouseDown(state, where)) {
 			window()->setMouseView(view);
 		}
@@ -124,19 +131,22 @@ void SCUM_Container::contextMenu(int state, const SCUM_Point& where)
 	if (view && view->isEnabled()) view->contextMenu(state, where);
 }
 
-void SCUM_Container::draw()
+void SCUM_Container::draw(const SCUM_Rect& damage)
 {
-	if (isVisible() && !isClipped(bounds())) {
-		drawView();
-		drawChildren(bounds().inset(padding()));
-		drawDisabled();
-		drawFocus();
+	if (isVisible() && !GCIsClipped(bounds())) {
+		SCUM_Rect myDamage(bounds() & damage);
+		drawView(myDamage);
+		drawChildren(myDamage);
+		drawDisabled(myDamage);
+		drawFocus(myDamage);
 	}
 }
 
-void SCUM_Container::drawChildren()
+void SCUM_Container::drawChildren(const SCUM_Rect& damage)
 {
-	drawChildren(bounds().inset(padding()));
+	ChildIter it = begin();
+	ChildIter itEnd = end();
+	while (it != itEnd) (*it++)->draw(damage);
 }
 
 void SCUM_Container::setProperty(const PyrSymbol* key, PyrSlot* slot)
@@ -159,15 +169,6 @@ void SCUM_Container::getProperty(const PyrSymbol* key, PyrSlot* slot)
 	} else {
 		SCUM_View::getProperty(key, slot);
 	}
-}
-
-void SCUM_Container::drawChildren(const SCUM_Rect& clip)
-{
-	pushClip(clip);
-	ChildIter it = begin();
-	ChildIter itEnd = end();
-	while (it != itEnd) (*it++)->draw();
-	popClip();
 }
 
 bool SCUM_Container::canFocus() const

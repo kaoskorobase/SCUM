@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Text.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Text.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -47,7 +47,7 @@ class SCUM_Label : public SCUM_View
 public:
 	SCUM_Label(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
@@ -69,7 +69,7 @@ class SCUM_StringEntry : public SCUM_Label
 public:
 	SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseMove(int state, const SCUM_Point& where);

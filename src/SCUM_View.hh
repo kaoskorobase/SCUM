@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_View.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_View.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -39,7 +39,7 @@ class SCUM_Window;
 struct SCUM_Layout
 {
     SCUM_Layout()
-		: alignment(SCUM::AlignC)
+		: alignment(SCUM::kAlignC)
 	{ }
 
 	SCUM_Size			lastPreferredSize;		// cache for preferred view size
@@ -78,26 +78,33 @@ public:
 	virtual ~SCUM_View();
 
 	// hierarchy access
-	SCUM_Container* parent() { return m_parent; }
-	const SCUM_Container* parent() const { return m_parent; }
-	SCUM_Window* window() { return m_window; }
-	const SCUM_Window* window() const { return m_window; }
+	inline const SCUM_Container* parent() const;
+	inline SCUM_Container* parent();
+
+	const SCUM_View* parentView() const;
+	SCUM_View* parentView();
+
+	inline const SCUM_Window* window() const;
+	inline SCUM_Window* window();
+
 	SCUM_Desktop* desktop();
+
+	virtual SCUM_View* viewAtPoint(const SCUM_Point& where);
 
 	virtual void raise();
 	virtual void lower();
 
-	bool isVisible() const { return m_flags.vVisible; }
-	bool isEnabled() const { return m_flags.vEnabled; }
+	inline bool isVisible() const;
+	inline bool isEnabled() const;
 
 	// drawing
 	void refresh(const SCUM_Rect& damage);
 	virtual void refresh();
 
-	virtual void draw();
-	virtual void drawView();
-	virtual void drawDisabled();
-	virtual void drawFocus();
+	virtual void draw(const SCUM_Rect& damage);
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void drawDisabled(const SCUM_Rect& damage);
+	virtual void drawFocus(const SCUM_Rect& damage);
 
 	// GL
 	virtual void initGL();
@@ -114,14 +121,14 @@ public:
 	virtual void keyUp(int state, wint_t key);
 
 	// bounds
-	const SCUM_Rect& bounds() const { return m_bounds; }
-	
-	SCUM_Size size() const { return bounds().size(); }
-	bool contains(const SCUM_Point& point) const { return bounds().contains(point); }
+	inline const SCUM_Rect& bounds() const;
+	inline SCUM_Size size() const;
+	inline bool contains(const SCUM_Point& point) const;
 
 	// layout
+	inline const SCUM_Layout& layout() const;
+	inline SCUM_Layout& layout();
 	bool layoutNeedsUpdate(const SCUM_Size& newSize) const;
-	SCUM_Layout& layout() { return m_layout; }
 	const SCUM_Size& updatePreferredSize();
 	virtual SCUM_Size preferredSize();
 	virtual void updateLayout();
@@ -139,8 +146,8 @@ public:
 	void setProperty(const PyrSymbol* key, PyrSlot* slot);
 	void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	const SCUM_Color& fgColor() const { return m_fgColor; }
-	const SCUM_Color& bgColor() const { return m_bgColor; }
+	inline const SCUM_Color& fgColor() const { return m_fgColor; }
+	inline const SCUM_Color& bgColor() const { return m_bgColor; }
 
 	// action
 	void doAction(PyrSymbol* message);
@@ -152,10 +159,10 @@ public:
 	virtual void animate();
 	
 protected:
-	const Flags& flags() const { return m_flags; }
-	Flags& flags() { return m_flags; }
+	inline const Flags& flags() const { return m_flags; }
+	inline Flags& flags() { return m_flags; }
 
-	void drawFocus(const SCUM_Rect& bounds);
+	void drawFocusInBounds(const SCUM_Rect& bounds);
 
 	bool sendMouseDown(int state, const SCUM_Point& where);
 	void sendMouseMove(int state, const SCUM_Point& where);
@@ -168,6 +175,8 @@ private:
 	void animateAction(SCUM_Timer* action);
 
 protected:
+	SCUM_View*			m_prev;
+	SCUM_View*			m_next;
 	SCUM_Container*		m_parent;
 	SCUM_Window*		m_window;
 	Flags				m_flags;
@@ -177,5 +186,60 @@ protected:
 	SCUM_Color			m_bgColor;
 	SCUM_Timer*			m_animateTimer;
 };
+
+inline const SCUM_Container* SCUM_View::parent() const
+{
+	return m_parent;
+}
+
+inline SCUM_Container* SCUM_View::parent()
+{
+	return m_parent;
+}
+
+inline const SCUM_Window* SCUM_View::window() const
+{
+	return m_window;
+}
+
+inline SCUM_Window* SCUM_View::window()
+{
+	return m_window;
+}
+
+inline bool SCUM_View::isVisible() const
+{
+	return m_flags.vVisible;
+}
+
+inline bool SCUM_View::isEnabled() const
+{
+	return m_flags.vEnabled;
+}
+
+inline const SCUM_Rect& SCUM_View::bounds() const
+{
+	return m_bounds;
+}
+
+inline SCUM_Size SCUM_View::size() const
+{
+	return bounds().size();
+}
+
+inline bool SCUM_View::contains(const SCUM_Point& point) const
+{
+	return bounds().contains(point);
+}
+
+inline const SCUM_Layout& SCUM_View::layout() const
+{
+	return m_layout;
+}
+
+inline SCUM_Layout& SCUM_View::layout()
+{
+	return m_layout;
+}
 
 #endif // SCUM_VIEW_HH_INCLUDED

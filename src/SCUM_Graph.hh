@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Graph.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Graph.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -73,7 +73,7 @@ protected:
 	void drawInvalid();
 
 private:
-	SCUM_GLContext*				m_context;
+	SCUM::GLContext*			m_context;
 	int							m_bufNum;
 	SndBuf						m_buf;
 	SCUM_Point					m_zoom;

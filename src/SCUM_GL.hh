@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_GL.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_GL.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -33,31 +33,43 @@
 #include "SCUM_View.hh"
 #include "SCUM_Window.hh"
 
+// =====================================================================
+// SCUM::GLContext
+
 class SCUM_GLView;
 
-// =====================================================================
-// SCUM_GLContext
+// class SCUM_GLContext
+// {
+// public:
+// 	SCUM_GLContext(SCUM_View* view);
+// 	virtual ~SCUM_GLContext();
 
-class SCUM_GLContext
-{
-public:
-	SCUM_GLContext(SCUM_View* view);
-	virtual ~SCUM_GLContext();
+// 	SCUM_View* view() { return m_view; }
 
-	SCUM_View* view() { return m_view; }
+// 	virtual SCUM_Rect bounds() = 0;
+// 	virtual void setBounds(const SCUM_Rect& bounds) = 0;
+// 	virtual void refresh() = 0;
 
-	virtual SCUM_Rect bounds() = 0;
-	virtual void setBounds(const SCUM_Rect& bounds) = 0;
-	virtual void refresh() = 0;
-
-private:
-	SCUM_View*	m_view;
-};
+// private:
+// 	SCUM_View*	m_view;
+// };
 
 namespace SCUM
 {
-	SCUM_GLContext* makeGLContext(SCUM_WindowHandle* window, SCUM_View* view);
-	SCUM_GLContext* makeGLContext(SCUM_View* view);
+// 	SCUM_GLContext* makeGLContext(SCUM_WindowHandle* window, SCUM_View* view);
+// 	SCUM_GLContext* makeGLContext(SCUM_View* view);
+
+	class GLContext
+	{
+	public:
+		static GLContext* create(SCUM::WindowHandle* window, SCUM_View* view);
+		static GLContext* create(SCUM_View* view);
+
+		virtual SCUM_Rect bounds() = 0;
+		virtual void setBounds(const SCUM_Rect& bounds) = 0;
+		virtual void refresh() = 0;
+// 		virtual void drawText(FontHandle* font, const char* str) = 0;
+	}; // GLContext
 };
 
 // =====================================================================
@@ -72,10 +84,10 @@ public:
 	void refreshGL();
 	
 protected:
-	SCUM_GLContext* context() { return m_context; }
+	SCUM::GLContext* context() { return m_context; }
 
 private:
-	SCUM_GLContext*		m_context;
+	SCUM::GLContext*	m_context;
 };
 
 // =====================================================================

@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Font.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Font.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -30,21 +30,36 @@
 #include <map>
 #include <string>
 
-class SCUM_FontHandle
-{
-public:
-	SCUM_FontHandle();
-	virtual ~SCUM_FontHandle();
+// class SCUM_FontHandle
+// {
+// public:
+// 	SCUM_FontHandle();
+// 	virtual ~SCUM_FontHandle();
 
-	virtual float height() = 0;
-	virtual float ascent() = 0;
-	virtual float descent() = 0;
-	virtual SCUM_Size measure(const char* str) = 0;
-};
+// 	virtual float height() = 0;
+// 	virtual float ascent() = 0;
+// 	virtual float descent() = 0;
+// 	virtual SCUM_Size measure(const char* str) = 0;
+// };
+
+// namespace SCUM
+// {
+// 	SCUM_FontHandle* makeFontHandle(const char* name, float size);
+// };
 
 namespace SCUM
 {
-	SCUM_FontHandle* makeFontHandle(const char* name, float size);
+	class FontHandle
+	{
+	public:
+		static FontHandle* create(const char* name, float size);
+
+		virtual float height() = 0;
+		virtual float ascent() = 0;
+		virtual float descent() = 0;
+
+		virtual SCUM_Size measure(const char* str) = 0;
+	};
 };
 
 class SCUM_Font
@@ -54,7 +69,7 @@ public:
 	SCUM_Font(const SCUM_Font& font);
 	~SCUM_Font();
 
-	SCUM_FontHandle* handle() { return m_handle; }
+	SCUM::FontHandle* handle() { return m_handle; }
 	const std::string& name() const { return m_name; }
 	float size() const { return m_size; }
 	bool isValid() const { return m_handle != 0; }
@@ -77,7 +92,7 @@ public:
 private:
 	std::string			m_name;
 	float				m_size;
-	SCUM_FontHandle*	m_handle;
+	SCUM::FontHandle*	m_handle;
 };
 
 inline void SCUM_Font::setFont(const std::string& name, float size)

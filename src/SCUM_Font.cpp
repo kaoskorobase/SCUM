@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Font.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Font.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -30,13 +30,13 @@ using namespace SCUM;
 // =====================================================================
 // SCUM_FontHandle
 
-SCUM_FontHandle::SCUM_FontHandle()
-{
-}
+// SCUM_FontHandle::SCUM_FontHandle()
+// {
+// }
 
-SCUM_FontHandle::~SCUM_FontHandle()
-{
-}
+// SCUM_FontHandle::~SCUM_FontHandle()
+// {
+// }
 
 // =====================================================================
 // SCUM_Font
@@ -61,17 +61,17 @@ SCUM_Font::~SCUM_Font()
 void SCUM_Font::setFont(const char* name, float size)
 {
 	delete m_handle;
-	m_handle = makeFontHandle(name, size > 0.f ? size : m_size);
+	m_handle = SCUM::FontHandle::create(name, size > 0.f ? size : m_size);
 }
 
 void SCUM_Font::draw(const SCUM_Rect& bounds, const char* str, int align)
 {
 	if (m_handle) {
-		SCUM::setFont(m_handle);
+		SCUM::GCSetFont(m_handle);
 		SCUM_Size size = m_handle->measure(str);
 		SCUM_Point pos(bounds.origin() + bounds.size().layout(size, align));
 		pos.y += height() - descent();
-		drawText(pos, str);
+		SCUM::GCDrawText(pos, str);
 	}
 }
 

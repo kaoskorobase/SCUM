@@ -18,14 +18,24 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Image.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Image.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
 #include "SCUM_Image.hh"
 
-SCUM_ImageHandle::~SCUM_ImageHandle()
+// SCUM_ImageHandle::~SCUM_ImageHandle()
+// {
+// }
+
+SCUM::ImageHandle* SCUM_Image::handle()
 {
+	return 0;
+}
+
+SCUM_Size SCUM_Image::size() const
+{
+	return SCUM_Size();
 }
 
 // EOF

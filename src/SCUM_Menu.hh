@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Menu.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -49,16 +49,16 @@ private:
 
 typedef std::vector<SCUM_MenuItem> SCUM_MenuItems;
 
-class SCUM_MenuHandle
-{
-public:
-	SCUM_MenuHandle();
-	virtual ~SCUM_MenuHandle();
+// class SCUM_MenuHandle
+// {
+// public:
+// 	SCUM_MenuHandle();
+// 	virtual ~SCUM_MenuHandle();
 
-	virtual bool value(int item) const = 0;
-	virtual void setValue(int item, bool value) = 0;
-	virtual int popup(const SCUM_Point& where, int item) = 0;
-};
+// 	virtual bool value(int item) const = 0;
+// 	virtual void setValue(int item, bool value) = 0;
+// 	virtual int popup(const SCUM_Point& where, int item) = 0;
+// };
 
 namespace SCUM
 {
@@ -72,7 +72,15 @@ namespace SCUM
 		MenuClose		= '<'
 	};
 
-	SCUM_MenuHandle* makeMenuHandle(const SCUM_MenuItems& items);
+	class MenuHandle
+	{
+	public:
+		static MenuHandle* create(const std::vector<SCUM_MenuItem>& items);
+
+		virtual bool value(int item) = 0;
+		virtual void setValue(int item, bool value) = 0;
+		virtual int popup(const SCUM_Point& where, int item) = 0;
+	}; // MenuHandle
 };
 
 class SCUM_Menu : public SCUM_Object
@@ -81,7 +89,7 @@ public:
 	SCUM_Menu(PyrObject* obj, const SCUM_MenuItems& items);
 	virtual ~SCUM_Menu();
 
-	SCUM_MenuHandle* handle() { return m_handle; }
+	SCUM::MenuHandle* handle() { return m_handle; }
 
 	int item() const { return m_item; }
 	void setItem(int item) { m_item = item; }
@@ -95,7 +103,7 @@ public:
 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 private:
-	SCUM_MenuHandle*			m_handle;
+	SCUM::MenuHandle*			m_handle;
 	int							m_item;
 };
 

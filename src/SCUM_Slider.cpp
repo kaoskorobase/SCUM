@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Slider.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -42,22 +42,22 @@ SCUM_Slider::SCUM_Slider(SCUM_Container* parent, PyrObject* obj)
 	  m_steady(false)
 { }
 
-void SCUM_Slider::drawView()
+void SCUM_Slider::drawView(const SCUM_Rect& damage)
 {
 	m_thumbRect = thumbRect();
-	saveGCState();
-	setColor(bgColor());
-	fillRect(bounds());
-	drawBeveledRect(bounds(), 1, true);
-	setColor(fgColor());
-	fillRect(m_thumbRect);
-	drawBeveledRect(m_thumbRect, 1, false);
-	restoreGCState();
+	GCSave();
+	GCSetColor(bgColor());
+	GCFillRect(damage);
+	GCDrawBeveledRect(bounds(), 1, true);
+	GCSetColor(fgColor());
+	GCFillRect(m_thumbRect);
+	GCDrawBeveledRect(m_thumbRect, 1, false);
+	GCRestore();
 }
 
-void SCUM_Slider::drawFocus()
+void SCUM_Slider::drawFocus(const SCUM_Rect& damage)
 {
-	SCUM_View::drawFocus(m_thumbRect.inset(1));
+	SCUM_View::drawFocusInBounds(m_thumbRect.inset(1));
 }
 
 bool SCUM_Slider::mouseDown(int state, const SCUM_Point& where)
@@ -91,7 +91,7 @@ void SCUM_Slider::scrollWheel(int state, const SCUM_Point&, const SCUM_Point& de
 		offset = 1.0 / (bounds().h - m_thumbSize - 2);
 	}
 		
-	if (state & ModShift) offset *= 10;
+	if (state & kModMaskShift) offset *= 10;
 
 	setValue(m_value - delta.y * offset, true);
 }
@@ -193,21 +193,21 @@ SCUM_Pad::SCUM_Pad(SCUM_Container* parent, PyrObject* obj)
 	  m_steady(false)
 { }
 
-void SCUM_Pad::drawView()
+void SCUM_Pad::drawView(const SCUM_Rect& damage)
 {
-	saveGCState();
-	setColor(bgColor());
-	fillRect(bounds());
-	drawBeveledRect(bounds(), 1, true);
-	setColor(fgColor());
-	setLineStyle(1);
+	GCSave();
+	GCSetColor(bgColor());
+	GCFillRect(damage);
+	GCDrawBeveledRect(bounds(), 1, true);
+	GCSetColor(fgColor());
+	GCSetLineWidth(1);
 	SCUM_Rect r(bounds().inset(1));
 	float x, y;
 	x = min(r.x + (r.w * m_x), r.maxX() - 1.);
 	y = min(r.y + (r.h * m_y), r.maxY() - 1.);
-	drawLine(x, r.y, x, r.maxY());
-	drawLine(r.x, y, r.maxX(), y);
-	restoreGCState();
+	GCDrawLine(x, r.y, x, r.maxY());
+	GCDrawLine(r.x, y, r.maxX(), y);
+	GCRestore();
 }
 
 bool SCUM_Pad::mouseDown(int state, const SCUM_Point& where)
@@ -330,18 +330,18 @@ SCUM_Table::SCUM_Table(SCUM_Container* parent, PyrObject* obj)
 	  m_readOnly(false)
 { }
 
-void SCUM_Table::drawView()
+void SCUM_Table::drawView(const SCUM_Rect& damage)
 {
 	if (!m_data) return;
 
-	saveGCState();
+	GCSave();
 
-	setColor(bgColor());
-	fillRect(bounds());
-	drawBeveledRect(bounds(), 1, true);
+	GCSetColor(bgColor());
+	GCFillRect(damage);
+	GCDrawBeveledRect(bounds(), 1, true);
 
-	setColor(fgColor());
-	setLineStyle(1);
+	GCSetColor(fgColor());
+	GCSetLineWidth(1);
 
 	SCUM_Rect r(bounds().inset(1));
 	int n = m_data->size;
@@ -355,7 +355,7 @@ void SCUM_Table::drawView()
 		float decacc = dec;
 		float x = r.x;
 
-		pushClip(r);
+		GCSetClip(r);
 
 		for (int i=0; i < n; i++) {
 			double y = r.maxY() - values[i] * r.h;
@@ -372,32 +372,30 @@ void SCUM_Table::drawView()
 			}
 
 			if (m_style == kLines) {
-				drawLine(x, y, x+w1, y);
+				GCDrawLine(x, y, x+w1, y);
 			} else if (m_style == kFilled) {
-				fillRect(x, y, w1, ceil(values[i] * r.h));
+				GCFillRect(x, y, w1, ceil(values[i] * r.h));
 			} else if (m_style == kWaveform) {
 				double value = values[i];
 				double h2 = r.h * 0.5;
 				if (value > 0.5) {
-					fillRect(x, r.y + r.h * (1. - value), w1, r.h * (value - 0.5));
+					GCFillRect(x, r.y + r.h * (1. - value), w1, r.h * (value - 0.5));
 				} else {
-					fillRect(x, r.y + r.h * 0.5, w1, r.h * (0.5 - value));
+					GCFillRect(x, r.y + r.h * 0.5, w1, r.h * (0.5 - value));
 				}
 			}
 
 			x += w1;
 		}
-
-		popClip();
 	}
 
-	restoreGCState();
+	GCRestore();
 }
 
 bool SCUM_Table::mouseDown(int state, const SCUM_Point& where)
 {
 	if (!m_readOnly && bounds().inset(1).contains(where)) {
-		if (state & ModShift) {
+		if (state & kModMaskShift) {
 			mouseMove(state, where);
 			return false;
 		} else {
@@ -491,7 +489,7 @@ void SCUM_Table::getProperty(const PyrSymbol* key, PyrSlot* slot)
 
 int SCUM_Table::indexFromPoint(const SCUM_Point& p)
 {
-	return (p.x - bounds().x - 1) * m_size / bounds().w;
+	return (int)((p.x - bounds().x - 1.f) * m_size / bounds().w);
 }
 
 double SCUM_Table::valueFromPoint(const SCUM_Point& p)

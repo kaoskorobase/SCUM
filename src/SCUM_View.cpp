@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_View.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_View.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -65,6 +65,16 @@ SCUM_View::~SCUM_View()
 	if (m_parent) m_parent->removeChild(this);
 }
 
+const SCUM_View* SCUM_View::parentView() const
+{
+	return static_cast<SCUM_View*>(m_parent);
+}
+
+SCUM_View* SCUM_View::parentView()
+{
+	return static_cast<SCUM_View*>(m_parent);
+}
+
 SCUM_Desktop* SCUM_View::desktop()
 {
 	return &SCUM_Desktop::instance();
@@ -78,6 +88,11 @@ void SCUM_View::raise()
 void SCUM_View::lower()
 {
 	parent()->lower(this);
+}
+
+SCUM_View* SCUM_View::viewAtPoint(const SCUM_Point& where)
+{
+	return (isVisible() && contains(where)) ? this : 0;
 }
 
 bool SCUM_View::mouseDown(int /* state */, const SCUM_Point& /* where */)
@@ -135,43 +150,44 @@ void SCUM_View::refresh()
 	refresh(bounds());
 }
 
-void SCUM_View::draw()
+void SCUM_View::draw(const SCUM_Rect& damage)
 {
-	if (isVisible() && !isClipped(bounds())) {
-		drawView();
-		drawDisabled();
-		drawFocus();
+	if (isVisible() && !GCIsClipped(bounds())) {
+		SCUM_Rect myDamage(bounds() & damage);
+		drawView(myDamage);
+		drawDisabled(myDamage);
+		drawFocus(myDamage);
 	}
 }
 
-void SCUM_View::drawView()
+void SCUM_View::drawView(const SCUM_Rect& damage)
 {
 	if (!bgColor().isTransparent()) {
-		saveGCState();
-		setColor(bgColor());
-		fillRect(bounds());
-		restoreGCState();
+		GCSave();
+		GCSetColor(bgColor());
+		GCFillRect(damage);
+		GCRestore();
 	}
 }
 
-void SCUM_View::drawDisabled()
+void SCUM_View::drawDisabled(const SCUM_Rect& damage)
 {
 	if (!isEnabled()) {
-		setColor(bgColor().blend(SCUM_Color(0, 0, 0), 0.15));
+		GCSetColor(bgColor().blend(SCUM_Color(0, 0, 0), 0.15));
 		float x1 = bounds().minX() + 1;
 		float x2 = bounds().maxX() - 1;
 		float y1 = bounds().minY() + 1;
 		float y2 = bounds().maxY() - 1;
 		while (y1 < y2) {
-			drawLine(x1, y1, x2, y1);
+			GCDrawLine(x1, y1, x2, y1);
 			y1 += 2.f;
 		}
 	}
 }
 
-void SCUM_View::drawFocus()
+void SCUM_View::drawFocus(const SCUM_Rect& damage)
 {
-	drawFocus(bounds().inset(1));
+	drawFocusInBounds(bounds().inset(1));
 }
 
 void SCUM_View::initGL()
@@ -411,14 +427,15 @@ void SCUM_View::animate()
 {
 }
 
-void SCUM_View::drawFocus(const SCUM_Rect& bounds)
+void SCUM_View::drawFocusInBounds(const SCUM_Rect& bounds)
 {
 	if (hasFocus() && window()->shouldDrawFocus()) {
-		saveGCState();
-		setColor(desktop()->focusColor());
-		setLineStyle(1, LineDot);
-		drawRect(bounds);
-		restoreGCState();
+		GCSave();
+		GCSetColor(desktop()->focusColor());
+		GCSetLineWidth(1);
+		GCSetLineStyle(kLineStyleDot);
+		GCDrawRect(bounds);
+		GCRestore();
 	}
 }
 

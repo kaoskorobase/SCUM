@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_GL.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_GL.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -32,12 +32,12 @@ using namespace SCUM;
 // =====================================================================
 // SCUM_GLContext
 
-SCUM_GLContext::SCUM_GLContext(SCUM_View* view)
-	: m_view(view)
-{ }
+// SCUM_GLContext::SCUM_GLContext(SCUM_View* view)
+// 	: m_view(view)
+// { }
 
-SCUM_GLContext::~SCUM_GLContext()
-{ }
+// SCUM_GLContext::~SCUM_GLContext()
+// { }
 
 // =====================================================================
 // SCUM_GLView
@@ -46,7 +46,7 @@ SCUM_GLView::SCUM_GLView(SCUM_Container* parent, PyrObject* obj)
 	: SCUM_View(parent, obj),
 	  m_context(0)
 {
-	m_context = SCUM::makeGLContext(window()->handle(), this);
+	m_context = SCUM::GLContext::create(window()->handle(), this);
 	assert(m_context != 0);
 }
 

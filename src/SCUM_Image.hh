@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Image.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Image.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -27,17 +27,35 @@
 
 #include "SCUM_Geometry.hh"
 
-class SCUM_ImageHandle
-{
-public:
-	virtual ~SCUM_ImageHandle();
-	virtual SCUM_Size size() = 0;
-	virtual void draw(const SCUM_Point& p) = 0;
-};
+// class SCUM_ImageHandle
+// {
+// public:
+// 	virtual ~SCUM_ImageHandle();
+// 	virtual SCUM_Size size() = 0;
+// 	virtual void draw(const SCUM_Point& p) = 0;
+// };
+
+// namespace SCUM
+// {
+// 	SCUM_ImageHandle* makeImageHandle(const char* fileName, const SCUM_Size& size);
+// };
 
 namespace SCUM
 {
-	SCUM_ImageHandle* makeImageHandle(const char* fileName, const SCUM_Size& size);
+	class ImageHandle
+	{
+	public:
+		static ImageHandle* create(const char* fileName, const SCUM_Size& size);
+
+		virtual SCUM_Size size() = 0;
+	};
+};
+
+class SCUM_Image
+{
+public:
+	SCUM::ImageHandle* handle();
+	SCUM_Size size() const;
 };
 
 #endif // SCUM_IMAGE_HH_INCLUDED

@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_System.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_System.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -28,36 +28,31 @@
 #include "SCUM_Color.hh"
 #include "SCUM_Font.hh"
 #include "SCUM_Geometry.hh"
+#include "SCUM_Image.hh"
+#include "SCUM_Timer.hh"
 
-class SCUM_Timer;
+// namespace SCUM
+// {
+// 	class CairoContext
+// 	{
+// 	public:
+// 		static CairoContext* create(SCUM_View* view);
+
+// 		virtual SCUM_Rect bounds() = 0;
+// 		virtual void setBounds(const SCUM_Rect& bounds) = 0;
+// 		virtual void refresh() = 0;
+// 		virtual void drawText(FontHandle* font, const char* str) = 0;
+// 	};
+// }; // SCUM
 
 namespace SCUM
 {
-	enum
+	enum ModMask
 	{
-		ModShift		= (1 << 0),
-		ModControl		= (1 << 1),
-		ModCommand		= (1 << 2),
-		ModKeypad		= (1 << 3)
-	};
-
-	enum
-	{
-		LineSolid,
-		LineDash,
-		LineDot
-	};
-
-	enum
-	{
-		Horizontal,
-		Vertical
-	};
-
-	enum
-	{
-		CondReadable = 1,
-		CondWritable = 2
+		kModMaskShift	= (1 << 0),
+		kModMaskControl	= (1 << 1),
+		kModMaskCommand	= (1 << 2),
+		kModMaskKeypad	= (1 << 3)
 	};
 
 	void init();
@@ -66,167 +61,149 @@ namespace SCUM
 
 	// actions
 	void addTimer(SCUM_Timer* timer);
+};
 
-	// manage clip stack
-	void pushClip(float x, float y, float w, float h);
-	inline void pushClip(const SCUM_Rect& r);
-	void pushNoClip();
-	void popClip();
-	bool isClipped(const SCUM_Rect& r);
-	SCUM_Rect clippedRect(const SCUM_Rect& r);
+namespace SCUM
+{
+	enum LineStyle
+	{
+		kLineStyleSolid,
+		kLineStyleDash,
+		kLineStyleDot
+	};
+
+	enum LineCap
+	{
+		kLineCapFlat,
+		kLineCapRound,
+		kLineCapSquare
+	};
+
+	enum LineJoin
+	{
+		kLineJoinMiter,
+		kLineJoinRound,
+		kLineJoinBevel
+	};
 
 	// manage graphic context stack
-	// includes: color, line style, line width
-	void saveGCState();
-	void restoreGCState();
+	// includes: color, line [width, style, cap, join], font
+	void GCSave();
+	void GCRestore();
+	
+	void GCSetColor(const SCUM_Color& c);
+	void GCSetLineWidth(float width);
+	void GCSetLineStyle(LineStyle style);
+	void GCSetLineCap(LineCap cap);
+	void GCSetLineJoin(LineJoin join);
+	void GCSetFont(FontHandle* font);
+	inline void GCSetFont(const SCUM_Font& font);
 
-	void setFont(SCUM_FontHandle* fontHandle);
-	inline void setFont(SCUM_Font& font);
+	// drawing
+	void GCDrawPoint(float x, float y);
+	inline void GCDrawPoint(const SCUM_Point& p);
+		
+	void GCDrawLine(float x1, float y1, float x2, float y2);
+	inline void GCDrawLine(const SCUM_Point& p1, const SCUM_Point& p2);
 
-	void setColor(const SCUM_Color& c);
-	void setLineStyle(float width, int style=SCUM::LineSolid);
+	void GCDrawRect(float x, float y, float w, float h);
+	inline void GCDrawRect(const SCUM_Rect& r);
+		
+	void GCDrawBeveledRect(float x, float y, float w, float w, float bw, bool inout);
+	inline void GCDrawBeveledRect(const SCUM_Rect& r, float bw, bool inout);
+		
+	void GCFillRect(float x, float y, float w, float h);
+	inline void GCFillRect(const SCUM_Rect& r);
 
-	void drawPoint(float x, float y);
-	inline void drawPoint(const SCUM_Point& p);
+	void GCDrawPolygon(float x1, float y1, float x2, float y2, float x3, float y3);
+	inline void GCDrawPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3);
 
-	void drawLine(float x1, float y1, float x2, float y2);
-	inline void drawLine(const SCUM_Point& p1, const SCUM_Point& p2) { drawLine(p1.x, p1.y, p2.x, p2.y); }
+	void GCFillPolygon(float x1, float y1, float x2, float y2, float x3, float y3);
+	inline void GCFillPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3);
+		
+	void GCDrawArc(float x, float y, float w, float h, float a1, float a2);
+	inline void GCDrawArc(const SCUM_Rect& bounds, float a1, float a2);
+		
+	void GCFillArc(float x, float y, float w, float h, float a1, float a2);
+	inline void GCFillArc(const SCUM_Rect& bounds, float a1, float a2);
+		
+	void GCDrawText(float x, float y, const char* str);
+	inline void GCDrawText(const SCUM_Point& pos, const char* str);
 
-	void drawRect(float x, float y, float w, float h);
-	inline void drawRect(const SCUM_Rect& r);
+	void GCDrawImage(SCUM::ImageHandle* img, float x, float y, float w, float h);
+	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Rect& bounds);
+	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Point& pos);
 
-// 	void drawBorderRect(int type, float x, float y, float w, float h, float bw);
-// 	inline void drawBorderRect(int type, const SCUM_Rect& r, float bw);
-	void drawBeveledRect(float x, float y, float w, float w, float bw, bool inout);
-	inline void drawBeveledRect(const SCUM_Rect& r, float bw, bool inout);
-
-	void fillRect(float x, float y, float w, float h);
-	inline void fillRect(const SCUM_Rect& r);
-
-	void fillRoundedRect(float x, float y, float w, float h, float radius);
-	inline void fillRoundedRect(const SCUM_Rect& r, float radius);
-
-	void drawPolygon(float x1, float y1, float x2, float y2, float x3, float y3);
-	inline void drawPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3);
-
-	void fillPolygon(float x1, float y1, float x2, float y2, float x3, float y3);
-	inline void fillPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3);
-
-	void drawArc(float x, float y, float w, float h, float a1, float a2);
-	inline void drawArc(const SCUM_Rect& bounds, float a1, float a2);
-
-	void fillArc(float x, float y, float w, float h, float a1, float a2);
-	inline void fillArc(const SCUM_Rect& bounds, float a1, float a2);
-
-	void drawText(float x, float y, const char* str);
-	inline void drawText(const SCUM_Point& pos, const char* str);
+	// clipping
+	void GCInitClip();
+	void GCSetClip(const SCUM_Rect& r);
+	bool GCIsClipped(const SCUM_Rect& r);
+	SCUM_Rect GCClippedRect(const SCUM_Rect& r);
 };
 
-class SCUM_Timer
+inline void SCUM::GCSetFont(const SCUM_Font& font)
 {
-public:
-	SCUM_Timer(float timeout)
-		: m_valid(true), m_timeout(timeout)
-	{ }
-
-	bool isValid() const { return m_valid; }
-	void remove() { m_valid = false; }
-
-	float timeout() const { return m_timeout; }
-	void setTimeout(float timeout) { m_timeout = timeout; }
-
-	virtual void operator () () = 0;
-
-private:
-	bool				m_valid;
-	float				m_timeout;
-};
-
-template <class T> class SCUM_MemTimer : public SCUM_Timer
-{
-public:
-	typedef void (T::*Callback)(SCUM_Timer* timer);
-
-	SCUM_MemTimer(float timeout, Callback cb, T* obj)
-		: SCUM_Timer(timeout),
-		  m_cb(cb), m_obj(obj)
-	{ }
-
-	virtual void operator () () { (m_obj->*m_cb)(this); }
-
-private:
-	Callback			m_cb;
-	T*					m_obj;
-};
-
-inline void SCUM::pushClip(const SCUM_Rect& r)
-{
-	pushClip(r.x, r.y, r.w, r.h);
+	if (font.isValid()) GCSetFont(const_cast<SCUM_Font&>(font).handle());
 }
 
-inline void SCUM::setFont(SCUM_Font& font)
+inline void SCUM::GCDrawPoint(const SCUM_Point& p)
 {
-	if (font.isValid()) setFont(font.handle());
+	GCDrawPoint(p.x, p.y);
 }
 
-inline void SCUM::drawPoint(const SCUM_Point& p)
+inline void SCUM::GCDrawLine(const SCUM_Point& p1, const SCUM_Point& p2)
 {
-	SCUM::drawPoint(p.x, p.y);
+	GCDrawLine(p1.x, p1.y, p2.x, p2.y);
 }
 
-inline void SCUM::drawRect(const SCUM_Rect& r)
+inline void SCUM::GCDrawRect(const SCUM_Rect& r)
 {
-	SCUM::drawRect(r.x, r.y, r.w, r.h);
+	GCDrawRect(r.x, r.y, r.w, r.h);
 }
 
-// inline void SCUM::drawBorderRect(int type, const SCUM_Rect& r, float bw)
-// {
-// 	SCUM::drawBorderRect(type, r.x, r.y, r.w, r.h, bw);
-// }
-
-// inline void SCUM::drawBeveledRect(float x, float y, float w, float h, float bw, bool inout)
-// {
-// 	SCUM::drawBorderRect(inout ? BorderSunken : BorderRaised, x, y, w, h, bw);
-// }
-
-inline void SCUM::drawBeveledRect(const SCUM_Rect& r, float bw, bool inout)
+inline void SCUM::GCDrawBeveledRect(const SCUM_Rect& r, float bw, bool inout)
 {
-	SCUM::drawBeveledRect(r.x, r.y, r.w, r.h, bw, inout);
+	GCDrawBeveledRect(r.x, r.y, r.w, r.h, bw, inout);
 }
 
-inline void SCUM::fillRect(const SCUM_Rect& r)
+inline void SCUM::GCFillRect(const SCUM_Rect& r)
 {
-	SCUM::fillRect(r.x, r.y, r.w, r.h);
+	GCFillRect(r.x, r.y, r.w, r.h);
 }
 
-inline void SCUM::fillRoundedRect(const SCUM_Rect& r, float radius)
+inline void SCUM::GCDrawPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3)
 {
-	SCUM::fillRoundedRect(r.x, r.y, r.w, r.h, radius);
+	GCDrawPolygon(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 }
 
-inline void SCUM::drawPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3)
+inline void SCUM::GCFillPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3)
 {
-	SCUM::drawPolygon(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+	GCFillPolygon(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 }
 
-inline void SCUM::fillPolygon(const SCUM_Point& p1, const SCUM_Point& p2, const SCUM_Point& p3)
+inline void SCUM::GCDrawArc(const SCUM_Rect& bounds, float a1, float a2)
 {
-	SCUM::fillPolygon(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+	GCDrawArc(bounds.x, bounds.y, bounds.w, bounds.h, a1, a2);
 }
 
-inline void SCUM::drawArc(const SCUM_Rect& bounds, float a1, float a2)
+inline void SCUM::GCFillArc(const SCUM_Rect& bounds, float a1, float a2)
 {
-	SCUM::drawArc(bounds.x, bounds.y, bounds.w, bounds.h, a1, a2);
+	GCFillArc(bounds.x, bounds.y, bounds.w, bounds.h, a1, a2);
 }
 
-inline void SCUM::fillArc(const SCUM_Rect& bounds, float a1, float a2)
+inline void SCUM::GCDrawText(const SCUM_Point& pos, const char* str)
 {
-	SCUM::fillArc(bounds.x, bounds.y, bounds.w, bounds.h, a1, a2);
+	GCDrawText(pos.x, pos.y, str);
 }
 
-inline void SCUM::drawText(const SCUM_Point& pos, const char* str)
+inline void SCUM::GCDrawImage(const SCUM_Image& img, const SCUM_Rect& bounds)
 {
-	drawText(pos.x, pos.y, str);
+	GCDrawImage(const_cast<SCUM_Image&>(img).handle(), bounds.x, bounds.y, bounds.w, bounds.h);
+}
+
+inline void SCUM::GCDrawImage(const SCUM_Image& img, const SCUM_Point& pos)
+{
+	GCDrawImage(img, SCUM_Rect(pos, img.size()));
 }
 
 #endif // SCUM_SYSTEM_HH_INCLUDED

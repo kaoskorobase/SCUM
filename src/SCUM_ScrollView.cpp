@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ScrollView.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_ScrollView.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -45,7 +45,7 @@ bool SCUM_ScrollView::mouseDown(int state, const SCUM_Point& where)
 	if (m_hThumb && (where.y > m_viewPortBounds.maxY())) {
 		if (m_hThumbBounds.contains(where)) {
 			m_mouseMoveStart = where.x;
-			m_mouseMoveOrient = Horizontal;
+			m_mouseMoveOrient = kOrientHorizontal;
 			return true;
 		}
 		return false;
@@ -53,7 +53,7 @@ bool SCUM_ScrollView::mouseDown(int state, const SCUM_Point& where)
 	if (m_vThumb && (where.x > m_viewPortBounds.maxX())) {
 		if (m_vThumbBounds.contains(where)) {
 			m_mouseMoveStart = where.y;
-			m_mouseMoveOrient = Vertical;
+			m_mouseMoveOrient = kOrientVertical;
 			return true;
 		}
 		return false;
@@ -64,7 +64,7 @@ bool SCUM_ScrollView::mouseDown(int state, const SCUM_Point& where)
 void SCUM_ScrollView::mouseMove(int state, const SCUM_Point& where)
 {
 	if (hasMouse()) {
-		if (m_mouseMoveOrient == Horizontal) {
+		if (m_mouseMoveOrient == kOrientHorizontal) {
 			scrollBy(SCUM_Point(where.x - m_mouseMoveStart, 0));
 			m_mouseMoveStart = where.x;
 		} else {
@@ -210,20 +210,19 @@ void SCUM_ScrollView::drawView()
 
 // 	updateThumbBounds();
 
-	saveGCState();
+	GCSave();
 
-	setColor(bgColor());
-	fillRect(r);
-	drawBeveledRect(r, 1, true);
+	GCSetColor(bgColor());
+	GCFillRect(r);
+	GCDrawBeveledRect(r, 1, true);
 
-	if (m_hThumb) drawBeveledRect(m_hThumbBounds, 1, false);
-	if (m_vThumb) drawBeveledRect(m_vThumbBounds, 1, false);
+	if (m_hThumb) GCDrawBeveledRect(m_hThumbBounds, 1, false);
+	if (m_vThumb) GCDrawBeveledRect(m_vThumbBounds, 1, false);
 
-	pushClip(m_viewPortBounds);
+	GCSetClip(m_viewPortBounds);
 	drawContent();
-	popClip();
 
-	restoreGCState();
+	GCRestore();
 }
 
 void SCUM_ScrollView::drawFocus()

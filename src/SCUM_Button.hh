@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Button.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Button.hh,v 1.2 2004/08/04 11:48:25 steve Exp $
 */
 
 
@@ -38,7 +38,7 @@ class SCUM_Toggle : public SCUM_View
 public:
 	SCUM_Toggle(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 	
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
@@ -63,7 +63,7 @@ class SCUM_Bang : public SCUM_View
 public:
 	SCUM_Bang(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
@@ -100,8 +100,8 @@ public:
 public:
 	SCUM_Button(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
-	virtual void drawFocus();
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void drawFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void mouseUp(int state, const SCUM_Point& where);
@@ -135,7 +135,7 @@ public:
 	SCUM_Choice(SCUM_Container* parent, PyrObject* obj);
 	virtual ~SCUM_Choice();
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int state, const SCUM_Point& where);
 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);

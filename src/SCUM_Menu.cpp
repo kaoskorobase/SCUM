@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Menu.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Menu.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -58,11 +58,11 @@ SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
 // =====================================================================
 // SCUM_MenuHandle
 
-SCUM_MenuHandle::SCUM_MenuHandle()
-{ }
+// SCUM_MenuHandle::SCUM_MenuHandle()
+// { }
 
-SCUM_MenuHandle::~SCUM_MenuHandle()
-{ }
+// SCUM_MenuHandle::~SCUM_MenuHandle()
+// { }
 
 // =====================================================================
 // SCUM_Menu
@@ -72,7 +72,7 @@ SCUM_Menu::SCUM_Menu(PyrObject* obj, const SCUM_MenuItems& items)
 	  m_handle(0),
 	  m_item(-1)
 {
-	m_handle = makeMenuHandle(items);
+	m_handle = SCUM::MenuHandle::create(items);
 	assert(m_handle != 0);
 	SCUM_Desktop::instance().retain(this);
 }

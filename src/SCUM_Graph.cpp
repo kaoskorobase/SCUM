@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Graph.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Graph.cpp,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -41,7 +41,7 @@ SCUM_Scope::SCUM_Scope(SCUM_Container* parent, PyrObject* obj)
 	  m_zoom(1.f, 1.f),
 	  m_style(kStyleSeparate)
 {
-	m_context = makeGLContext(this);
+	m_context = SCUM::GLContext::create(this);
 	memset(&m_buf, 0, sizeof(SndBuf));
 // 	layout().minSize = SCUM_Size(200, 100);
 	startAnimation();

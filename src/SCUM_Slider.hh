@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_Slider.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id: SCUM_Slider.hh,v 1.2 2004/08/04 11:48:26 steve Exp $
 */
 
 
@@ -36,8 +36,8 @@ class SCUM_Slider : public SCUM_View
 public:
 	SCUM_Slider(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
-	virtual void drawFocus();
+	virtual void drawView(const SCUM_Rect& damage);
+	virtual void drawFocus(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
@@ -99,7 +99,7 @@ class SCUM_Pad : public SCUM_View
 public:
 	SCUM_Pad(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
@@ -148,7 +148,7 @@ public:
 
 	SCUM_Table(SCUM_Container* parent, PyrObject* obj);
 
-	virtual void drawView();
+	virtual void drawView(const SCUM_Rect& damage);
 
 	virtual bool mouseDown(int, const SCUM_Point&);
 	virtual void mouseMove(int, const SCUM_Point&);
