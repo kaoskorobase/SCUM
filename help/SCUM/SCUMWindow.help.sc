@@ -43,6 +43,13 @@ w.resizable = true;
 // close window
 w.close;
 
+// if you want to add a function it has to call when it is closed, you have to call the destruction of the window explicitly in that function as well:
+
+w.onClose = { "now I am closed".postln; w.destroy };
+
+// you should not use w.close instead of destroy (from the onClose function) if you want the window to disappear from the screen, as this causes the function to call itself again and again and again... causing a horrible loop.
+// if you do not add the destroy command to the onClose function, then the only way to get rid of the window on the screen is calling explicitly w.destroy, or restarting the interpreter.
+
 // ---------------------------------------------------------------------
 // properties
 // ---------------------------------------------------------------------
@@ -96,5 +103,5 @@ w.close;
 //    changes.
 //
 // ---------------------------------------------------------------------
-// $Id: SCUMWindow.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ---------------------------------------------------------------------

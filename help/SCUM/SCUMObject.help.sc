@@ -13,7 +13,8 @@
 // the 'getProperty' and 'setProperty' methods. property keys are
 // instances of Symbol.
 //
-// see also: SCUM, SCUMDesktop, SCUMView, SCUMMenu.
+// see also: SCUM, SCUMDesktop, SCUMView, SCUMMenu
+.
 //
 // ---------------------------------------------------------------------
 // instance variables
@@ -112,5 +113,5 @@
 //   as long as its primitive object has not been destroyed yet.
 //
 // ------------------------------------------------------------------------
-// $Id: SCUMObject.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // SCUMVBox : SCUMBox
 // ---------------------------------------------------------------------
 //
-// container view that lays out child views horizontally (in columns).
+// container view that lays out child views vertically (in rows).
 //
 // see also: SCUMBox, SCUMHBox
 //
@@ -10,7 +10,7 @@
 // examples
 // ---------------------------------------------------------------------
 
-(	// create an HBox with some labels
+(	// create an VBox with some labels
 	w = SCUMWindow.new;
 	w.title = "VBox example";
 
@@ -59,5 +59,5 @@ c.doMsg(\yFill_, 1);
 c.homogenous = true;
 
 // ---------------------------------------------------------------------
-// $Id: SCUMVBox.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ---------------------------------------------------------------------

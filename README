@@ -11,7 +11,7 @@ requirements
 ------------------------------------------------------------------------
 
 * libscsynth, libsclang
-* fltk 1.1
+* fltk 1.1.5
 * opengl
 
 ------------------------------------------------------------------------
@@ -62,3 +62,11 @@ disclaimer
 
 the GUI classes are far from complete, but they provide a decent
 overview of what might be possible.
+
+------------------------------------------------------------------------
+contributors
+------------------------------------------------------------------------
+
+* numerous fixes and help file additions by marije baalman
+
+-- EOF

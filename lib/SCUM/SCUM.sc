@@ -40,16 +40,16 @@ SCUM
 		keyEnd			= 16rF72B;
 
 		keyF1			= 16rF704;
-		keyF1			= 16rF705;
-		keyF1			= 16rF706;
-		keyF1			= 16rF707;
-		keyF1			= 16rF708;
-		keyF1			= 16rF709;
-		keyF1			= 16rF70A;
-		keyF1			= 16rF70B;
-		keyF1			= 16rF70C;
-		keyF1			= 16rF70D;
-		keyF1			= 16rF70E;
-		keyF1			= 16rF70F;
+		keyF2			= 16rF705;
+		keyF3			= 16rF706;
+		keyF4			= 16rF707;
+		keyF5			= 16rF708;
+		keyF6			= 16rF709;
+		keyF7			= 16rF70A;
+		keyF8			= 16rF70B;
+		keyF9			= 16rF70C;
+		keyF10			= 16rF70D;
+		keyF11			= 16rF70E;
+		keyF12			= 16rF70F;
 	}
 }

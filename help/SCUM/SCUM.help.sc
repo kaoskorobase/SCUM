@@ -5,6 +5,8 @@
 // namespace class without instances. defines constants used in SCUM
 // classes.
 //
+// normally you do not need to use this class directly
+//
 // see also: SCUMObject, SCUMView
 //
 // ---------------------------------------------------------------------
@@ -14,7 +16,7 @@
 // show the argument vector
 SCUM.argv;
 
-// quit the application with an error
+// quit the application (sclangx) with an error
 255.exit;
 
 // ---------------------------------------------------------------------
@@ -35,5 +37,5 @@ SCUM.argv;
 //    startup.
 //
 // ---------------------------------------------------------------------
-// $Id: SCUM.help.sc,v 1.1 2004/07/30 16:20:14 steve Exp $
+// $Id$
 // ---------------------------------------------------------------------

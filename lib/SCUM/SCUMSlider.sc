@@ -64,7 +64,7 @@ SCUMTable : SCUMControl {
 	}
 
 	value_ { |v|
-		value = v.asSignal;
+		value = v.as(Signal);
 		this.update;
 	}
 	update {

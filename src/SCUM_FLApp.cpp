@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_FLApp.cpp,v 1.1 2004/07/30 16:20:14 steve Exp $
+	$Id$
 */
 
 
@@ -108,7 +108,8 @@ void SCUM_FLApp::onInterpStartup()
 	PyrClass* klass;
 	int cvx = classVarOffset("SCUM", "argv", &klass);
 	if (cvx >= 0) {
-		PyrSlot* argvSlot = g->classvars[klass->classIndex.ui].uo->slots + cvx;
+		//PyrSlot* argvSlot = g->classvars[klass->classIndex.ui].uo->slots + cvx;
+		PyrSlot* argvSlot = &g->classvars->slots[cvx];
 		PyrObject* argv = newPyrArray(g->gc, options().mArgc * sizeof(PyrObject), 0, true);
 		SetObject(argvSlot, argv);
 		for (int i=0; i < options().mArgc; i++) {
