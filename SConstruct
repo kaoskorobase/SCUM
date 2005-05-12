@@ -123,7 +123,9 @@ else:
     env.Append(CPPDEFINES = ['NDEBUG'])
 
 # platform specific
-if PLATFORM == 'linux':
+if PLATFORM == 'darwin':
+    env.Append(LIBS = 'pthread')
+elif PLATFORM == 'linux':
     # needed for posix shm
     env.Append(LIBS = 'rt')
 
