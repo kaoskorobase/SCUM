@@ -1,6 +1,6 @@
 + Stethoscope
 {
-	makeWindow { | view |
+	makeSCUMWindow { | view |
 		var style = 0, w;
 		var vb, hb;
 
@@ -55,7 +55,7 @@
 		view.show;
 	}
 	
-	updateColors {
+	updateSCUMColors {
 		// not yet.
 // 		var no, ni, c;
 // 		no = server.options.numOutputBusChannels;

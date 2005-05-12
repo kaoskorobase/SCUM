@@ -51,6 +51,8 @@ SCUM_App::SCUM_App()
         SCUM_Object_Init(reg);
         extern void SCUM_View_Init(SCUM_ClassRegistry*);
         SCUM_View_Init(reg);
+        extern void SCUM_Button_Init(SCUM_ClassRegistry*);
+        SCUM_Button_Init(reg);
         extern void SCUM_Container_Init(SCUM_ClassRegistry*);
         SCUM_Container_Init(reg);
         extern void SCUM_Slider_Init(SCUM_ClassRegistry*);

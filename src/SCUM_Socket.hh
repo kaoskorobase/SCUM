@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA
 
-    $Id: SCUM_Button.hh 13 2005-03-10 17:21:31Z sk $
+    $Id$
 */
 
 

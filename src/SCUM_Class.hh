@@ -18,7 +18,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 	02111-1307 USA
 
-	$Id: SCUM_ViewFactory.hh 2 2004-07-30 16:20:12Z steve $
+	$Id$
 */
 
 

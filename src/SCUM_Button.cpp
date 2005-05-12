@@ -1,5 +1,5 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: sw=4 et:
+    vi: et sta sw=4:
 
     SCUM. copyright (c) 2004 stefan kersten.
 
@@ -505,6 +505,16 @@ bool SCUM_Choice::setValue(int value, bool doSend)
         return true;
     }
     return false;
+}
+
+#include "SCUM_Class.hh"
+
+void SCUM_Button_Init(SCUM_ClassRegistry* reg)
+{
+    new SCUM_ClassT<SCUM_Bang>(reg, "Bang", "View");
+    new SCUM_ClassT<SCUM_Button>(reg, "Button", "View");
+    new SCUM_ClassT<SCUM_Choice>(reg, "Choice", "View");
+    new SCUM_ClassT<SCUM_Toggle>(reg, "Toggle", "View");
 }
 
 // EOF
