@@ -3,7 +3,8 @@ SCUM -- graphical user interface server
 ------------------------------------------------------------------------
 
 SCUM is a graphical user interface server that can be controlled from
-any client program via OSC.
+any client program via OSC. the focus is on a light-weight,
+cross-platform GUI for live performance.
 
 ------------------------------------------------------------------------
 requirements
@@ -16,44 +17,16 @@ requirements
 compilation
 ------------------------------------------------------------------------
 
-compilation boils down to the usual
+to build and install SCUM, execute:
 
-$ ./configure && make && make install
+$ scons install
 
-you need fltk 1.1 which ships with an fltk-config script. if this
-script is not in your PATH, you can point the configure script to its
-location with the --with-fltk-config option.
+you need fltk 1.1 which ships with an fltk-config script. make sure
+this script is in your PATH.
 
 fltk needs to be built with opengl support, which is the case in most
 distributions. on debian/unstable you can apt-get install
 libfltk1.1-dev and should be set.
-
-------------------------------------------------------------------------
-usage (linux)
-------------------------------------------------------------------------
-
-the lib subdirectory in the distribution needs to be included in
-sclang's library configuration, by adding a line like the following to
-~/.sclang.cfg:
-
-+$HOME/path/to/sclangx/lib
-
-in order to access the online help files, either copy the help
-subdirectory to the directory where you keep the SuperCollider help
-files or just make a symbolic link.
-
-in order to use sclangx from emacs, customize the variable
-sclang-program, e.g.:
-
-(setq sclang-program "sclangx")
-
-------------------------------------------------------------------------
-usage (osx)
-------------------------------------------------------------------------
-
-put the lib and help subdirectories where the compiler can find it:
-
-ln -s /path/to/scum-src ~/Library/Application\ Support/SuperCollider/Extensions/SCUM
 
 ------------------------------------------------------------------------
 examples
