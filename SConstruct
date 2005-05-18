@@ -7,6 +7,7 @@
 import glob
 import os
 import re
+import struct
 import tarfile
 
 # ======================================================================
@@ -26,7 +27,11 @@ VERSION = '0.0.3'
 
 PLATFORM = os.uname()[0].lower()
 CPU = os.uname()[4].lower()
-
+if struct.unpack("=l", struct.pack(">l", 1))[0] == 1:
+    ENDIANNESS = 'big'
+else:
+    ENDIANNESS = 'little'
+    
 ANY_FILE_RE = re.compile('.*')
 HELP_FILE_RE = re.compile('.*\.(rtf(d)?|sc)$')
 SC_FILE_RE = re.compile('.*\.sc$')
@@ -107,14 +112,17 @@ env.Append(
 # ======================================================================
 
 conf = Configure(env, custom_tests = { 'CheckFLTK' : CheckFLTK })
-
 if not conf.CheckFLTK('1.1'):
     Exit(1)
-
 env.ParseConfig('fltk-config --use-gl --cxxflags --ldflags')
+env = conf.Finish()
 
 # defines and compiler flags
 env.Append(CPPDEFINES = ['_REENTRANT'])
+if ENDIANNESS == 'big':
+    env.Append(CPPDEFINES = ['OSC_HOST_BIG_ENDIAN'])
+else:
+    env.Append(CPPDEFINES = ['OSC_HOST_LITTLE_ENDIAN'])
 
 # debugging flags
 if env['DEBUG']:

@@ -13,7 +13,7 @@ SCUM {
 	classvar <borderNone, <borderFlat, <borderRaised, <borderSunken;
 
 	classvar <>addr, <desktop, <objectTable, objectIDStream, resources;
-	classvar <>serverProgramPath = "/usr/local/bin/scum";
+	classvar <>serverProgram = "scum";
 	classvar <>serverAddress;
 	
 	*initClass {
@@ -197,11 +197,11 @@ SCUM {
 	// PRIVATE
 	*prBoot { | addr |
 		var args = "";
-		if (serverProgramPath.notNil) {
+		if (serverProgram.notNil) {
 			if (addr.notNil) {
 				args = addr.ip + addr.port;
 			};
-			"% % &".format(serverProgramPath, args).systemCmd;
+			"% % &".format(serverProgram, args).systemCmd;
 		}
 	}
 	*prOnConnect { | addr |

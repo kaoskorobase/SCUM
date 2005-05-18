@@ -29,6 +29,14 @@ distributions. on debian/unstable you can apt-get install
 libfltk1.1-dev and should be set.
 
 ------------------------------------------------------------------------
+initialization
+------------------------------------------------------------------------
+
+to initialize the connection from within sclang, execute SCUM.connect
+before using the SCUM classes, e.g. from ~/.sclang.sc or
+~/scwork/startup.rtf.
+
+------------------------------------------------------------------------
 examples
 ------------------------------------------------------------------------
 
