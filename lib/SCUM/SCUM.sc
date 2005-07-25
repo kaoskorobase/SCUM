@@ -211,7 +211,9 @@ SCUM {
 			this.message(msg[1])
 		}).add;
 		OSCresponder(addr, "/error", { | time, resp, msg |
-			this.message("ERROR in " ++ msg[1].asString ++ ": " ++ msg[2].asString)
+			var who, where, str;
+			#who, where, str = msg;
+			this.message("ERROR in %%::%%: %%".format(who, where, str))
 		}).add;
 		this.changed(\connected);
 	}

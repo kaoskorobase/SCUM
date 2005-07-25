@@ -95,26 +95,39 @@ namespace SCUM
 	{
 		return strcmp(s1, s2) == 0;
 	}
-
 	inline SCUM_Point pointValue(SCUM_ArgStream& args)
 	{
-		return SCUM_Point(args.get_f(), args.get_f());
+		float x = args.get_f();
+		float y = args.get_f();
+		return SCUM_Point(x, y);
 	}
 	inline SCUM_Size sizeValue(SCUM_ArgStream& args)
 	{
-		return SCUM_Size(args.get_f(), args.get_f());
+		float w = args.get_f();
+		float h = args.get_f();
+		return SCUM_Size(w, h);
 	}
 	inline SCUM_Rect rectValue(SCUM_ArgStream& args)
 	{
-		return SCUM_Rect(args.get_f(), args.get_f(), args.get_f(), args.get_f());
+		float x = args.get_f();
+		float y = args.get_f();
+		float w = args.get_f();
+		float h = args.get_f();
+		return SCUM_Rect(x, y, w, h);
 	}
 	inline SCUM_Color colorValue(SCUM_ArgStream& args)
 	{
-		return SCUM_Color(args.get_f(), args.get_f(), args.get_f(), args.get_f());
+		float r = args.get_f();
+		float g = args.get_f();
+		float b = args.get_f();
+		float a = args.get_f();
+		return SCUM_Color(r, g, b, a);
 	}
 	inline SCUM_Font fontValue(SCUM_ArgStream& args)
 	{
-		return SCUM_Font(args.get_s(), args.get_f());
+		const char* name = args.get_s();
+		double size = args.get_f();
+		return SCUM_Font(name, size);
 	}
 };
 #endif // SCUM_OBJECT_HH_INCLUDED

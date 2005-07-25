@@ -53,6 +53,7 @@ public:
 	SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName);
 
 	SCUM_ClassRegistry* getRegistry() { return m_reg; }
+	const char* getName() const { return m_name; }
 	SCUM_Class* getSuperclass();
 
 	virtual SCUM_Object* makeObject(SCUM_Client* client, int oid, SCUM_ArgStream& args) = 0;

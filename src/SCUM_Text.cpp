@@ -72,7 +72,7 @@ void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
 		m_textAlign = args.get_i();
 		refresh();
 	} else if (equal(key, "font")) {
-		m_text.setFont(SCUM_Font(args.get_s(), args.get_f()));
+		m_text.setFont(fontValue(args));
 		updateLayout();
 	} else if (equal(key, "xPadding")) {
 		m_padding.x = max(2.f, args.get_f());

@@ -183,7 +183,7 @@ SCUMNumberEntry : SCUMTextEntry {
 	var <>precision, <>coarseStep=1, <>fineStep=0.001;
 	var lastMousePos;
 
-	*viewClass { ^SCUMStringEntry }
+	*serverClass { ^SCUMStringEntry }
 
 	initDefaults {
 		super.initDefaults;

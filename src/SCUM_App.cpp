@@ -30,6 +30,8 @@
 #endif
 #include "SCUM_Socket.hh"
 
+#include <errno.h>
+#include <unistd.h>
 #include <FL/Fl.H>
 
 #define SCUM_APP_IDLE_TIMEOUT 3.1415926535898
@@ -74,7 +76,7 @@ SCUM_App::SCUM_App()
 
 SCUM_App::~SCUM_App()
 {
-    close(m_socket);
+    ::close(m_socket);
 #if 0
     SCUM_RendezvousStop();
 #endif

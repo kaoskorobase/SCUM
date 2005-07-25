@@ -28,11 +28,14 @@
 #include <stdint.h>
 #include <iostream>
 
+namespace SCUM
+{
+	static const double kRGBAScale = 1.0/255.0;
+};
+
 class SCUM_Color
 {
 public:
-	static const double kRGBAScale = 1.0/255.0;
-
 	union RGBA
 	{
 		uint32_t		u32;
@@ -72,10 +75,10 @@ public:
 	uint8_t b8() const { return rgba.u8[2]; }
 	uint8_t a8() const { return rgba.u8[3]; }
 
-	float r32() const { return rgba.u8[0] * kRGBAScale; }
-	float g32() const { return rgba.u8[1] * kRGBAScale; }
-	float b32() const { return rgba.u8[2] * kRGBAScale; }
-	float a32() const { return rgba.u8[3] * kRGBAScale; }
+	float r32() const { return rgba.u8[0] * SCUM::kRGBAScale; }
+	float g32() const { return rgba.u8[1] * SCUM::kRGBAScale; }
+	float b32() const { return rgba.u8[2] * SCUM::kRGBAScale; }
+	float a32() const { return rgba.u8[3] * SCUM::kRGBAScale; }
 
 	bool isTransparent() const { return a8() == 0; }
 	inline SCUM_Color scale(float alpha) const;

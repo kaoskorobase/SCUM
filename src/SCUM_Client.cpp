@@ -96,7 +96,7 @@ SCUM_Client::~SCUM_Client()
 {
 	Fl::remove_fd(m_socket);
 	close(m_socket);
-	SCUM_ObjectIter::iterator it = m_resources.begin();
+	SCUM_ObjectIter it = m_resources.begin();
 	while (it != m_resources.end()) {
 		delete (SCUM_Object*)*it++;
 	}
@@ -182,8 +182,8 @@ SCUM_Object* SCUM_Client::getObject(int oid)
 
 void SCUM_Client::send(const char* buffer, size_t size)
 {
-	const int32_t ssize = size;
-	::send(m_socket, &ssize, sizeof(ssize), 0);
+	const int32_t nsize = htonl(size);
+	::send(m_socket, &nsize, sizeof(nsize), 0);
 	::send(m_socket, buffer, size, 0);
 }
 
@@ -206,7 +206,7 @@ void SCUM_Client::message(const char* fmt, ...)
 	send(p);
 }
 
-void SCUM_Client::error(const char* where, const char* fmt, ...)
+void SCUM_Client::error(SCUM_Object* who, const char* where, const char* fmt, ...)
 {
 	const size_t bufferSize = 256;
 	char buffer[bufferSize];
@@ -214,7 +214,12 @@ void SCUM_Client::error(const char* where, const char* fmt, ...)
 	va_start(vargs, fmt); 
 	vsnprintf(buffer, bufferSize, fmt, vargs);
 	OSC::StaticClientPacket<512> p;
-	p.openMessage("/error", 2);
+	p.openMessage("/error", 3);
+	if (who && who->getClass()) {
+		p.putString(who->getClass()->getName());
+	} else {
+		p.putString("<unknown>");
+	}
 	p.putString(where);
 	p.putString(buffer);
 	p.closeMessage();
@@ -258,6 +263,7 @@ void SCUM_Client::osc_free(const char*, SCUM_ArgStream& args)
 
 void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
 {
+	SCUM_Object* recvr = 0;
 	if (*path == '/') path++;
 	try {
 		SCUM_ArgStream args(data, size);
@@ -265,14 +271,14 @@ void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
 			(this->*m)(path, args);
 		} else if ((args.size() > 0) && (args.peek() == 'i')) {
 			int oid = args.get_i();
-			SCUM_Object* obj = oid == 0 ? this : getObject(oid);
-			if (!obj) throw std::runtime_error("object not found");
-			SCUM_Class* klass = obj->getClass();
-			if (!klass) throw std::runtime_error("classless object");
-			klass->dispatchMethod(obj, path, args);
+			recvr = oid == 0 ? this : getObject(oid);
+			if (!recvr) throw std::runtime_error("object not found");
+			SCUM_Class* klass = recvr->getClass();
+			if (!klass) throw std::runtime_error("classless object, wtf?");
+			klass->dispatchMethod(recvr, path, args);
 		}
 	} catch (OSC::Error& e) {
-		error(path, "OSC Error: %s", e.what());
+		error(recvr, path, "OSC Error: %s", e.what());
 	} catch (std::runtime_error& e) {
 		message(e.what());
 	}
@@ -307,7 +313,7 @@ void SCUM_Client::dataAvailableCB(int fd, void* data)
 			}
 		}
 	} catch (OSC::Error& e) {
-		self->error("<unknown>", "OSC Error: %s", e.what());
+		self->error(self, "<unknown>", "OSC Error: %s", e.what());
 	}
 }
 

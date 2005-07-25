@@ -63,7 +63,7 @@ public:
 	void send(const OSC::ClientPacket& packet);
 
 	void message(const char* fmt, ...);
-	void error(const char* where, const char* fmt, ...);
+	void error(SCUM_Object* who, const char* where, const char* fmt, ...);
 
 private:
 	friend class SCUM_Object;

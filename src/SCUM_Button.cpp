@@ -275,7 +275,7 @@ void SCUM_Button::setProperty(const char* key, SCUM_ArgStream& args)
         //setBoolValue(slot, setValue(intValue(slot), false));
         setValue(args.get_i(), false);
     } else if (equal(key, "font")) {
-        m_font = SCUM_Font(args.get_s(), args.get_f());
+        m_font = fontValue(args);
         for (int i=0; i < m_states.size(); i++) {
             m_states[i].text.setFont(m_font);
         }
@@ -425,7 +425,7 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
         //setBoolValue(slot, setValue(intValue(slot), false));
         setValue(args.get_i(), false);
     } else if (equal(key, "font")) {
-        m_font = SCUM_Font(args.get_s(), args.get_f());
+        m_font = fontValue(args);
         updateLayout();
     } else if (equal(key, "xPadding")) {
         m_padding.x = max(3.f, args.get_f());

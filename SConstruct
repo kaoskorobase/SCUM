@@ -9,6 +9,7 @@ import os
 import re
 import struct
 import tarfile
+import time
 
 # ======================================================================
 # setup
@@ -31,7 +32,7 @@ if struct.unpack("=l", struct.pack(">l", 1))[0] == 1:
     ENDIANNESS = 'big'
 else:
     ENDIANNESS = 'little'
-    
+
 ANY_FILE_RE = re.compile('.*')
 HELP_FILE_RE = re.compile('.*\.(rtf(d)?|sc)$')
 SC_FILE_RE = re.compile('.*\.sc$')
@@ -205,6 +206,7 @@ src/st.h
 ''')
 
 scum = env.Program('scum', scum_source_files)
+env.Default(scum)
 
 # ======================================================================
 # installation directories
@@ -274,9 +276,15 @@ def build_tar(env, target, source):
         tar.add(path, os.path.join(tar_name, path))
     tar.close()
 
-if 'dist' in COMMAND_LINE_TARGETS:
-    env.Alias('dist', env['TARBALL'])
-    env.Command(env['TARBALL'], 'SConstruct', build_tar)
+snapshot_tarball = PACKAGE + '-' + time.strftime("%Y%m%d", time.localtime()) + '.tbz2'
+env.Alias('snapshot-dist', snapshot_tarball)
+env.AlwaysBuild(env.Command(snapshot_tarball, None, build_tar))
+
+release_tarball = PACKAGE + '-' + VERSION + '.tbz2'
+env.Alias('release-dist', release_tarball)
+env.AlwaysBuild(env.Command(release_tarball, None, build_tar))
+
+env.Alias('dist', ['snapshot-dist'])
 
 # ======================================================================
 # cleanup
