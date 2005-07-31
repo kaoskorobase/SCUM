@@ -60,10 +60,14 @@ SCUMDesktop : SCUMObject {
 	font_ { |v| this.setProperty(\font, v) }
 
 	// server windows
-	makeServerWindows {
+	showServerPanel {
 		Server.named.keys.asArray.sort.do { | key |
 			Server.named[key].makeSCUMWindow
 		}
+	}
+	makeServerWindows {
+		// obsolete
+		this.showServerPanel;
 	}
 
 	// PRIVATE

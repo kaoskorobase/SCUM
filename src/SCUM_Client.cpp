@@ -285,7 +285,7 @@ void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
 }
 
 static const size_t gPacketBufferSize = 32768;
-static char gPacketBuffer[gPacketBufferSize];
+static float gPacketBuffer[gPacketBufferSize>>2];
 
 void SCUM_Client::dataAvailableCB(int fd, void* data)
 {
@@ -305,7 +305,7 @@ void SCUM_Client::dataAvailableCB(int fd, void* data)
 				delete self;
 				return;
 			}
-			OSC::ServerPacket packet(gPacketBuffer, size);
+			OSC::ServerPacket packet((char*)gPacketBuffer, size);
 			OSC::MessageStream ms(packet);
 			while (!ms.atEnd()) {
 				OSC::Message m = ms.next();

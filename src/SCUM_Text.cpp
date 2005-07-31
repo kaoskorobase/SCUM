@@ -62,7 +62,7 @@ void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
 {
 	if (equal(key, "text")) {
 		m_text.setText(args.get_s());
-		printf("frozenSize %d needsUpdate %d\n", m_frozenSize.isEmpty(), layoutNeedsUpdate(getMinSize()));
+		//printf("frozenSize %d needsUpdate %d\n", m_frozenSize.isEmpty(), layoutNeedsUpdate(getMinSize()));
 		if (m_frozenSize.isEmpty() && layoutNeedsUpdate(getMinSize())) {
 			updateLayout();
 		} else {

@@ -137,6 +137,8 @@ if PLATFORM == 'darwin':
 elif PLATFORM == 'linux':
     # needed for posix shm
     env.Append(LIBS = 'rt')
+    if ENDIANNESS == 'little':
+        env.Append(CCFLAGS = '-fno-strict-aliasing')
 
 opts.Save('scache.conf', env)
 Help(opts.GenerateHelpText(env))

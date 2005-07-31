@@ -219,11 +219,6 @@ SCUM_App& SCUM_App::instance()
 
 int main(int argc, char** argv)
 {
-    /* TODO: command line args
-     *       bind address
-     *       port
-     *       idle timeout
-     */
     char* address = 0;
     uint16_t port = 57130;
     if (argc > 1) {
