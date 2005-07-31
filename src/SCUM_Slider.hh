@@ -1,7 +1,7 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vim: et sta sw=4:
+    vi: et sta sw=4:
 
-    SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -145,8 +145,8 @@ class SCUM_Knob : public SCUM_View
 {
 
 private:
-	double		m_value;
-	double		m_step;
+    double		m_value;
+    double		m_step;
 };
 #endif // 0
 
@@ -157,11 +157,11 @@ class SCUM_Table : public SCUM_View
 {
 public:
     enum
-    {
-        kLines,
-        kFilled,
-        kWaveform
-    };
+        {
+            kLines,
+            kFilled,
+            kWaveform
+        };
 
     SCUM_Table(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
     virtual ~SCUM_Table();
@@ -198,5 +198,5 @@ private:
   Range
   Knob
   Joystick
- */
+*/
 #endif // SCUM_SLIDER_HH_INCLUDED

@@ -5,10 +5,10 @@
 
 namespace SCUM
 {
-	static inline void CheckAlloc(void* ptr)
-	{
-		if (!ptr) throw std::bad_alloc();
-	}
+  static inline void CheckAlloc(void* ptr)
+  {
+    if (!ptr) throw std::bad_alloc();
+  }
 };
 
 #ifdef SCUM_DEBUG
@@ -25,15 +25,15 @@ namespace SCUM
 
 namespace SCUM
 {
-	static inline void DebugPrint(FILE* ostream, const char* file, int line, const char* func, const char* fmt, ...)
-	{
-		va_list ap;
-		va_start(ap, fmt);
-		fprintf(ostream, "SCUM:%s:%d:%s ", file, line, func);
-		vfprintf(ostream, fmt, ap);
-		fflush(ostream);
-		va_end(ap);
-	}
+  static inline void DebugPrint(FILE* ostream, const char* file, int line, const char* func, const char* fmt, ...)
+  {
+    va_list ap;
+    va_start(ap, fmt);
+    fprintf(ostream, "SCUM:%s:%d:%s ", file, line, func);
+    vfprintf(ostream, fmt, ap);
+    fflush(ostream);
+    va_end(ap);
+  }
 };
 
 # define SCUM_ASSERT(expr) \

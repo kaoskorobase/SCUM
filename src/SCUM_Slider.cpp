@@ -1,7 +1,7 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vim: et sta sw=4:
+    vi: et sta sw=4:
 
-    SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -32,16 +32,16 @@ namespace SCUM
 {
     static const int kDefaultThumbSize = 10;
 
-// 	inline static double expDelta(double delta)
-// 	{
-// 		double sign;
+    // 	inline static double expDelta(double delta)
+    // 	{
+    // 		double sign;
             
-// 		if (delta > 0.) sign = 1.;
-// 		else if (delta < 0.) sign = -1.;
-// 		else return 0.;
+    // 		if (delta > 0.) sign = 1.;
+    // 		else if (delta < 0.) sign = -1.;
+    // 		else return 0.;
             
-// 		return sign * exp(delta * delta) / M_E;
-// 	}
+    // 		return sign * exp(delta * delta) / M_E;
+    // 	}
     inline static Orient orientValue(SCUM_ArgStream& args)
     {
         const char* sym = args.get_s();
@@ -53,11 +53,11 @@ namespace SCUM
 #if 0
     inline static void setOrientValue(PyrSlot* slot, int orient)
     {
-            switch (orient) {
-                    case kOrientHorizontal: SetSymbol(slot, getsym("horizontal")); break;
-                    case kOrientVertical: SetSymbol(slot, getsym("vertical")); break;
-                    default: SetNil(slot);
-            }
+        switch (orient) {
+        case kOrientHorizontal: SetSymbol(slot, getsym("horizontal")); break;
+        case kOrientVertical: SetSymbol(slot, getsym("vertical")); break;
+        default: SetNil(slot);
+        }
     }
 #endif
 };
@@ -540,21 +540,21 @@ void SCUM_Table::mouseMove(int state, const SCUM_Point& where)
         double delta = (value - prevValue) / (index - prevIndex);
         setValueRange(prevIndex, index + 1, prevValue, delta, true);
         /*
-           for (int i=prevIndex; i <= index; ++i) {
-           setValue(i, val, true);
-           val += delta;
-           }
-           */
+          for (int i=prevIndex; i <= index; ++i) {
+          setValue(i, val, true);
+          val += delta;
+          }
+        */
     } else {
         double val = value;
         double delta = (prevValue - value) / (prevIndex - index);
         setValueRange(index, prevIndex + 1, value, delta, true);
         /*
-           for (int i=index; i <= prevIndex; ++i) {
-           setValue(i, val, true);
-           val += delta;
-           }
-           */
+          for (int i=index; i <= prevIndex; ++i) {
+          setValue(i, val, true);
+          val += delta;
+          }
+        */
     }
 
     m_prevPoint = where;
@@ -616,9 +616,9 @@ void SCUM_Table::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal(key, "style")) {
         switch (m_style) {
-            case kLines: SetSymbol(slot, getsym("lines")); break;
-            case kFilled: SetSymbol(slot, getsym("filled")); break;
-            case kWaveform: SetSymbol(slot, getsym("waveform")); break;
+        case kLines: SetSymbol(slot, getsym("lines")); break;
+        case kFilled: SetSymbol(slot, getsym("filled")); break;
+        case kWaveform: SetSymbol(slot, getsym("waveform")); break;
         }
     } else if (equal(key, "step")) {
         setFloatValue(slot, m_step);

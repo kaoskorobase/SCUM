@@ -1,7 +1,7 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vim: et sta sw=4:
+    vi: et sta sw=4:
 
-    SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -31,9 +31,9 @@
 static const char* SCUM_ProtoString(int proto)
 {
     switch (proto) {
-        case kSCUM_ProtoUDP: return "_osc._udp";
-        case kSCUM_ProtoTCP: return "_osc._tcp";
-        default: return 0;
+    case kSCUM_ProtoUDP: return "_osc._udp";
+    case kSCUM_ProtoTCP: return "_osc._tcp";
+    default: return 0;
     }
 }
 
@@ -51,11 +51,11 @@ static void howlTickCB(void* data)
 }
 
 static sw_result HOWL_API howlPublishReplyFunc(
-        sw_discovery,
-        sw_discovery_oid,
-        sw_discovery_publish_status status,
-        sw_opaque
-        )
+                                               sw_discovery,
+                                               sw_discovery_oid,
+                                               sw_discovery_publish_status status,
+                                               sw_opaque
+                                               )
 {
     return SW_OKAY;
 }
@@ -96,17 +96,17 @@ bool SCUM_RendezvousPublish(const char* name, int proto, uint16_t port)
     if (!type) return false;
 
     res = sw_discovery_publish(
-            g_howlSession,
-            0,				// interface
-            name,			// name
-            type,			// type
-            0,				// domain (.local)
-            0,				// host
-            port,			// port
-            0, 0,			// text records
-            howlPublishReplyFunc, 0,	// reply func
-            &oid			// request id
-            );
+                               g_howlSession,
+                               0,				// interface
+                               name,			// name
+                               type,			// type
+                               0,				// domain (.local)
+                               0,				// host
+                               port,			// port
+                               0, 0,			// text records
+                               howlPublishReplyFunc, 0,	// reply func
+                               &oid			// request id
+                               );
 
     fprintf(stderr, "SCUM_RendezvousPublish(howl): %s %s %d : %d\n", name, type, port, res == SW_OKAY);
 
@@ -141,11 +141,11 @@ static bool netServiceRegister(CFNetServiceRef netServiceRef)
     pthread_attr_setdetachstate(&attr, 1);
     pthread_t thread;
     int err = pthread_create(
-            &thread,
-            &attr,
-            netServiceRegisterThreadFunc,
-            netServiceRef
-            );
+                             &thread,
+                             &attr,
+                             netServiceRegisterThreadFunc,
+                             netServiceRef
+                             );
     return err == 0;
 }
 
@@ -155,24 +155,24 @@ bool SCUM_RendezvousPublish(const char* cname, int proto, uint16_t port)
     if (!ctype) return false;
 
     CFStringRef type = CFStringCreateWithCString(
-            kCFAllocatorDefault,
-            ctype,
-            kCFStringEncodingUTF8
-            );
+                                                 kCFAllocatorDefault,
+                                                 ctype,
+                                                 kCFStringEncodingUTF8
+                                                 );
 
     CFStringRef name = CFStringCreateWithCString(
-            kCFAllocatorDefault,
-            cname,
-            kCFStringEncodingUTF8
-            );
+                                                 kCFAllocatorDefault,
+                                                 cname,
+                                                 kCFStringEncodingUTF8
+                                                 );
 
     CFNetServiceRef netServiceRef =  CFNetServiceCreate(
-            NULL,                   // default allocator
-            CFSTR(""),              // default domain
-            type,
-            name,
-            port
-            );
+                                                        NULL,                   // default allocator
+                                                        CFSTR(""),              // default domain
+                                                        type,
+                                                        name,
+                                                        port
+                                                        );
 
     fprintf(stderr, "SCUM: created net service\n");
 

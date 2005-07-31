@@ -1,7 +1,7 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vim: et sta sw=4:
+    vi: et sta sw=4:
 
-    SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -35,29 +35,29 @@
 class SCUM_SharedMemory
 {
 public:
-	struct Segment
-	{
-		uint32_t	m_size;
-		uint8_t		m_data[1];
-	};
+    struct Segment
+    {
+        uint32_t	m_size;
+        uint8_t		m_data[1];
+    };
 
-	SCUM_SharedMemory();
-	~SCUM_SharedMemory();
+    SCUM_SharedMemory();
+    ~SCUM_SharedMemory();
 
-	int attach(const char* name);
-	void detach();
+    int attach(const char* name);
+    void detach();
 
-	bool isAttached() { return m_fd != -1; }
-	inline size_t getSize() const { return m_seg->m_size; }
-	uint8_t* getData() { return m_seg->m_data; }
+    bool isAttached() { return m_fd != -1; }
+    inline size_t getSize() const { return m_seg->m_size; }
+    uint8_t* getData() { return m_seg->m_data; }
 
-	void lock();
-	void unlock();
+    void lock();
+    void unlock();
 
 private:
-	int			m_fd;
-	sem_t*		m_sem;
-	Segment*	m_seg;
+    int			m_fd;
+    sem_t*		m_sem;
+    Segment*	m_seg;
 };
 
 #endif // SCUM_SHM_HH_INCLUDED

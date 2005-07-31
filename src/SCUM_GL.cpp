@@ -1,7 +1,7 @@
 /*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: sw=4 et:
+    vi: et sta sw=4:
 
-    SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
