@@ -106,14 +106,25 @@ void SCUM_App::timeoutCB(void* data)
 static int bind_port(int socket, uint16_t port)
 {
     struct sockaddr_in addr;
+
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_LOOPBACK;
     addr.sin_port = htons(port);
-    int err = bind(socket, (struct sockaddr*)&addr, sizeof(addr));
-    return (err == -1) ? errno : 0;
+
+    int opt = 1;
+    if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        return errno;
+    }
+
+    if (bind(socket, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+        return errno;
+    }
+
+    return 0;
 }
 
+/*
 static int bind_port_range(int socket, uint16_t portStart, uint16_t portMax, bool wrap)
 {
     uint16_t port;
@@ -138,6 +149,7 @@ static int bind_port_range(int socket, uint16_t portStart, uint16_t portMax, boo
 
     return 0;
 }
+*/
 
 void SCUM_App::initOSC(const char* address, uint16_t port)
 {
