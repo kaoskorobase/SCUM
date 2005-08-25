@@ -65,7 +65,7 @@ SCUMTextEntry : SCUMLabel {
 	stringToValue { | str | ^str }
 
 	addInput { | char, maxLength |
-		this.prStartEditing;
+		this.prStartEditing(true);
 		keyString = keyString.add(char);
 		if (maxLength.notNil) {
 			this.text = keyString.copyRange(0, maxLength);
@@ -73,17 +73,26 @@ SCUMTextEntry : SCUMLabel {
 			this.text = keyString;
 		}
 	}
+	deleteLastInput {
+		this.prStartEditing(false);
+		keyString = keyString.copyRange(0, keyString.size - 2);
+		this.text = keyString;
+	}
 
 	defaultKeyDownAction { | evt |
 		evt.ifNl({
 			if (this.isEditing) {
 				this.prStopEditing(true);
 			}{
-				this.prStartEditing;
+				this.prStartEditing(false);
 			}
 			^this
 		});
-		evt.ifKeys([keyDelete, keyBackSpace, keyEscape], {
+		evt.ifKey(keyBackSpace) {
+			this.deleteLastInput;
+			^this
+		};
+		evt.ifKeys([keyDelete, keyEscape], {
 			this.prStopEditing(false);
 			^this
 		});
@@ -121,9 +130,9 @@ SCUMTextEntry : SCUMLabel {
 	onStopEditing { }
 
 	// PRIVATE
-	prStartEditing {
+	prStartEditing { | erase=true |
 		if (this.isEditing.not) {
-			keyString = String.new;
+			keyString = if (erase) { String.new } { this.text };
 			fgColorSave = this.fgColor;
 			this.fgColor = editColor;
 			this.onStartEditing;
@@ -180,13 +189,15 @@ SCUMStringEntry : SCUMTextEntry {
 }
 
 SCUMNumberEntry : SCUMTextEntry {
-	var <>precision, <>coarseStep=1, <>fineStep=0.001;
+	var <>precision, <>coarseStep=1, <>fineStep=0.001, <>min, <>max;
 	var lastMousePos;
 
 	*serverClass { ^SCUMStringEntry }
 
 	initDefaults {
 		super.initDefaults;
+		min = -inf;
+		max = inf;
 		this.bgColor = Color.grey(0.6);
 		this.font = Font("Courier", 12);
 		this.textAlignment = 4;
@@ -194,11 +205,14 @@ SCUMNumberEntry : SCUMTextEntry {
 		this
 			.setKey(nil, SCUM.keyUp, { |v| v.increment })
 			.setKey(nil, SCUM.keyDown, { |v| v.decrement })
-			.setKey(\S, SCUM.keyUp, { |v| v.increment(fine: true) })			.setKey(\S, SCUM.keyDown, { |v| v.decrement(fine: true) })	}
+			.setKey(\S, SCUM.keyUp, { |v| v.increment(fine: true) })
+			.setKey(\S, SCUM.keyDown, { |v| v.decrement(fine: true) })
+	}
 
 	defaultValue { ^0 }
 	valueToString { | obj | ^obj.asFloat.asStringPrec(precision) }
 	stringToValue { | str | ^str.asFloat }
+	value_ { | aNumber | super.value_(aNumber.clip(min, max)) }
 
 	increment { | n=1, fine=false | this.valueAction = this.value + (n * fine.if(fineStep, coarseStep)) }
 	decrement { | n=1, fine=false | this.valueAction = this.value - (n * fine.if(fineStep, coarseStep)) }
