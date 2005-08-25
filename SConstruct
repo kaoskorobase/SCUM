@@ -7,7 +7,7 @@
 import glob
 import os
 import re
-import struct
+import sys
 import tarfile
 import time
 
@@ -28,15 +28,8 @@ VERSION = '0.0.3'
 
 PLATFORM = os.uname()[0].lower()
 CPU = os.uname()[4].lower()
-if struct.unpack("=l", struct.pack(">l", 1))[0] == 1:
-    ENDIANNESS = 'big'
-else:
-    ENDIANNESS = 'little'
 
-ANY_FILE_RE = re.compile('.*')
-HELP_FILE_RE = re.compile('.*\.(rtf(d)?|sc)$')
-SC_FILE_RE = re.compile('.*\.sc$')
-SRC_FILE_RE = re.compile('.*\.(c(pp)|h)$')
+ENDIANNESS = sys.byteorder
 
 # ======================================================================
 # util
@@ -115,7 +108,10 @@ env.Append(
 conf = Configure(env, custom_tests = { 'CheckFLTK' : CheckFLTK })
 if not conf.CheckFLTK('1.1'):
     Exit(1)
-env.ParseConfig('fltk-config --use-gl --cxxflags --ldflags')
+if PLATFORM == 'darwin':
+    env.ParseConfig('fltk-config --use-gl --cxxflags')
+else:
+    env.ParseConfig('fltk-config --use-gl --cxxflags --ldflags')
 env = conf.Finish()
 
 # defines and compiler flags
@@ -134,6 +130,11 @@ else:
 # platform specific
 if PLATFORM == 'darwin':
     env.Append(LIBS = 'pthread')
+    # hackedyhackhack: ParseConfig doesn't understand -framework
+    #                  linking commandline order matters!
+    fd = os.popen('fltk-config --use-gl --ldstaticflags')
+    env.Append(_LIBFLAGS = " " + fd.readline())
+    fd.close()
 elif PLATFORM == 'linux':
     # needed for posix shm
     env.Append(LIBS = 'rt')
@@ -215,7 +216,20 @@ env.Default(scum)
 # ======================================================================
 
 INSTALL_PREFIX = os.path.join('$DESTDIR', '$PREFIX')
-DATA_DIR = os.path.join(INSTALL_PREFIX, 'share', 'SuperCollider')
+
+if PLATFORM == 'darwin':
+    if os.path.realpath(env['PREFIX']) == os.path.realpath(os.environ['HOME']):
+        data_prefix = '$PREFIX'
+    else:
+        data_prefix = '/'
+    DATA_DIR = os.path.join(
+        '$DESTDIR', data_prefix,
+        'Library', 'Application Support', 'SuperCollider')
+else:
+    DATA_DIR = os.path.join(INSTALL_PREFIX, 'share', 'SuperCollider')
+
+HELP_DIR = os.path.join(DATA_DIR, 'Help', env['PACKAGE'])
+LIB_DIR = os.path.join(DATA_DIR, 'Extensions', env['PACKAGE'])
 
 ANY_FILE_RE = re.compile('.*')
 SC_FILE_RE = re.compile('.*\.sc$')
@@ -226,17 +240,9 @@ SRC_FILE_RE = re.compile('.*\.(h|hh|c|cpp)$')
 # installation
 # ======================================================================
 
-env.Alias('install-bin',
-          env.Install(os.path.join(INSTALL_PREFIX, 'bin'), scum))
-
-env.Alias('install-data', install_dir(
-    env, 'help',
-    os.path.join(DATA_DIR, 'Help', env['PACKAGE']), HELP_FILE_RE, 1))
-
-env.Alias('install-data', install_dir(
-    env, 'lib',
-    os.path.join(DATA_DIR, 'Extensions', env['PACKAGE']), SC_FILE_RE, 1))
-
+env.Alias('install-bin', env.Install(os.path.join(INSTALL_PREFIX, 'bin'), scum))
+env.Alias('install-data', install_dir(env, 'help', HELP_DIR, HELP_FILE_RE, 1))
+env.Alias('install-data', install_dir(env, 'lib', LIB_DIR, SC_FILE_RE, 1))
 env.Alias('install', ['install-bin', 'install-data'])
 
 # ======================================================================
