@@ -66,7 +66,7 @@ SCUMButton : SCUMControl {
 	}
 	value_ { |v|
 		v = v.wrap(0, this.states.size - 1);
-		this.setPropertyChanged(\value, v) { value = v }
+		this.setPropertyChanged(\value, v, onlyIfChanged: false) { value = v }
 	}
 	font { ^this.getProperty(\font) }
 	font_ { |v| this.setProperty(\font, v); ^v }
