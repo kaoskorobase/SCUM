@@ -92,6 +92,7 @@ void SCUM_Toggle::setProperty(const char* key, SCUM_ArgStream& args)
     if (equal(key, "value")) {
         //setBoolValue(slot, setValue(boolValue(slot), false));
         setValue(args.get_i(), false);
+        m_pushed = m_value;
         refresh();
     } else {
         SCUM_View::setProperty(key, args);

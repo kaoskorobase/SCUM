@@ -88,7 +88,7 @@ void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
         }
         updateLayout();
     } else if (equal(key, "minSize") && (args.peek() == 's')) { // overridden from SCUM_View
-        layout().minSize = m_text.font().measure(args.get_s()).size;
+        layout().minSize = m_text.font().measure(args.get_s()).size.padded(m_padding);
         updateLayout();
     } else {
         SCUM_View::setProperty(key, args);

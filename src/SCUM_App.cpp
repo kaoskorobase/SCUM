@@ -170,6 +170,11 @@ void SCUM_App::initOSC(const char* address, uint16_t port)
         struct hostent* he = gethostbyname(address);
         if (he) addr.sin_addr.s_addr = *(int32_t*)he->h_addr;
     }
+    int opt = 1;
+    if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        perror("setsockopt");
+        exit(1);
+    }
     ret = bind(m_socket, (struct sockaddr*)&addr, sizeof(addr));
     if (ret == -1) {
         perror("bind");
