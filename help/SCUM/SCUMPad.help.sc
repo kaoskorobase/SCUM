@@ -11,17 +11,19 @@
 // ---------------------------------------------------------------------
 
 (
-	w = SCUMWindow.new {
-		~initialSize = 200.asSize;
-		~padding = 15;
-		~children = {
-			SCUMPad.make {
-				~action = { |v| v.value.postln };
-				~step = 0.1;
-			}
-		}
-	};
-	w.show;
+w = SCUMWindow.make {
+	~initialSize = 200.asSize;
+	~padding = 15;
+	~bgColor = Color(0.2, 0.6, 0.01);
+	SCUMPad.make {
+		~fgColor = Color(0.2, 0.4, 0.1);
+		~bgColor = Color(0.2, 0.6, 0.01);
+		~action = { |v| v.value.postln };
+		~step = 0.1;
+		~thumbSize = 20;
+	}
+};
+w.show;
 )
 
 // ---------------------------------------------------------------------

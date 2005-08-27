@@ -8,20 +8,25 @@ SCUMContainer : SCUMView {
 		));
 	}
 	initObject { | argParent initFunction serverArgs |
-		var continuation;
+		var func;
 		super.initObject(argParent, initFunction, serverArgs);
-		continuation = children;
-		children = List.new;
-		named = Dictionary.new;
-		Environment.new.put(\parent, this).use(continuation);
+		if (children.isKindOf(Function)) {
+			func = children;
+			children = nil;
+			"SCUM: obsolete use of ~children function, please review your code".warn;
+			Environment.new.put(\buildParent, this).put(\parent, this).use(func);
+		};
 	}
-
+	initEnvironment {
+		super.initEnvironment;
+		~buildParent = this;
+	}
 	size { ^children.size }
 	at { | key |
 		^key.isNumber.if(children, named).at(key)
 	}
 	children_ { | continuation |
-		if (children.isNil) {
+		if (children.isNil and: { continuation.isKindOf(Function) }) {
 			children = continuation;
 		}
 	}
@@ -46,19 +51,29 @@ SCUMContainer : SCUMView {
 	prDestroyed {
 		var list;
 		list = children.copy;
-		children.clear;
+		children = nil;
 		list.do { arg child; child.prDestroyed };
 		super.prDestroyed;
 	}
 	prAddChild { | child, name |
+		if (children.isNil) {
+			children = List.new;
+		};
 		if (children.includes(child).not) {
 			children = children.add(child);
 		};
-		if (name.notNil) { named.put(name, child) }
 	}
 	prRemoveChild { | child, name |
 		children.remove(child);
-		if (name.notNil) { named.removeAt(name) }
+	}
+	prAddNamed { | name, child |
+		if (named.isNil) {
+			named = Dictionary.new;
+		};
+		named.put(name, child);
+	}
+	prRemoveNamed { | name |
+		named.removeAt(name);
 	}
 	prRaiseChild { | child |
 		var i;

@@ -8,7 +8,7 @@ SCUMObject : SCUM {
 	*initClass {
 		defaultClock = AppClock;
 		ActionListener(SCUM, \connected, {
-			SCUM.registerObjectMethod("/changed", {Ê| obj, name ... args |
+			SCUM.registerObjectMethod("/changed", { | obj, name ... args |
 				obj.doBlocked {
 					obj.tryPerform(("prSet_" ++ name).asSymbol, *args)
 				}
@@ -53,22 +53,23 @@ SCUMObject : SCUM {
 		var bundle;
 		bundle = SCUM.makeBundle(false) {
 			// create remote object
-			if (serverArgs.isArray) {
+			if (serverArgs.notNil) {
 				// don't send if serverArgs.isNil
 				SCUM.sendMsg(*this.newMsg(*serverArgs));
 			};
 			// set properties
-			SCUM.sendBundle(nil, *this.setPropertiesBundle(
-				this.recordPropertyChangesDuring {
+// 			SCUM.sendBundle(nil, *this.setPropertiesBundle(
+// 				this.recordPropertyChangesDuring {
 					// default initializer
 					this.initDefaults;
 					// user initializer
 					this.use { initFunction.value(this) };
-				}
-			))
+// 				}
+// 			))
 		};
 		SCUM.putObject(id, this);
-		SCUM.sendBundle(nil, *bundle);
+		//SCUM.sendBundle(nil, *bundle);
+		bundle.do(SCUM.sendMsg(*_))
 	}
 	initDefaults {
 		// initialize property defaults etc. here
@@ -94,17 +95,20 @@ SCUMObject : SCUM {
 	}
 	
 	// environment support
+	initEnvironment {
+		~thisObject = this;
+	}
 	use { | function |
 		var saveEnvir, envir, result;
 		saveEnvir = currentEnvironment;
-		envir = Environment.new.put(\thisObject, this);
+		envir = Environment.make({ this.initEnvironment });
 		currentEnvironment = EnvironmentProxy(
-			{ |k|
+			{ | k |
 				if (this.respondsTo(k))
 				{ this.perform(k) }
 				{ envir.at(k) }
 			},
-			{ |k,v|
+			{ | k, v |
 				if (this.respondsTo(k.asSetter))
 				{ this.perform(k.asSetter, v) }
 				{ envir.put(k, v) }
@@ -226,8 +230,8 @@ SCUMObject : SCUM {
 			this.doActionUnlessMuted(name);
 		}
 	}
-	setPropertyChanged { | name value changedFunction |
-		if (value != this.perform(name)) {
+	setPropertyChanged { | name value changedFunction onlyIfChanged(true) |
+		if (onlyIfChanged.not or: { value != this.perform(name) }) {
 			changedFunction.value(value);
 			this.prSetServerProperty(name, value);
 			this.doActionUnlessMuted(name);

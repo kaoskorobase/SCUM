@@ -10,20 +10,22 @@
 // examples
 // ---------------------------------------------------------------------
 
-(
-	w = SCUMWindow.new;
-	w.title = "List example";
-	w.initialSize = Size(400, 400);
+// PARTIALLY IMPLEMENTED
 
-	l = SCUMList(w);
-	l.items = Pattern.allSubclasses.collectMsg(\asString);
-	l.fgColor = Color.grey(0.7);
-	l.bgColor = Color(0.2, 0, 0.5);
-	l.fgColorSel = Color.white;
-	l.bgColorSel = Color.grey(0.2);
-	l.action = #{ | view | view.value.postln };
-	
-	w.show;
+(
+SCUMWindow.make {
+	~title = "List example";
+	~initialSize = Size(400, 400);
+
+	SCUMList.make {
+		~items = Pattern.allSubclasses.collectMsg(\asString);
+		~fgColor = Color.grey(0.7);
+		~bgColor = Color(0.2, 0, 0.5);
+		~fgColorSel = Color.white;
+		~bgColorSel = Color.grey(0.2);
+		~action = #{ | view | view.value.postln };
+	};
+}.show;
 )
 
 // ---------------------------------------------------------------------

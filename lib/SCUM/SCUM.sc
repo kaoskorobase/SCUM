@@ -1,59 +1,49 @@
 SCUM {
 	// constants
-	classvar <modShift, <modControl, <modCommand, <modKeypad;
+	classvar <modShift		= 1;
+	classvar <modControl	= 2;
+	classvar <modCommand	= 4;
+	classvar <modKeypad		= 8;
+
+	classvar <keyBackSpace	= 16r0008;
+	classvar <keyTab		= 16r0009;
+	classvar <keyLF			= 16r000A;
+	classvar <keyCR			= 16r000D;
+	classvar <keyEscape		= 16r001B;
+	classvar <keySpace		= 16r0020;
+	classvar <keyDelete		= 16rF728;
+
+	classvar <keyUp			= 16rF700;
+	classvar <keyDown		= 16rF701;
+	classvar <keyLeft		= 16rF702;
+	classvar <keyRight		= 16rF703;
+	classvar <keyPageUp		= 16rF72C;
+	classvar <keyPageDown	= 16rF72D;
+	classvar <keyHome		= 16rF729;
+	classvar <keyBegin		= 16rF72A;
+	classvar <keyEnd		= 16rF72B;
+	
+	classvar <keyF1			= 16rF704;
+	classvar <keyF2			= 16rF705;
+	classvar <keyF3			= 16rF706;
+	classvar <keyF4			= 16rF707;
+	classvar <keyF5			= 16rF708;
+	classvar <keyF6			= 16rF709;
+	classvar <keyF7			= 16rF70A;
+	classvar <keyF8			= 16rF70B;
+	classvar <keyF9			= 16rF70C;
+	classvar <keyF10		= 16rF70D;
+	classvar <keyF11		= 16rF70E;
+	classvar <keyF12		= 16rF70F;
+	
+	// default modifier (platform dependent)
 	classvar <>modDefault;
 	
-	classvar <keyTab, <keyDelete, <keyBackSpace, <keySpace;
-	classvar <keyLF, <keyCR, <keyEscape;
-	classvar <keyUp, <keyDown, <keyLeft, <keyRight, <keyPageUp, <keyPageDown;
-	classvar <keyHome, <keyBegin, <keyEnd;
-	classvar <keyF1, <keyF2, <keyF3, <keyF4, <keyF5, <keyF6;
-	classvar <keyF7, <keyF8, <keyF9, <keyF10, <keyF11, <keyF12;
-
-	classvar <borderNone, <borderFlat, <borderRaised, <borderSunken;
-
 	classvar <>addr, <desktop, <objectTable, objectIDStream, resources;
 	classvar <>serverProgram = "scum";
 	classvar <>serverAddress;
 	
 	*initClass {
-		modShift			= (1 << 0);
-		modControl		= (1 << 1);
-		modCommand		= (1 << 2);
-		modKeypad			= (1 << 3);
-
-		keyBackSpace		= 16r0008;
-		keyTab			= 16r0009;
-		keyLF			= 16r000A;
-		keyCR			= 16r000D;
-		keyEscape			= 16r001B;
-		keySpace			= 16r0020;
-// 		keyDelete			= 16r007F;
-		keyDelete			= 16rF728;
-
-		keyUp			= 16rF700;
-		keyDown			= 16rF701;
-		keyLeft			= 16rF702;
-		keyRight			= 16rF703;
-		keyPageUp			= 16rF72C;
-		keyPageDown		= 16rF72D;
-		keyHome			= 16rF729;
-		keyBegin			= 16rF72A;
-		keyEnd			= 16rF72B;
-
-		keyF1			= 16rF704;
-		keyF2			= 16rF705;
-		keyF3			= 16rF706;
-		keyF4			= 16rF707;
-		keyF5			= 16rF708;
-		keyF6			= 16rF709;
-		keyF7			= 16rF70A;
-		keyF8			= 16rF70B;
-		keyF9			= 16rF70C;
-		keyF10			= 16rF70D;
-		keyF11			= 16rF70E;
-		keyF12			= 16rF70F;
-		
 		objectTable = IdentityDictionary.new;
 		objectIDStream = {: x, x <- (0..inf), x != 0 };
 		serverAddress = NetAddr("127.0.0.1", 57130);

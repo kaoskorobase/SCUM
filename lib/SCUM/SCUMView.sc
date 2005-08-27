@@ -30,10 +30,10 @@ SCUMView : SCUMObject {
 		^super.new.initObject(parent, function);
 	}
 	*make { | function |
-		if (~parent.isNil) {
-			Error("missing ~parent for view").throw;
+		if (~buildParent.isNil) {
+			Error("missing ~buildParent for view").throw;
 		};
-		^this.new(~parent, function)
+		^this.new(~buildParent, function)
 	}
 	initObject { | argParent initFunction serverArgs |
 		parent = argParent.asView;
@@ -47,13 +47,13 @@ SCUMView : SCUMObject {
 
 	// naming
 	name_ { | argName |
-		var oldName;
-		oldName = name;
-		name = if (argName.notNil, { argName.asString });
-		if (parent.notNil) {
-			parent.prRemoveChild(nil, oldName);
-			parent.prAddChild(this, name);
-		}
+		if (name.notNil) {
+			parent.prRemoveNamed(name);
+		};
+		name = argName !? { argName.asString };
+		if (name.notNil) {
+			parent.prAddNamed(name, this);
+		};
 	}
 	printOn { | stream |
 		super.printOn(stream);
@@ -224,7 +224,10 @@ SCUMView : SCUMObject {
 		parent.prAddChild(this);
 	}
 	prRemoveFromParent {
-		parent.prRemoveChild(this, name);
+		parent.prRemoveChild(this);
+		if (name.notNil) {
+			parent.prRemoveNamed(name);
+		};
 	}
 	prDestroyed {
 		this.prRemoveFromParent;

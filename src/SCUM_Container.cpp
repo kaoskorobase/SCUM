@@ -724,7 +724,9 @@ void SCUM_Grid::setProperty(const char* key, SCUM_ArgStream& args)
         m_spacing.y = max(0.f, args.get_f());
         updateLayout();
     } else if (equal(key, "dimensions")) {
-        SCUM_Size size(args.get_f(), args.get_f());
+        SCUM_Size size;
+        size.w = args.get_f();
+        size.h = args.get_f();
         m_numRows = max(0, (int)size.h);
         m_numCols = max(0, (int)size.w);
         dimensionsChanged();
@@ -1020,18 +1022,22 @@ void SCUM_Grid::updateGrid()
     memset(m_grid, 0, sizeof(SCUM_View*) * rows * cols);
 
     SCUM_View* child = firstChild();
-    for (size_t r=0; r < rows; r++) {
-        for (size_t c=0; c < cols; c++) {
-            if (child == 0) return;
-            childPut(r, c, child);
-            child = child->nextView();
-        }
+    for (int i = 0; i < numChildren(); ++i) {
+        m_grid[gridIndex(i)] = child;
+        child = child->nextView();
     }
+//     for (size_t r=0; r < rows; r++) {
+//         for (size_t c=0; c < cols; c++) {
+//             if (child == 0) return;
+//             childPut(r, c, child);
+//             child = child->nextView();
+//         }
+//     }
 }
 
-size_t SCUM_Grid::childIndex(size_t row, size_t col)
+size_t SCUM_Grid::gridIndex(size_t index)
 {
-    return 0;
+    return index;
 }
 
 // =====================================================================
@@ -1041,11 +1047,6 @@ SCUM_HGrid::SCUM_HGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_Arg
     : SCUM_Grid(klass, client, oid, args)
 { }
 
-size_t SCUM_HGrid::childIndex(size_t row, size_t col)
-{
-    return row * numCols() + col;
-}
-
 // =====================================================================
 // SCUM_VGrid
 
@@ -1053,9 +1054,23 @@ SCUM_VGrid::SCUM_VGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_Arg
     : SCUM_Grid(klass, client, oid, args)
 { }
 
-size_t SCUM_VGrid::childIndex(size_t row, size_t col)
+// size_t SCUM_VGrid::childIndex(size_t row, size_t col)
+// {
+// //     return col * numRows() + row;
+//     size_t i = row * numCols() + col;
+//     row = i % numRows();
+//     col = i / numRows();
+//     size_t j = row * numCols() + col;
+// //     printf("%d <-> %d\n", i, j);
+//     return j;
+// }
+
+size_t SCUM_VGrid::gridIndex(size_t index)
 {
-    return col * numRows() + row;
+//     return col * numRows() + row;
+    size_t row = index % numRows();
+    size_t col = index / numRows();
+    return row * numCols() + col;
 }
 
 // =====================================================================

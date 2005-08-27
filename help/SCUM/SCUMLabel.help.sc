@@ -12,20 +12,19 @@
 
 (
 // create some labels
-w = SCUMWindow.new;
-w.title = "Label example";
-
-c = SCUMVBox(w);
-
-(8..22).do { |i|
-	SCUMLabel(c, { |v|
-		v.text = "the brown cow jumps over the white fox";
-		v.font = Font("Helvetica", i);
-		v.yExpand = i;
-		v.yFill = 1;
-	})
-};
-w.show;
+SCUMWindow.make {
+	~title = "Label example";
+	c = SCUMVBox.make {
+		(8..22).do { |i|
+			SCUMLabel.make {
+				~text = "the brown cow jumps over the white fox";
+				~font = Font("Helvetica", i);
+				~yExpand = i;
+				~yFill = 1;
+			}
+		};
+	}
+}.show;
 )
 
 (

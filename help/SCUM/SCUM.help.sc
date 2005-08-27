@@ -11,11 +11,15 @@
 // examples
 // ---------------------------------------------------------------------
 
-// show the argument vector
-SCUM.argv;
-
-// quit the application with an error
-255.exit;
+(
+SCUM.do {
+	SCUMWindow.make {
+		~title = "scoobadoo";
+		~initialSize = 300;
+		~bgColor = Color.rand;
+	}.show
+}
+)
 
 // ---------------------------------------------------------------------
 // class methods
@@ -27,12 +31,34 @@ SCUM.argv;
 //
 // *key...
 //
-//    unicode key definitions
+//    unicode key codes
 //
-// *argv
+// *isConnected
 //
-//    return array of strings that was passed to the process upon
-//    startup.
+//    return true when the connection to the SCUM server is
+//    established.
+//
+// *connect(completionFunc)
+//
+//    connect to the server and execute completionFunc on success.
+//
+// *disconnect
+//
+//    disconnect from the server.
+//
+//
+// *do(function)
+//
+//    make sure there's a connection to the server and execute
+//    function.
+//
+// *sendMsg(...msg)
+//
+//    send an OSC message to the server (see NetAddr).
+//
+// *sendMsg(time...args)
+//
+//    send an OSC bundle to the server (see NetAddr).
 //
 // ---------------------------------------------------------------------
 // $Id$

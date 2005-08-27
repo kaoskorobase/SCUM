@@ -10,41 +10,31 @@
 // examples
 // ---------------------------------------------------------------------
 
+s.boot;
+
 (
 	var synths;
-	w = SCUMWindow.new {
+	w = SCUMWindow.make {
 		//~title = "Window example";
 		~bgColor = Color.rand;
 		~minSize = Size(400, 600);
-		~children = {
-			v = SCUMHBox(~parent, {
-				~bgColor = Color.green;
-				~children = {
-					{ |i|
-						SCUMVSlider(~parent, { |v|
-							~action = {
-								[i, v.value].postln;
-								synths[i].set(\freq, v.value * 50 + 20)
-							};
-							//~step = 0.1;
-							~bgColor = Color.blue;
-							~fgColor = Color.green;
-							~fill = 1.0;
-							~expand = 1.0;
-						})
-					} ! 4;
+		SCUMHBox.make {
+			~bgColor = Color.green;
+			{ |i|
+				SCUMVSlider.make { |v|
+					~action = {
+						[i, v.value].postln;
+						synths[i].set(\freq, v.value * 50 + 20)
+					};
+					//~step = 0.1;
+					~bgColor = Color.blue(0.6);
+					~fgColor = Color.green(0.8);
+					~fill = 1.0;
+					~expand = 1.0;
 				}
-			})
+			} ! 4;
 		};
 	};
-	/*
-	SCUMButton(w, { | b |
-		~states = [["hell"], ["yeah!"]];
-		~fgColor = Color.green;
-		~bgColor = Color.white;
-		ActionListener(b, \focus, { |b| [\focus, b.hasFocus].postln });
-	});
-	*/
 	synths = { Synth(\default, [\freq, 20]) } ! 4;
 	w.addResources(synths, \release);
 	w.show;
@@ -54,19 +44,9 @@ w.close;
 w.decorated = false;
 w.decorated = true;
 
-x = Synth(\default);
-x.set(\freq, 1000)
-
-v.action = { x.set(\freq, v.value * 800 + 200) }
-v.addResource(x);
-v -- { |mySlider| mySlider.valueAction_(1.0.rand) }
-v.value_(-10.5)
-
-w.children.first.aspectRatio
-
 w.use {
 	~title = "Fucking hell";
-	~minSize = Size(10, 200);
+	~minSize = Size(50, 200);
 }
 
 w = SCUMWindow.new;

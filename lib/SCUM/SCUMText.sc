@@ -110,27 +110,22 @@ SCUMTextEntry : SCUMLabel {
 		}
 	}
 	value_ { | obj |
+		var prev = value;
 		keyString = nil;
 		value = obj;
 		if (setBoth) {
 			this.text = this.valueToString(value);
-		}
-	}
-	valueAction_ { | obj |
-		var prev;
-		prev = value;
-		this.value = obj;
+		};
 		if (value != prev) {
-			this.doAction;
-			this.changed(\value);
-		}
+			this.doActionUnlessMuted(\value);
+		};
 	}
 
 	onStartEditing { }
 	onStopEditing { }
 
 	// PRIVATE
-	prStartEditing { | erase=true |
+	prStartEditing { | erase |
 		if (this.isEditing.not) {
 			keyString = if (erase) { String.new } { this.text };
 			fgColorSave = this.fgColor;
@@ -141,7 +136,7 @@ SCUMTextEntry : SCUMLabel {
 	prStopEditing { | commit |
 		if (this.isEditing) {
 			if (commit) {
-				this.valueAction = this.stringToValue(keyString);
+				this.value = this.stringToValue(keyString);
 			}{
 				this.text = this.valueToString(value);
 			};
@@ -214,8 +209,8 @@ SCUMNumberEntry : SCUMTextEntry {
 	stringToValue { | str | ^str.asFloat }
 	value_ { | aNumber | super.value_(aNumber.clip(min, max)) }
 
-	increment { | n=1, fine=false | this.valueAction = this.value + (n * fine.if(fineStep, coarseStep)) }
-	decrement { | n=1, fine=false | this.valueAction = this.value - (n * fine.if(fineStep, coarseStep)) }
+	increment { | n=1, fine=false | this.value = this.value + (n * fine.if(fineStep, coarseStep)) }
+	decrement { | n=1, fine=false | this.value = this.value - (n * fine.if(fineStep, coarseStep)) }
 
 	mouseDown { | evt |
 		lastMousePos = evt.pos;

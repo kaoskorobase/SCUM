@@ -134,9 +134,9 @@ public:
     float spacing() const { return m_spacing; }
 
 protected:
-    float		m_spacing;
+    float	m_spacing;
     uint16_t	m_numExpand;
-    float		m_totalExpand;
+    float	m_totalExpand;
 };
 
 // =====================================================================
@@ -197,10 +197,8 @@ public:
     //virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
     inline SCUM_View* childAt(size_t row, size_t col);
-    inline void childPut(size_t row, size_t col, SCUM_View* view);
-
-    virtual size_t childIndex(size_t row, size_t col);
-
+    virtual size_t gridIndex(size_t index);
+    
 protected:
     virtual SCUM_Size getMinSize();
     virtual void boundsChanged(const SCUM_Rect& bounds);
@@ -214,12 +212,11 @@ private:
 
 private:
     SCUM_Point			m_spacing;
-    // 	uint16_t			m_wrap;
     uint16_t			m_numRows;
     uint16_t			m_numCols;
     SCUM_View**			m_grid;
-    Info*				m_rowInfo;
-    Info*				m_colInfo;
+    Info*			m_rowInfo;
+    Info*			m_colInfo;
     SCUM_Point			m_totalExpand;
     uint16_t			m_rowsExpand;
     uint16_t			m_colsExpand;
@@ -234,7 +231,6 @@ class SCUM_HGrid : public SCUM_Grid
 {
 public:
     SCUM_HGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
-    virtual size_t childIndex(size_t row, size_t col);
 };
 
 // =====================================================================
@@ -246,7 +242,7 @@ class SCUM_VGrid : public SCUM_Grid
 {
 public:
     SCUM_VGrid(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
-    virtual size_t childIndex(size_t row, size_t col);
+    virtual size_t gridIndex(size_t index);
 };
 
 // more containers to come:
@@ -348,14 +344,20 @@ SCUM_View* SCUM_Bin::visibleChild()
 // =====================================================================
 // SCUM_Grid (inline functions)
 
+// inline SCUM_View* SCUM_Grid::childAt(size_t row, size_t col)
+// {
+//     return m_grid[childIndex(row, col)];
+// }
+
+// inline void SCUM_Grid::childPut(size_t row, size_t col, SCUM_View* view)
+// {
+// //     m_grid[childIndex(row, col)] = view;
+//     m_grid[row * numCols() + col] = view;
+// }
+
 inline SCUM_View* SCUM_Grid::childAt(size_t row, size_t col)
 {
-    return m_grid[childIndex(row, col)];
-}
-
-inline void SCUM_Grid::childPut(size_t row, size_t col, SCUM_View* view)
-{
-    m_grid[childIndex(row, col)] = view;
+    return m_grid[row * numCols() + col];
 }
 
 #endif // SCUM_CONTAINER_HH_INCLUDED

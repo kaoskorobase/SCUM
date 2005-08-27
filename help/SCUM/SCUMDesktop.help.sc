@@ -2,9 +2,10 @@
 // SCUMDesktop : SCUMObject
 // ---------------------------------------------------------------------
 //
-// singleton class that represents the desktop. holds references to
-// allocated toplevel objects like windows and menus and has
-// properties that are used as default values in various view classes.
+// singleton class that represents the desktop. the singleton instance
+// is referenced by SCUM.desktop. holds references to allocated
+// toplevel objects like windows and menus and has properties that are
+// used as default values in various view classes.
 //
 // ---------------------------------------------------------------------
 // properties
@@ -48,6 +49,10 @@
 // *closeAllWindows
 //
 //    close all GUI windows.
+//
+// *showServerPanel
+//
+//    create a server panel if it doesn't exist yet and show it.
 //
 // ---------------------------------------------------------------------
 // $Id$

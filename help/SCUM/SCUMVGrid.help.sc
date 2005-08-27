@@ -11,17 +11,20 @@
 // ---------------------------------------------------------------------
 
 (
-	w = SCUMWindow({ |v| v.title = "VGrid example" });
-	c = SCUMVGrid(w, { |v| v.dimensions = Size(3, 3) });
-	9.do({ |i|
-		SCUMLabel(c, { |v|
-			v.text = (i+1).asString;
-			v.expand = i+1;
-			v.fill = 1;
-			v.bgColor = Color.rand;
-		});
-	});
-	w.show;
+SCUMWindow.make {
+	~title = "VGrid example";
+	c = SCUMVGrid.make {
+		~dimensions = Size(4, 3);
+		(~dimensions.width * ~dimensions.height).do { |i|
+			SCUMLabel.make {
+				~text = (i+1).asString;
+				~expand = i+1;
+				~fill = 1;
+				~bgColor = Color.rand;
+			};
+		};
+	};
+}.show;
 )
 
 // make the grid homogenous
