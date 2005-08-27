@@ -58,6 +58,8 @@ SCUMButton : SCUMControl {
 	initDefaults {
 		super.initDefaults;
 		value = this.class.propertyDefault(\value);
+		this.setKey(nil, keySpace, #{ |v| v.value = v.value + 1 });
+		this.setKey(nil, keyCR, #{ |v| v.value = v.value + 1 });
 	}
 	
 	// properties
