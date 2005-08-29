@@ -50,10 +50,11 @@ private:
 class SCUM_Class
 {
 public:
-    SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName);
+    SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName, bool abstract);
 
     SCUM_ClassRegistry* getRegistry() { return m_reg; }
     const char* getName() const { return m_name; }
+    bool isAbstract() const { return m_abstract; }
     SCUM_Class* getSuperclass();
 
     virtual SCUM_Object* makeObject(SCUM_Client* client, int oid, SCUM_ArgStream& args) = 0;
@@ -67,6 +68,7 @@ protected:
 private:
     SCUM_ClassRegistry*	m_reg;
     const char*		m_name;
+    bool                m_abstract;
     const char*		m_superclassName;
     SCUM_Class*		m_superclass;
     st_table*		m_methods;
@@ -81,8 +83,8 @@ public:
         MethodFunc	m_func;
     };
 
-    SCUM_ClassT(SCUM_ClassRegistry* reg, const char* name, const char* superclassName)
-        : SCUM_Class(reg, name, superclassName)
+    SCUM_ClassT(SCUM_ClassRegistry* reg, const char* name, const char* superclassName, bool abstract=false)
+        : SCUM_Class(reg, name, superclassName, abstract)
     { }
 
     SCUM_Object* makeObject(SCUM_Client* client, int oid, SCUM_ArgStream& args)

@@ -70,7 +70,6 @@ static SCUM_Client::OSCMethod lookupOSCMethod(const char* path)
 SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
     : SCUM_Object(klass, client, oid, args)
 {
-    throw std::runtime_error("abstract class");
 }
 
 SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_ArgStream& args, int socket)
@@ -238,12 +237,12 @@ void SCUM_Client::osc_new(const char* path, SCUM_ArgStream& args)
     if (strncmp(klassName, "SCUM", 4) == 0) {
         klassName += 4;
     }
-    if (*klassName == '_') {
-        throw std::runtime_error("abstract class");
-    }
     SCUM_Class* klass = getClass()->getRegistry()->lookupClass(klassName);
     if (!klass) {
         throw std::runtime_error("class not found");
+    }
+    if (klass->isAbstract()) {
+        throw std::runtime_error("abstract class");
     }
     if (getObject(oid)) {
         throw std::runtime_error("duplicate object id");
@@ -319,5 +318,5 @@ void SCUM_Client::dataAvailableCB(int fd, void* data)
 
 void SCUM_Client_Init(SCUM_ClassRegistry* reg)
 {
-    SCUM_ClassT<SCUM_Client>* klass = new SCUM_ClassT<SCUM_Client>(reg, "_Client", "Object");
+    SCUM_ClassT<SCUM_Client>* klass = new SCUM_ClassT<SCUM_Client>(reg, "Client", "Object", true);
 }

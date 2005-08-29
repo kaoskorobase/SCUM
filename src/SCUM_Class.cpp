@@ -50,9 +50,10 @@ SCUM_Class* SCUM_ClassRegistry::lookupClass(const char* name)
     return 0;
 }
 
-SCUM_Class::SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName)
+SCUM_Class::SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName, bool abstract)
     : m_reg(reg),
       m_name(name),
+      m_abstract(abstract),
       m_superclassName(superclassName),
       m_superclass(0)
 {

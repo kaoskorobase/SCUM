@@ -70,7 +70,6 @@ using namespace SCUM;
 SCUM_Slider::SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
     : SCUM_View(klass, client, oid, args)
 {
-    throw std::runtime_error("abstract class");
 }
 
 SCUM_Slider::SCUM_Slider(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args, int orient)
@@ -721,7 +720,7 @@ bool SCUM_Table::setValue(const SCUM_Point& p)
 
 void SCUM_Slider_Init(SCUM_ClassRegistry* reg)
 {
-    new SCUM_ClassT<SCUM_Slider>(reg, "Slider", "View");
+    new SCUM_ClassT<SCUM_Slider>(reg, "Slider", "View", true);
     new SCUM_ClassT<SCUM_HSlider>(reg, "HSlider", "Slider");
     new SCUM_ClassT<SCUM_VSlider>(reg, "VSlider", "Slider");
     new SCUM_ClassT<SCUM_Pad>(reg, "Pad", "View");

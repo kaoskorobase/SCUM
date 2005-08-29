@@ -1182,12 +1182,12 @@ void SCUM_Scroll::updateLayout()
 
 void SCUM_Container_Init(SCUM_ClassRegistry* reg)
 {
-    new SCUM_ClassT<SCUM_Container>(reg, "Container", "View");
+    new SCUM_ClassT<SCUM_Container>(reg, "Container", "View", true);
     new SCUM_ClassT<SCUM_Bin>(reg, "Bin", "Container");
-    new SCUM_ClassT<SCUM_Box>(reg, "Box", "Container");
+    new SCUM_ClassT<SCUM_Box>(reg, "Box", "Container", true);
     new SCUM_ClassT<SCUM_HBox>(reg, "HBox", "Box");
     new SCUM_ClassT<SCUM_VBox>(reg, "VBox", "Box");
-    new SCUM_ClassT<SCUM_Grid>(reg, "Grid", "Container");
+    new SCUM_ClassT<SCUM_Grid>(reg, "Grid", "Container", true);
     new SCUM_ClassT<SCUM_HGrid>(reg, "HGrid", "Grid");
     new SCUM_ClassT<SCUM_VGrid>(reg, "VGrid", "Grid");
 }

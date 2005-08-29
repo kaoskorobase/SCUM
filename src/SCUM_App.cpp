@@ -91,7 +91,7 @@ void SCUM_App::dataAvailableCB(int fd, void* data)
         perror("accept");
         exit(1);
     }
-    SCUM_Class* klass = gClassRegistry->lookupClass("_Client");
+    SCUM_Class* klass = gClassRegistry->lookupClass("Client");
     SCUM_ArgStream args;
     SCUM_Client* client = new SCUM_Client(klass, args, sock);
     ((SCUM_App*)data)->addClient(client);
