@@ -30,7 +30,7 @@
 //#include "SCUM_ViewFactory.hh"
 #include "st.h"
 
-#include <Fl/Fl.H>
+#include <FL/Fl.H>
 #include <stdexcept>
 
 typedef SCUM_ObjectList::iterator SCUM_ObjectIter;
