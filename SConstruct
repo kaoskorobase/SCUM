@@ -277,20 +277,30 @@ def dist_paths():
 
 def build_tar(env, target, source):
     paths = dist_paths()
+    #     tarfile_name = str(target[0])
+    #     tar_name = os.path.splitext(os.path.basename(tarfile_name))[0]
     tarfile_name = str(target[0])
-    tar_name = os.path.splitext(os.path.basename(tarfile_name))[0]
-    tar = tarfile.open(tarfile_name, "w:bz2")
+    tar_name = env['TAR_NAME']
+    tar_comp = env['TAR_COMP']
+    tar = tarfile.open(tarfile_name, "w:" + tar_comp)
     for path in paths:
         tar.add(path, os.path.join(tar_name, path))
     tar.close()
 
-snapshot_tarball = PACKAGE + '-' + time.strftime("%Y%m%d", time.localtime()) + '.tbz2'
+env['TAR_COMP'] = 'bz2'
+snapshotEnv = env.Copy(
+    TAR_NAME = PACKAGE + '-' + time.strftime("%Y%m%d", time.localtime()),
+    )
+snapshot_tarball = snapshotEnv['TAR_NAME'] + '.tar' + '.' + snapshotEnv['TAR_COMP']
 env.Alias('snapshot-dist', snapshot_tarball)
-env.AlwaysBuild(env.Command(snapshot_tarball, None, build_tar))
+env.AlwaysBuild(snapshotEnv.Command(snapshot_tarball, None, build_tar))
 
-release_tarball = PACKAGE + '-' + VERSION + '.tbz2'
+releaseEnv = env.Copy(
+    TAR_NAME = PACKAGE + '-' + VERSION
+    )
+release_tarball = releaseEnv['TAR_NAME'] + '.tar' + '.' + releaseEnv['TAR_COMP']
 env.Alias('release-dist', release_tarball)
-env.AlwaysBuild(env.Command(release_tarball, None, build_tar))
+env.AlwaysBuild(releaseEnv.Command(release_tarball, None, build_tar))
 
 env.Alias('dist', ['snapshot-dist'])
 
