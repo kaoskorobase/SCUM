@@ -42,6 +42,7 @@ class SCUM_ArgStream
 public:
     SCUM_ArgStream();
     SCUM_ArgStream(char* data, size_t size);
+    SCUM_ArgStream(const SCUM_ArgStream& other);
 
     bool atEnd() const;
     size_t size() const;

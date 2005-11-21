@@ -32,6 +32,10 @@ SCUM_ArgStream::SCUM_ArgStream(char* data, size_t size)
     : m_stream(data, size)
 { }
 
+SCUM_ArgStream::SCUM_ArgStream(const SCUM_ArgStream& other)
+    : m_stream(other.m_stream)
+{ }
+
 bool SCUM_ArgStream::atEnd() const
 {
     return m_stream.atEnd();

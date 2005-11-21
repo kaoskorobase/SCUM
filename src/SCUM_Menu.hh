@@ -37,6 +37,7 @@ class SCUM_View;
 struct SCUM_MenuItem
 {
     SCUM_MenuItem(int type, const std::string& text);
+    SCUM_MenuItem(const char* spec);
     SCUM_MenuItem(const SCUM_MenuItem& item);
 
     int type() const { return m_type; }

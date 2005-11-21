@@ -25,6 +25,7 @@
 #ifndef SCUM_APP_HH_INCLUDED
 #define SCUM_APP_HH_INCLUDED
 
+#include "SCUM_Class.hh"
 #include "SCUM_Client.hh"
 #include "SCUM_Object.hh"
 
@@ -34,8 +35,8 @@ class SCUM_App
 {
 public:
     static SCUM_App& instance();
+    void initClassRegistry(SCUM_ClassRegistry* reg);
     void initOSC(const char* addr, uint16_t port);
-
     void run();
 
 private:

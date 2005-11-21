@@ -36,29 +36,20 @@ SCUM_MenuItem::SCUM_MenuItem(int type, const std::string& text)
     : m_type(type), m_text(text)
 { }
 
+SCUM_MenuItem::SCUM_MenuItem(const char* spec)
+{
+    m_type = *spec++;
+    if (m_type) {
+	m_text = spec;
+    } else {
+	m_type = kMenuSeparator;
+	m_text = "";
+    }
+}
+
 SCUM_MenuItem::SCUM_MenuItem(const SCUM_MenuItem& item)
     : m_type(item.m_type), m_text(item.m_text)
 { }
-
-#if 0
-SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
-{
-    if (!isKindOfSlot(spec, class_array) || (spec->uo->size < 2))
-	throw TypeError();
-
-    m_type = charValue(spec->uo->slots+0);
-    m_text = stringValue(spec->uo->slots+1);
-}
-#endif
-
-// =====================================================================
-// SCUM_MenuHandle
-
-// SCUM_MenuHandle::SCUM_MenuHandle()
-// { }
-
-// SCUM_MenuHandle::~SCUM_MenuHandle()
-// { }
 
 // =====================================================================
 // SCUM_Menu
@@ -68,15 +59,20 @@ SCUM_Menu::SCUM_Menu(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgSt
       m_handle(0),
       m_item(-1)
 {
-//     m_handle = SCUM::MenuHandle::create(items);
-    SCUM_ASSERT(m_handle != 0);
+    std::vector<SCUM_MenuItem> items;
+    items.reserve(args.size());
+    while (!args.atEnd()) {
+	items.push_back(SCUM_MenuItem(args.get_s()));
+    }
+    setItems(items);
     getClient()->retain(this);
 }
 
 void SCUM_Menu::setItems(const std::vector<SCUM_MenuItem>& items)
 {
-    if (m_handle) delete m_handle;
+    delete m_handle;
     m_handle = SCUM::MenuHandle::create(items);
+    SCUM_ASSERT(m_handle != 0);    
 }
 
 SCUM_Menu::~SCUM_Menu()
@@ -136,5 +132,12 @@ void SCUM_Menu::getProperty(const PyrSymbol* key, PyrSlot* slot)
     }
 }
 #endif
+
+#include "SCUM_Class.hh"
+
+void SCUM_Menu_Init(SCUM_ClassRegistry* reg)
+{
+    new SCUM_ClassT<SCUM_Menu>(reg, "Menu", "Object");
+}
 
 // EOF

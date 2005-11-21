@@ -23,7 +23,6 @@
 
 
 #include "SCUM_App.hh"
-#include "SCUM_Class.hh"
 #include "SCUM_GC.hh"
 #if 0
 #include "SCUM_Rendezvous.hh"
@@ -37,7 +36,7 @@
 #define SCUM_APP_IDLE_TIMEOUT 3.1415926535898
 
 static float gIdleTimeout = SCUM_APP_IDLE_TIMEOUT;
-static SCUM_ClassRegistry* gClassRegistry = 0;
+static bool gClassRegistryInitialized = false;
 
 SCUM_App::SCUM_App()
     : m_socket(-1)
@@ -47,30 +46,9 @@ SCUM_App::SCUM_App()
 	throw std::runtime_error("couldn't start rendezvous");
     }
 #endif
-    if (!gClassRegistry) {
-	SCUM_ClassRegistry* reg = gClassRegistry = new SCUM_ClassRegistry();
-	extern void SCUM_Object_Init(SCUM_ClassRegistry*);
-	SCUM_Object_Init(reg);
-	extern void SCUM_View_Init(SCUM_ClassRegistry*);
-	SCUM_View_Init(reg);
-	extern void SCUM_Button_Init(SCUM_ClassRegistry*);
-	SCUM_Button_Init(reg);
-	extern void SCUM_Container_Init(SCUM_ClassRegistry*);
-	SCUM_Container_Init(reg);
-	extern void SCUM_Slider_Init(SCUM_ClassRegistry*);
-	SCUM_Slider_Init(reg);
-	extern void SCUM_Text_Init(SCUM_ClassRegistry*);
-	SCUM_Text_Init(reg);
-	extern void SCUM_GL_Init(SCUM_ClassRegistry*);
-	SCUM_GL_Init(reg);
-	extern void SCUM_ScrollView_Init(SCUM_ClassRegistry*);
-	SCUM_ScrollView_Init(reg);
-	extern void SCUM_Graph_Init(SCUM_ClassRegistry*);
-	SCUM_Graph_Init(reg);
-	extern void SCUM_Client_Init(SCUM_ClassRegistry*);
-	SCUM_Client_Init(reg);
-	extern void SCUM_Window_Init(SCUM_ClassRegistry*);
-	SCUM_Window_Init(reg);
+    if (!gClassRegistryInitialized) {
+	initClassRegistry(&SCUM_ClassRegistry::instance());
+	gClassRegistryInitialized = true;
     }
 }
 
@@ -82,6 +60,35 @@ SCUM_App::~SCUM_App()
 #endif
 }
 
+extern void SCUM_Button_Init(SCUM_ClassRegistry*);
+extern void SCUM_Client_Init(SCUM_ClassRegistry*);
+extern void SCUM_Container_Init(SCUM_ClassRegistry*);
+extern void SCUM_GL_Init(SCUM_ClassRegistry*);
+extern void SCUM_Graph_Init(SCUM_ClassRegistry*);
+extern void SCUM_Menu_Init(SCUM_ClassRegistry*);
+extern void SCUM_Object_Init(SCUM_ClassRegistry*);
+extern void SCUM_ScrollView_Init(SCUM_ClassRegistry*);
+extern void SCUM_Slider_Init(SCUM_ClassRegistry*);
+extern void SCUM_Text_Init(SCUM_ClassRegistry*);
+extern void SCUM_View_Init(SCUM_ClassRegistry*);
+extern void SCUM_Window_Init(SCUM_ClassRegistry*);
+
+void SCUM_App::initClassRegistry(SCUM_ClassRegistry* reg)
+{
+    SCUM_Button_Init(reg);
+    SCUM_Client_Init(reg);
+    SCUM_Container_Init(reg);
+    SCUM_GL_Init(reg);
+    SCUM_Graph_Init(reg);
+    SCUM_Menu_Init(reg);
+    SCUM_Object_Init(reg);
+    SCUM_ScrollView_Init(reg);
+    SCUM_Slider_Init(reg);
+    SCUM_Text_Init(reg);
+    SCUM_View_Init(reg);
+    SCUM_Window_Init(reg);
+}
+
 void SCUM_App::dataAvailableCB(int fd, void* data)
 {
     struct sockaddr_in addr;
@@ -91,7 +98,7 @@ void SCUM_App::dataAvailableCB(int fd, void* data)
 	perror("accept");
 	exit(1);
     }
-    SCUM_Class* klass = gClassRegistry->lookupClass("Client");
+    SCUM_Class* klass = SCUM_ClassRegistry::instance().lookupClass("Client");
     SCUM_ArgStream args;
     SCUM_Client* client = new SCUM_Client(klass, args, sock);
     ((SCUM_App*)data)->addClient(client);

@@ -10,8 +10,6 @@
 // examples
 // ---------------------------------------------------------------------
 
-// NOT YET IMPLEMENTED
-
 (
 w = SCUMWindow.make {
 	~padding = 15;

@@ -28,6 +28,7 @@
 #include "SCUM_GC.hh"
 #include "SCUM_Menu.hh"
 #include "SCUM_System.hh"
+#include "SCUM_Util.hh"
 
 using namespace SCUM;
 
@@ -375,6 +376,7 @@ SCUM_Choice::SCUM_Choice(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_A
       m_menu(0)
 {
     m_font = getClient()->font();
+    m_menu = (SCUM_Menu*)SCUM_ClassRegistry::instance().makeObject("Menu", getClient(), kInvalidOID);
 }
 
 SCUM_Choice::~SCUM_Choice()
@@ -444,18 +446,12 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 	while (!args.atEnd()) {
 	    m_states.push_back(SCUM_Text(args.get_s()));
 	}
-	delete m_menu; m_menu = 0;
-	if (!m_states.empty()) {
-	    SCUM_MenuItems items;
-	    items.reserve(m_states.size());
-	    for (size_t i=0; i < m_states.size(); i++) {
-		items.push_back(SCUM_MenuItem(kMenuAction, m_states[i].text()));
-	    }
-	    //m_menu = new SCUM_Menu(getClient(), kInvalidOID, items);
-	    // TODO: use args directly?!
-	    m_menu = (SCUM_Menu*)SCUM_ClassRegistry::instance().makeObject("Menu", getClient(), kInvalidOID);
-	    m_menu->setItems(items);
+	SCUM_MenuItems items;
+	items.reserve(m_states.size());
+	for (size_t i=0; i < m_states.size(); i++) {
+	    items.push_back(SCUM_MenuItem(kMenuAction, m_states[i].text()));
 	}
+	m_menu->setItems(items);
 	updateLayout();
     } else {
 	SCUM_View::setProperty(key, args);
