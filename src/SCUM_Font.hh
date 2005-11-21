@@ -104,8 +104,8 @@ private:
     void copyText(const char* text, size_t size);
 
 private:
-    char*				m_text;
-    SCUM_Font			m_font;
+    char*		m_text;
+    SCUM_Font		m_font;
     SCUM_TextExtents	m_extents;
 };
 

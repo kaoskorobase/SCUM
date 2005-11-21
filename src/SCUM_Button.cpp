@@ -370,7 +370,7 @@ static const SCUM_Size kIndicatorPadding(6, 4);
 
 SCUM_Choice::SCUM_Choice(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args)
     : SCUM_View(klass, client, oid, args),
-      m_padding(SCUM_Point(2, 2)),
+      m_padding(SCUM_Point(0, 0)),
       m_textAlign(kAlignC),
       m_value(0),
       m_menu(0)
@@ -430,6 +430,9 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 	setValue(args.get_i(), false);
     } else if (equal(key, "font")) {
 	m_font = fontValue(args);
+	for (int i=0; i < m_states.size(); i++) {
+	    m_states[i].setFont(m_font);
+	}	
 	updateLayout();
     } else if (equal(key, "xPadding")) {
 	m_padding.x = max(3.f, args.get_f());
@@ -445,6 +448,7 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 	m_states.reserve(args.get_i());
 	while (!args.atEnd()) {
 	    m_states.push_back(SCUM_Text(args.get_s()));
+	    m_states.back().setFont(m_font);
 	}
 	SCUM_MenuItems items;
 	items.reserve(m_states.size());
@@ -481,7 +485,7 @@ SCUM_Size SCUM_Choice::getMinSize()
 	size = size.max(m_states[i].extents().size);
     }
 
-    size = size.padded(m_padding);
+    size = size.padded(m_padding + 1.f /* bevel */);
     size.h = max(size.h, kIndicatorSize.h + 2.f * kIndicatorPadding.h);
     size.w += kIndicatorSize.w + 2.f * kIndicatorPadding.w;
 

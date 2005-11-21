@@ -16,7 +16,7 @@ w = SCUMWindow.make {
 	SCUMVBox.make {
 		SCUMLabel.make {
 			~text = "Make your choice!";
-			~font = Font("Helvetica", 22);
+			~font = Font("Helvetica", 20);
 		};
 		SCUMChoice.make {
 			~font = Font("Helvetica", 18);
