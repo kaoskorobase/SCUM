@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -46,22 +46,22 @@ class SCUM_Scope : public SCUM_GLView
 {
 public:
     enum
-        {
-            kStyleSeparate,
-            kStyleOverlay,
-            kStyleXY
-        };
+	{
+	    kStyleSeparate,
+	    kStyleOverlay,
+	    kStyleXY
+	};
 
     SCUM_Scope(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
     ~SCUM_Scope();
 
-    // 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
+    //	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
-    // 	virtual void refresh();
-    // 	virtual void initGL();
-    // 	virtual void resizeGL(int w, int h);
-    // 	virtual void drawGL();
-    // 	virtual void draw(const SCUM_Rect& damage);
+    //	virtual void refresh();
+    //	virtual void initGL();
+    //	virtual void resizeGL(int w, int h);
+    //	virtual void drawGL();
+    //	virtual void draw(const SCUM_Rect& damage);
     virtual void initGL();
     virtual void drawGL();
 
@@ -71,8 +71,8 @@ public:
     virtual void animate();
 
 protected:
-    // 	virtual void boundsChanged(const SCUM_Rect& bounds);
-    // 	void updateContentSize();
+    //	virtual void boundsChanged(const SCUM_Rect& bounds);
+    //	void updateContentSize();
 
     void drawSeparate();
     void drawOverlay();

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -32,10 +32,10 @@ namespace SCUM
 {
     enum ModMask
 	{
-            kModMaskShift	= (1 << 0),
-            kModMaskControl	= (1 << 1),
-            kModMaskCommand	= (1 << 2),
-            kModMaskKeypad	= (1 << 3)
+	    kModMaskShift	= (1 << 0),
+	    kModMaskControl	= (1 << 1),
+	    kModMaskCommand	= (1 << 2),
+	    kModMaskKeypad	= (1 << 3)
 	};
 
     SCUM_Size screenSize();

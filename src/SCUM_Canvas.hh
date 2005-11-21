@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -39,14 +39,14 @@ namespace SCUM
     class CanvasHandle : public SCUM_Handle
     {
     public:
-        static CanvasHandle* create(WindowHandle* parent, SCUM_CanvasView* view, cairo_t* cr, bool doubleBuffer);
+	static CanvasHandle* create(WindowHandle* parent, SCUM_CanvasView* view, cairo_t* cr, bool doubleBuffer);
 
-        virtual void setContext(cairo_t* cr);
-        virtual SCUM_Rect bounds() = 0;
-        virtual void setBounds(const SCUM_Rect& bounds) = 0;
-        virtual void refresh() = 0;
-        virtual void show() = 0;
-        virtual void hide() = 0;
+	virtual void setContext(cairo_t* cr);
+	virtual SCUM_Rect bounds() = 0;
+	virtual void setBounds(const SCUM_Rect& bounds) = 0;
+	virtual void refresh() = 0;
+	virtual void show() = 0;
+	virtual void hide() = 0;
     };
 
     void cairo_set_rgb_color(cairo_t* cr, const SCUM_Color& c);
@@ -82,8 +82,8 @@ protected:
 
 private:
     SCUM::CanvasHandle*	m_handle;
-    cairo_t*			m_cairo;
-    SCUM_Point			m_padding;
+    cairo_t*		m_cairo;
+    SCUM_Point		m_padding;
 };
 
 inline void SCUM_CanvasView::setPadding(const SCUM_Point& padding)

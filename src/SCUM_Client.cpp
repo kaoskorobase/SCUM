@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -40,7 +40,7 @@ static st_table* gOSCMethodTable;
 struct OSCMethod
 {
     OSCMethod(SCUM_Client::OSCMethod m)
-        : m_method(m)
+	: m_method(m)
     { }
     SCUM_Client::OSCMethod m_method;
 };
@@ -48,8 +48,8 @@ struct OSCMethod
 static bool initOSCMethodTable()
 {
     if (!gOSCMethodTable) {
-        gOSCMethodTable = st_init_strtable();
-        return true;
+	gOSCMethodTable = st_init_strtable();
+	return true;
     }
     return false;
 }
@@ -63,7 +63,7 @@ static SCUM_Client::OSCMethod lookupOSCMethod(const char* path)
 {
     st_data_t value;
     if (st_lookup(gOSCMethodTable, (st_data_t)path, &value))
-        return ((OSCMethod*)value)->m_method;
+	return ((OSCMethod*)value)->m_method;
     return 0;
 }
 
@@ -83,11 +83,11 @@ SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_ArgStream& args, int socket)
     m_font = SCUM_Font("Helvetica", 12);
     Fl::add_fd(m_socket, &dataAvailableCB, this);
     if (initOSCMethodTable()) {
-        addOSCMethod("new", &SCUM_Client::osc_new);
-        addOSCMethod("free", &SCUM_Client::osc_free);
-        //addOSCMethod("/o_set", &SCUM_Client::osc_o_set);
-        //addOSCMethod("/v_raise", &SCUM_Client::osc_v_raise);
-        //addOSCMethod("/w_update", &SCUM_Client::osc_w_update);
+	addOSCMethod("new", &SCUM_Client::osc_new);
+	addOSCMethod("free", &SCUM_Client::osc_free);
+	//addOSCMethod("/o_set", &SCUM_Client::osc_o_set);
+	//addOSCMethod("/v_raise", &SCUM_Client::osc_v_raise);
+	//addOSCMethod("/w_update", &SCUM_Client::osc_w_update);
     }
 }
 
@@ -97,7 +97,7 @@ SCUM_Client::~SCUM_Client()
     close(m_socket);
     SCUM_ObjectIter it = m_resources.begin();
     while (it != m_resources.end()) {
-        delete (SCUM_Object*)*it++;
+	delete (SCUM_Object*)*it++;
     }
     SCUM_App::instance().removeClient(this);
 }
@@ -107,7 +107,7 @@ uint16_t SCUM_Client::getPort() const
     struct sockaddr_in saddr;
     socklen_t len = sizeof(saddr);
     if ((getsockname(getSocket(), (sockaddr*)&saddr, &len) == -1) || (len != sizeof(saddr)))
-        return 0;
+	return 0;
     return ntohs(saddr.sin_port);
 }
 
@@ -116,22 +116,22 @@ uint16_t SCUM_Client::getPeerPort() const
     struct sockaddr_in saddr;
     socklen_t len = sizeof(saddr);
     if ((getpeername(getSocket(), (sockaddr*)&saddr, &len) == -1) || (len != sizeof(saddr)))
-        return 0;
+	return 0;
     return ntohs(saddr.sin_port);
 }
 
 void SCUM_Client::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "fgColor")) {
-        m_fgColor = colorValue(args);
+	m_fgColor = colorValue(args);
     } else if (equal(key, "bgColor")) {
-        m_bgColor = colorValue(args);
+	m_bgColor = colorValue(args);
     } else if (equal(key, "focusColor")) {
-        m_focusColor = colorValue(args);
+	m_focusColor = colorValue(args);
     } else if (equal(key, "font")) {
-        m_font = fontValue(args);
+	m_font = fontValue(args);
     } else {
-        SCUM_Object::setProperty(key, args);
+	SCUM_Object::setProperty(key, args);
     }
 }
 
@@ -163,10 +163,10 @@ void SCUM_Client::retain(SCUM_Object* obj)
 void SCUM_Client::release(SCUM_Object* obj)
 {
     if (!m_resources.empty()) {
-        SCUM_ObjectIter it = find(m_resources.begin(), m_resources.end(), obj);
-        if (it != m_resources.end()) {
-            m_resources.erase(it);
-        }
+	SCUM_ObjectIter it = find(m_resources.begin(), m_resources.end(), obj);
+	if (it != m_resources.end()) {
+	    m_resources.erase(it);
+	}
     }
 }
 
@@ -174,7 +174,7 @@ SCUM_Object* SCUM_Client::getObject(int oid)
 {
     st_data_t value;
     if (st_lookup(m_objects, (st_data_t)oid, &value)) {
-        return (SCUM_Object*)value;
+	return (SCUM_Object*)value;
     }
     return 0;
 }
@@ -215,9 +215,9 @@ void SCUM_Client::error(SCUM_Object* who, const char* where, const char* fmt, ..
     OSC::StaticClientPacket<512> p;
     p.openMessage("/error", 3);
     if (who && who->getClass()) {
-        p.putString(who->getClass()->getName());
+	p.putString(who->getClass()->getName());
     } else {
-        p.putString("<unknown>");
+	p.putString("<unknown>");
     }
     p.putString(where);
     p.putString(buffer);
@@ -235,17 +235,17 @@ void SCUM_Client::osc_new(const char* path, SCUM_ArgStream& args)
     const char* klassName = args.get_s();
     int oid = args.get_i();
     if (strncmp(klassName, "SCUM", 4) == 0) {
-        klassName += 4;
+	klassName += 4;
     }
     SCUM_Class* klass = getClass()->getRegistry()->lookupClass(klassName);
     if (!klass) {
-        throw std::runtime_error("class not found");
+	throw std::runtime_error("class not found");
     }
     if (klass->isAbstract()) {
-        throw std::runtime_error("abstract class");
+	throw std::runtime_error("abstract class");
     }
     if (getObject(oid)) {
-        throw std::runtime_error("duplicate object id");
+	throw std::runtime_error("duplicate object id");
     }
     klass->makeObject(this, oid, args);
 }
@@ -255,8 +255,8 @@ void SCUM_Client::osc_free(const char*, SCUM_ArgStream& args)
     st_data_t key = (st_data_t)args.get_i();
     st_data_t value;
     if (st_delete(m_objects, &key, &value)) {
-        SCUM_Object* obj = (SCUM_Object*)value;
-        delete obj;
+	SCUM_Object* obj = (SCUM_Object*)value;
+	delete obj;
     }
 }
 
@@ -265,21 +265,21 @@ void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
     SCUM_Object* recvr = 0;
     if (*path == '/') path++;
     try {
-        SCUM_ArgStream args(data, size);
-        if (OSCMethod m = lookupOSCMethod(path)) {
-            (this->*m)(path, args);
-        } else if ((args.size() > 0) && (args.peek() == 'i')) {
-            int oid = args.get_i();
-            recvr = oid == 0 ? this : getObject(oid);
-            if (!recvr) throw std::runtime_error("object not found");
-            SCUM_Class* klass = recvr->getClass();
-            if (!klass) throw std::runtime_error("classless object, wtf?");
-            klass->dispatchMethod(recvr, path, args);
-        }
+	SCUM_ArgStream args(data, size);
+	if (OSCMethod m = lookupOSCMethod(path)) {
+	    (this->*m)(path, args);
+	} else if ((args.size() > 0) && (args.peek() == 'i')) {
+	    int oid = args.get_i();
+	    recvr = oid == 0 ? this : getObject(oid);
+	    if (!recvr) throw std::runtime_error("object not found");
+	    SCUM_Class* klass = recvr->getClass();
+	    if (!klass) throw std::runtime_error("classless object, wtf?");
+	    klass->dispatchMethod(recvr, path, args);
+	}
     } catch (OSC::Error& e) {
-        error(recvr, path, "OSC Error: %s", e.what());
+	error(recvr, path, "OSC Error: %s", e.what());
     } catch (std::runtime_error& e) {
-        message(e.what());
+	message(e.what());
     }
 }
 
@@ -291,28 +291,28 @@ void SCUM_Client::dataAvailableCB(int fd, void* data)
     SCUM_Client* self = (SCUM_Client*)data;
     int ret;
     try {
-        int32_t size;
-        ret = read(fd, &size, sizeof(size));
-        if (ret != sizeof(size)) {
-            delete self;
-            return;
-        }
-        size = ntohl(size);
-        if (size > 0) {
-            ret = read(fd, gPacketBuffer, size);
-            if (ret != size) {
-                delete self;
-                return;
-            }
-            OSC::ServerPacket packet((char*)gPacketBuffer, size);
-            OSC::MessageStream ms(packet);
-            while (!ms.atEnd()) {
-                OSC::Message m = ms.next();
-                self->dispatchMessage(m.path, m.data, m.size);
-            }
-        }
+	int32_t size;
+	ret = read(fd, &size, sizeof(size));
+	if (ret != sizeof(size)) {
+	    delete self;
+	    return;
+	}
+	size = ntohl(size);
+	if (size > 0) {
+	    ret = read(fd, gPacketBuffer, size);
+	    if (ret != size) {
+		delete self;
+		return;
+	    }
+	    OSC::ServerPacket packet((char*)gPacketBuffer, size);
+	    OSC::MessageStream ms(packet);
+	    while (!ms.atEnd()) {
+		OSC::Message m = ms.next();
+		self->dispatchMessage(m.path, m.data, m.size);
+	    }
+	}
     } catch (OSC::Error& e) {
-        self->error(self, "<unknown>", "OSC Error: %s", e.what());
+	self->error(self, "<unknown>", "OSC Error: %s", e.what());
     }
 }
 

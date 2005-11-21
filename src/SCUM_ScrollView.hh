@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -144,15 +144,15 @@ inline double SCUM_ScrollView::vRange() const
 inline double SCUM_ScrollView::hRatio() const
 {
     return (m_contentBounds.w > 0.)
-        ? SCUM::min(1., (double)m_viewPortBounds.w / (double)m_contentBounds.w)
-        : 1.;
+	? SCUM::min(1., (double)m_viewPortBounds.w / (double)m_contentBounds.w)
+	: 1.;
 }
 
 inline double SCUM_ScrollView::vRatio() const
 {
     return (m_contentBounds.h > 0.)
-        ? SCUM::min(1., (double)m_viewPortBounds.h / (double)m_contentBounds.h)
-        : 1.;
+	? SCUM::min(1., (double)m_viewPortBounds.h / (double)m_contentBounds.h)
+	: 1.;
 }
 
 #endif // SCUM_SCROLLVIEW_HH_INCLUDED

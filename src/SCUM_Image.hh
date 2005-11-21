@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -33,9 +33,9 @@ namespace SCUM
     class ImageHandle : public SCUM_Handle
     {
     public:
-        static ImageHandle* create(const char* fileName, const SCUM_Size& size);
+	static ImageHandle* create(const char* fileName, const SCUM_Size& size);
 
-        virtual SCUM_Size size() = 0;
+	virtual SCUM_Size size() = 0;
     };
 };
 

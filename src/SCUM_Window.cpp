@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -58,7 +58,7 @@ SCUM_Window::SCUM_Window(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_A
     memset(&m_deferredCommands, 0, sizeof(DeferredCommands));
 
     m_deferredTimer
-        = new SCUM_MemTimer<SCUM_Window>(0.075, &SCUM_Window::deferredAction, this);
+	= new SCUM_MemTimer<SCUM_Window>(0.075, &SCUM_Window::deferredAction, this);
     addTimer(m_deferredTimer);
 
     getClient()->retain(this);
@@ -68,8 +68,8 @@ SCUM_Window::~SCUM_Window()
 {
     getClient()->release(this);
     if (m_deferredTimer) {
-        m_deferredTimer->remove();
-        m_deferredTimer = 0;
+	m_deferredTimer->remove();
+	m_deferredTimer = 0;
     }
     // this is done in the language from closeEvent or destroy
     // sendMessage(SCUM_Symbol::prDestroyed, 0, 0);
@@ -77,12 +77,12 @@ SCUM_Window::~SCUM_Window()
 
 void SCUM_Window::refresh(const SCUM_Rect& damage)
 {
-    // 	std::cout << "SCUM_Window::refresh " << damage << "\n";
+    //	std::cout << "SCUM_Window::refresh " << damage << "\n";
     this->damage(
-                 FL_DAMAGE_CHILD,
-                 damage.xi(), damage.yi(),
-                 damage.wi(), damage.hi()
-                 );
+		 FL_DAMAGE_CHILD,
+		 damage.xi(), damage.yi(),
+		 damage.wi(), damage.hi()
+		 );
 }
 
 void SCUM_Window::refresh()
@@ -92,7 +92,7 @@ void SCUM_Window::refresh()
 
 void SCUM_Window::draw(const SCUM_Rect& damage)
 {
-    // 	std::cout << "SCUM_Window::draw: " << damage << " " << isVisible() << "\n";
+    //	std::cout << "SCUM_Window::draw: " << damage << " " << isVisible() << "\n";
     SCUM_Bin::draw(damage);
     if (m_focusView && SCUM_View::flags().wShowFocus) m_focusView->drawFocus(damage);
 }
@@ -137,13 +137,13 @@ void SCUM_Window::focusEvent(bool hasFocus)
     SCUM_View* refreshView = 0;
 
     if (hasFocus) {
-        m_focusView = m_saveFocusView;
-        m_saveFocusView = 0;
-        refreshView = m_focusView;
+	m_focusView = m_saveFocusView;
+	m_saveFocusView = 0;
+	refreshView = m_focusView;
     } else {
-        m_saveFocusView = m_focusView;
-        m_focusView = 0;
-        refreshView = m_saveFocusView;
+	m_saveFocusView = m_focusView;
+	m_focusView = 0;
+	refreshView = m_saveFocusView;
     }
 
     if (refreshView) refreshView->refreshFocus();
@@ -158,41 +158,41 @@ void SCUM_Window::setMouseView(SCUM_View* view)
 void SCUM_Window::mouseMove(int state, const SCUM_Point& where)
 {
     if (m_mouseMoveView) {
-        m_mouseMoveView->mouseMove(state, where);
+	m_mouseMoveView->mouseMove(state, where);
     }
 }
 
 void SCUM_Window::mouseUp(int state, const SCUM_Point& where)
 {
     if (m_mouseMoveView) {
-        m_mouseMoveView->mouseUp(state, where);
-        m_mouseMoveView = 0;
+	m_mouseMoveView->mouseUp(state, where);
+	m_mouseMoveView = 0;
     }
 }
 
 void SCUM_Window::keyDown(int state, wint_t key)
 {
     if (key == '\t') {
-        if (state == 0) {
-            tabNextFocus();
-        } else if (state == kModMaskShift) {
-            tabPrevFocus();
-        }
+	if (state == 0) {
+	    tabNextFocus();
+	} else if (state == kModMaskShift) {
+	    tabPrevFocus();
+	}
     } else {
-        if (m_focusView) {
-            m_focusView->keyDown(state, key);
-        } else {
-            SCUM_Bin::keyDown(state, key);
-        }
+	if (m_focusView) {
+	    m_focusView->keyDown(state, key);
+	} else {
+	    SCUM_Bin::keyDown(state, key);
+	}
     }
 }
 
 void SCUM_Window::keyUp(int state, wint_t key)
 {
     if (m_focusView) {
-        m_focusView->keyUp(state, key);
+	m_focusView->keyUp(state, key);
     } else {
-        SCUM_Bin::keyUp(state, key);
+	SCUM_Bin::keyUp(state, key);
     }
 }
 
@@ -210,7 +210,7 @@ void SCUM_Window::resetFocus(bool send)
 {
     SCUM_View* view = focusView();
     if (view && !view->canFocus()) {
-        view->makeFocus(false, send);
+	view->makeFocus(false, send);
     }
 }
 
@@ -240,73 +240,73 @@ void SCUM_Window::doUpdateLayout(bool xFit, bool yFit)
     SCUM_Size minSize = newSize;
 
     if (!shown()) {
-        newSize = newSize.max(m_initialSize);
+	newSize = newSize.max(m_initialSize);
     } else {
-        if (!xFit) newSize.w = max(newSize.w, curSize.w);
-        if (!yFit) newSize.h = max(newSize.h, curSize.h);
+	if (!xFit) newSize.w = max(newSize.w, curSize.w);
+	if (!yFit) newSize.h = max(newSize.h, curSize.h);
     }
 
-    // 	std::cout << "curSize " << curSize << " newSize " << newSize << "\n";
+    //	std::cout << "curSize " << curSize << " newSize " << newSize << "\n";
 
     // release constraints
     size_range(0, 0);
 
     // set size
     if (newSize == curSize) {
-        setBounds(bounds());
+	setBounds(bounds());
     } else {
-        Fl_Double_Window::size(newSize.wi(), newSize.hi());
+	Fl_Double_Window::size(newSize.wi(), newSize.hi());
     }
 
     // enforce constraints
     if (SCUM_View::flags().wResizable) {
-        size_range(minSize.wi(), minSize.hi());
+	size_range(minSize.wi(), minSize.hi());
     } else {
-        int w = newSize.wi();
-        int h = newSize.hi();
-        size_range(w, h, w, h);
+	int w = newSize.wi();
+	int h = newSize.hi();
+	size_range(w, h, w, h);
     }
 }
 
 void SCUM_Window::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "visible")) { // overridden from SCUM_View
-        if (args.get_i()) {
-            m_deferredCommands.show = true;
-            m_deferredCommands.hide = false;
-        } else {
-            m_deferredCommands.show = false;
-            m_deferredCommands.hide = true;
-        }
+	if (args.get_i()) {
+	    m_deferredCommands.show = true;
+	    m_deferredCommands.hide = false;
+	} else {
+	    m_deferredCommands.show = false;
+	    m_deferredCommands.hide = true;
+	}
     } else if (equal(key, "title")) {
-        m_title = args.get_s();
-        label(m_title.c_str());
+	m_title = args.get_s();
+	label(m_title.c_str());
     } else if (equal(key, "initialSize")) {
-        m_initialSize = SCUM_Size(args.get_f(), args.get_f());
+	m_initialSize = SCUM_Size(args.get_f(), args.get_f());
     } else if (equal(key, "resizable")) {
-        SCUM_View::flags().wResizable = args.get_i();
-        updateLayout(false, false);
+	SCUM_View::flags().wResizable = args.get_i();
+	updateLayout(false, false);
     } else if (equal(key, "fullscreen")) {
-        //m_deferredCommands.fullscreen = args.get_i();
+	//m_deferredCommands.fullscreen = args.get_i();
     } else if (equal(key, "decorated")) {
-        bool flag = args.get_i();
-        if (flag != border()) {
-            border(flag);
-        }
+	bool flag = args.get_i();
+	if (flag != border()) {
+	    border(flag);
+	}
     } else if (equal(key, "modal")) {
-        bool flag = args.get_i();
-        if (flag != modal()) {
-            if (flag) set_modal();
-            else set_non_modal();
-        }
+	bool flag = args.get_i();
+	if (flag != modal()) {
+	    if (flag) set_modal();
+	    else set_non_modal();
+	}
     } else if (equal(key, "showFocus")) {
-        bool flag = args.get_i();
-        if (flag != SCUM_View::flags().wShowFocus) {
-            SCUM_View::flags().wShowFocus = flag;
-            if (m_focusView) m_focusView->refreshFocus();
-        }
+	bool flag = args.get_i();
+	if (flag != SCUM_View::flags().wShowFocus) {
+	    SCUM_View::flags().wShowFocus = flag;
+	    if (m_focusView) m_focusView->refreshFocus();
+	}
     } else {
-        SCUM_Bin::setProperty(key, args);
+	SCUM_Bin::setProperty(key, args);
     }
 }
 
@@ -314,21 +314,21 @@ void SCUM_Window::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Window::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal(key, "initialSize")) {
-        setSizeValue(slot, m_initialSize);
+	setSizeValue(slot, m_initialSize);
     } else if (equal(key, "screenBounds")) {
-        setRectValue(slot, m_screenBounds);
+	setRectValue(slot, m_screenBounds);
     } else if (equal(key, "resizable")) {
-        setBoolValue(slot, SCUM_View::flags().wResizable);
+	setBoolValue(slot, SCUM_View::flags().wResizable);
     } else if (equal(key, "fullscreen")) {
-        setBoolValue(slot, SCUM_View::flags().wFullscreen);
+	setBoolValue(slot, SCUM_View::flags().wFullscreen);
     } else if (equal(key, "decorated")) {
-        setBoolValue(slot, border());
+	setBoolValue(slot, border());
     } else if (equal(key, "modal")) {
-        setBoolValue(slot, modal());
+	setBoolValue(slot, modal());
     } else if (equal(key, "showFocus")) {
-        setBoolValue(slot, SCUM_View::flags().wShowFocus);
+	setBoolValue(slot, SCUM_View::flags().wShowFocus);
     } else {
-        SCUM_Bin::getProperty(key, slot);
+	SCUM_Bin::getProperty(key, slot);
     }
 }
 #endif
@@ -337,46 +337,46 @@ void SCUM_Window::deferredAction(SCUM_Timer*)
 {
 #ifdef LATER
     if (handle()->flags().fullscreen != m_deferredCommands.fullscreen) {
-        WindowHandle::Flags flags(handle()->flags());
-        flags.fullscreen = m_deferredCommands.fullscreen;
-        handle()->setFlags(flags);
-        m_deferredCommands.fullscreen = handle()->flags().fullscreen;
+	WindowHandle::Flags flags(handle()->flags());
+	flags.fullscreen = m_deferredCommands.fullscreen;
+	handle()->setFlags(flags);
+	m_deferredCommands.fullscreen = handle()->flags().fullscreen;
     }
 #endif
 
     if (m_deferredCommands.show) {
-        m_deferredCommands.show = false;
-        if (!shown()) {
-            doUpdateLayout(false, false);
-            m_deferredCommands.updateLayout = false;
-        }
-        show();
+	m_deferredCommands.show = false;
+	if (!shown()) {
+	    doUpdateLayout(false, false);
+	    m_deferredCommands.updateLayout = false;
+	}
+	show();
     } else if (m_deferredCommands.hide) {
-        m_deferredCommands.hide = false;
-        hide();
+	m_deferredCommands.hide = false;
+	hide();
     }
 
     // currently unused
     // user resizes are propagated instantly
 #if 0
     if (m_deferredCommands.resize) {
-        m_deferredCommands.resize = false;
-        SCUM_Rect newBounds(m_screenBounds);
-        newBounds.x = newBounds.y = 0.0f;
-        // 		if (newBounds != bounds()) {
-        setBounds(newBounds);
-        // 		}
+	m_deferredCommands.resize = false;
+	SCUM_Rect newBounds(m_screenBounds);
+	newBounds.x = newBounds.y = 0.0f;
+	//		if (newBounds != bounds()) {
+	setBounds(newBounds);
+	//		}
     }
 #endif // 0
 
     if (m_deferredCommands.updateLayout) {
-        doUpdateLayout(
-                       m_deferredCommands.xFit,
-                       m_deferredCommands.yFit
-                       );
-        m_deferredCommands.updateLayout = false;
-        m_deferredCommands.xFit = false;
-        m_deferredCommands.yFit = false;
+	doUpdateLayout(
+		       m_deferredCommands.xFit,
+		       m_deferredCommands.yFit
+		       );
+	m_deferredCommands.updateLayout = false;
+	m_deferredCommands.xFit = false;
+	m_deferredCommands.yFit = false;
     }
 }
 
@@ -400,60 +400,60 @@ int SCUM_Window::handle(int evt)
 {
     switch (evt) {
     case FL_PUSH:
-        if (Fl::event_button() == 3) {
-            contextMenu(SCUM::FLEventState(), SCUM::FLEventPos());
-        } else {
-            mouseDown(SCUM::FLEventState(), SCUM::FLEventPos());
-        }
-        return true;
+	if (Fl::event_button() == 3) {
+	    contextMenu(SCUM::FLEventState(), SCUM::FLEventPos());
+	} else {
+	    mouseDown(SCUM::FLEventState(), SCUM::FLEventPos());
+	}
+	return true;
     case FL_DRAG:
-        mouseMove(SCUM::FLEventState(), SCUM::FLEventPos());
-        return true;
+	mouseMove(SCUM::FLEventState(), SCUM::FLEventPos());
+	return true;
     case FL_RELEASE:
-        mouseUp(SCUM::FLEventState(), SCUM::FLEventPos());
-        return true;
+	mouseUp(SCUM::FLEventState(), SCUM::FLEventPos());
+	return true;
     case FL_MOUSEWHEEL:
-        {
-            float dx = Fl::event_dx();
-            float dy = Fl::event_dy();
-            int state = SCUM::FLEventState();
-            if (state & SCUM::kModMaskControl) {
-                // swap axes
-                float tmp = dx;
-                dx = dy;
-                dy = tmp;
-                // strip modifier
-                state &= ~SCUM::kModMaskControl;
-            }
-            scrollWheel(state, SCUM::FLEventPos(), SCUM_Point(dx, dy));
-        }
-        return true;
+	{
+	    float dx = Fl::event_dx();
+	    float dy = Fl::event_dy();
+	    int state = SCUM::FLEventState();
+	    if (state & SCUM::kModMaskControl) {
+		// swap axes
+		float tmp = dx;
+		dx = dy;
+		dy = tmp;
+		// strip modifier
+		state &= ~SCUM::kModMaskControl;
+	    }
+	    scrollWheel(state, SCUM::FLEventPos(), SCUM_Point(dx, dy));
+	}
+	return true;
     case FL_FOCUS:
-        focusEvent(true);
-        return true;
+	focusEvent(true);
+	return true;
     case FL_UNFOCUS:
-        focusEvent(false);
-        return true;
+	focusEvent(false);
+	return true;
     case FL_KEYDOWN:
-        {
-            int state = SCUM::FLEventState();
-            wint_t key = SCUM::FLEventKey(state);
-            keyDown(state, key);
-        }
-        return true;
+	{
+	    int state = SCUM::FLEventState();
+	    wint_t key = SCUM::FLEventKey(state);
+	    keyDown(state, key);
+	}
+	return true;
     case FL_KEYUP:
-        {
-            int state = SCUM::FLEventState();
-            wint_t key = SCUM::FLEventKey(state);
-            keyUp(state, key);
-        }
-        return true;
+	{
+	    int state = SCUM::FLEventState();
+	    wint_t key = SCUM::FLEventKey(state);
+	    keyUp(state, key);
+	}
+	return true;
     case FL_SHOW:
-        showEvent();
-        break;
+	showEvent();
+	break;
     case FL_HIDE:
-        hideEvent();
-        break;
+	hideEvent();
+	break;
     }
 
     return Fl_Double_Window::handle(evt);
@@ -472,9 +472,9 @@ void SCUM_Window::draw()
 {
     int X, Y, W, H;
     if (!fl_clip_box(0, 0, w(), h(), X, Y, W, H)) {
-        X = Y = 0;
-        W = w();
-        H = h();
+	X = Y = 0;
+	W = w();
+	H = h();
     }
     draw(SCUM_Rect(X, Y, W, H));
 }

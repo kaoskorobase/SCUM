@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -34,67 +34,67 @@ namespace SCUM
 {
     enum Orient
 	{
-            kOrientHorizontal,
-            kOrientVertical
+	    kOrientHorizontal,
+	    kOrientVertical
 	};
 
     enum Align
 	{
-            kAlignNW = 1,
-            kAlignN,
-            kAlignNE,
-            kAlignW,
-            kAlignC,
-            kAlignE,
-            kAlignSW,
-            kAlignS,
-            kAlignSE
+	    kAlignNW = 1,
+	    kAlignN,
+	    kAlignNE,
+	    kAlignW,
+	    kAlignC,
+	    kAlignE,
+	    kAlignSW,
+	    kAlignS,
+	    kAlignSE
 	};
 
     enum Border
 	{
-            kBorderNone,
-            kBorderIn,
-            kBorderOut
+	    kBorderNone,
+	    kBorderIn,
+	    kBorderOut
 	};
 
     template <class T> T min(T a, T b)
     {
-        return (a > b) ? b : a;
+	return (a > b) ? b : a;
     }
 
     template <class T> T max(T a, T b)
     {
-        return (a > b) ? a : b;
+	return (a > b) ? a : b;
     }
 
     template <class T> T clip(T x, T min, T max)
     {
-        if (x < min) x = min;
-        else if (x > max) x = max;
-        return x;
+	if (x < min) x = min;
+	else if (x > max) x = max;
+	return x;
     }
 
     inline int clipAlign(int align)
     {
-        return SCUM::clip<int>(align, (int)SCUM::kAlignNW, (int)SCUM::kAlignSE);
+	return SCUM::clip<int>(align, (int)SCUM::kAlignNW, (int)SCUM::kAlignSE);
     }
 
     inline SCUM::Align makeAlign(int align)
     {
-        return (SCUM::Align)clipAlign(align);
+	return (SCUM::Align)clipAlign(align);
     }
 
     inline double quant(double value, double step)
     {
-        return floor(value / step + 0.5) * step;
+	return floor(value / step + 0.5) * step;
     }
 
     inline double clipQuant(double value, double min, double max, double step)
     {
-        return step > 0. ?
-            clip(quant(value, step), min, max) :
-            clip(value, min, max);
+	return step > 0. ?
+	    clip(quant(value, step), min, max) :
+	    clip(value, min, max);
     }
 };
 
@@ -102,16 +102,16 @@ class SCUM_Point
 {
 public:
     SCUM_Point()
-        : x(0.0f), y(0.0f)
+	: x(0.0f), y(0.0f)
     { }
     SCUM_Point(float xy)
-        : x(xy), y(xy)
+	: x(xy), y(xy)
     { }
     SCUM_Point(float x1, float y1)
-        : x(x1), y(y1)
+	: x(x1), y(y1)
     { }
     SCUM_Point(const SCUM_Point& point)
-        : x(point.x), y(point.y)
+	: x(point.x), y(point.y)
     { }
 
     inline int xi() const { return (int)x; }
@@ -125,7 +125,7 @@ public:
 
     template <class T> void copy(T* dst) const
     {
-        dst[0] = x; dst[1] = y;
+	dst[0] = x; dst[1] = y;
     }
 
     float x, y;
@@ -172,19 +172,19 @@ class SCUM_Size
 {
 public:
     SCUM_Size()
-        : w(0.0f), h(0.0f)
+	: w(0.0f), h(0.0f)
     { }
     SCUM_Size(float wh)
-        : w(wh), h(wh)
+	: w(wh), h(wh)
     { }
     SCUM_Size(float w1, float h1)
-        : w(w1), h(h1)
+	: w(w1), h(h1)
     { }
     SCUM_Size(const SCUM_Point& p)
-        : w(p.x), h(p.y)
+	: w(p.x), h(p.y)
     { }
     SCUM_Size(const SCUM_Size& size)
-        : w(size.w), h(size.h)
+	: w(size.w), h(size.h)
     { }
 
     inline int wi() const { return (int)w; }
@@ -201,7 +201,7 @@ public:
 
     template <class T> void copy(T* dst) const
     {
-        dst[0] = w; dst[1] = h;
+	dst[0] = w; dst[1] = h;
     }
 
     float w, h;
@@ -264,35 +264,35 @@ inline SCUM_Point SCUM_Size::layout(const SCUM_Size& box, SCUM::Align align) con
 
     switch (align) {
     case SCUM::kAlignNW:
-        break;
+	break;
     case SCUM::kAlignN:
-        delta.x = std::max(0.0f, 0.5f * (w - box.w));
-        break;
+	delta.x = std::max(0.0f, 0.5f * (w - box.w));
+	break;
     case SCUM::kAlignNE:
-        delta.x = std::max(0.0f, w - box.w);
-        break;
+	delta.x = std::max(0.0f, w - box.w);
+	break;
     case SCUM::kAlignW:
-        delta.y = std::max(0.0f, 0.5f * (h - box.h));
-        break;
+	delta.y = std::max(0.0f, 0.5f * (h - box.h));
+	break;
     case SCUM::kAlignC:
-        delta.x = std::max(0.0f, 0.5f * (w - box.w));
-        delta.y = std::max(0.0f, 0.5f * (h - box.h));
-        break;
+	delta.x = std::max(0.0f, 0.5f * (w - box.w));
+	delta.y = std::max(0.0f, 0.5f * (h - box.h));
+	break;
     case SCUM::kAlignE:
-        delta.x = std::max(0.0f, w - box.w);
-        delta.y = std::max(0.0f, 0.5f * (h - box.h));
-        break;
+	delta.x = std::max(0.0f, w - box.w);
+	delta.y = std::max(0.0f, 0.5f * (h - box.h));
+	break;
     case SCUM::kAlignSW:
-        delta.y = std::max(0.0f, h - box.h);
-        break;
+	delta.y = std::max(0.0f, h - box.h);
+	break;
     case SCUM::kAlignS:
-        delta.x = std::max(0.0f, 0.5f * (w - box.w));
-        delta.y = std::max(0.0f, h - box.h);
-        break;
+	delta.x = std::max(0.0f, 0.5f * (w - box.w));
+	delta.y = std::max(0.0f, h - box.h);
+	break;
     case SCUM::kAlignSE:
-        delta.x = std::max(0.0f, w - box.w);
-        delta.y = std::max(0.0f, h - box.h);
-        break;
+	delta.x = std::max(0.0f, w - box.w);
+	delta.y = std::max(0.0f, h - box.h);
+	break;
     }
 
     return delta;
@@ -317,19 +317,19 @@ class SCUM_Rect
 {
 public:
     SCUM_Rect()
-        : x(0.0f), y(0.0f), w(0.0f), h(0.0f)
+	: x(0.0f), y(0.0f), w(0.0f), h(0.0f)
     { }
     SCUM_Rect(float inX, float inY, float width, float height)
-        : x(inX), y(inY), w(width), h(height)
+	: x(inX), y(inY), w(width), h(height)
     { }
     SCUM_Rect(const SCUM_Point& origin, const SCUM_Point& extent)
-        : x(origin.x), y(origin.y), w(extent.x-x), h(extent.y-y)
+	: x(origin.x), y(origin.y), w(extent.x-x), h(extent.y-y)
     { }
     SCUM_Rect(const SCUM_Point& origin, const SCUM_Size& size)
-        : x(origin.x), y(origin.y), w(size.w), h(size.h)
+	: x(origin.x), y(origin.y), w(size.w), h(size.h)
     { }
     SCUM_Rect(const SCUM_Rect& r)
-        : x(r.x), y(r.y), w(r.w), h(r.h)
+	: x(r.x), y(r.y), w(r.w), h(r.h)
     { }
 
     inline int xi() const { return (int)x; }
@@ -365,10 +365,10 @@ public:
 
     template <class T> void copy(T* dst) const
     {
-        dst[0] = x;
-        dst[1] = y;
-        dst[2] = w;
-        dst[3] = h;
+	dst[0] = x;
+	dst[1] = y;
+	dst[2] = w;
+	dst[3] = h;
     }
 
     float x, y, w, h;
@@ -377,15 +377,15 @@ public:
 inline bool SCUM_Rect::contains(const SCUM_Point& point) const
 {
     return (point.x >= minX()) && (point.x <= maxX())
-        && (point.y >= minY()) && (point.y <= maxY());
+	&& (point.y >= minY()) && (point.y <= maxY());
 }
 
 inline bool SCUM_Rect::intersects(const SCUM_Rect& other) const
 {
     return !((maxX() <= other.minX()) ||
-             (other.maxX() <= minX()) ||
-             (maxY() <= other.minY()) ||
-             (other.maxY() <= minY()));
+	     (other.maxX() <= minX()) ||
+	     (maxY() <= other.minY()) ||
+	     (other.maxY() <= minY()));
 }
 
 inline SCUM_Rect& SCUM_Rect::translate(const SCUM_Point& delta)
@@ -440,14 +440,14 @@ inline SCUM_Rect& SCUM_Rect::operator &= (const SCUM_Rect& other)
 {
     // intersection
     if (intersects(other)) {
-        float maxX0 = maxX();
-        float maxY0 = maxY();
-        x = SCUM::max(x, other.x);
-        y = SCUM::max(y, other.y);
-        w = SCUM::min(maxX0, other.maxX()) - x;
-        h = SCUM::min(maxY0, other.maxY()) - y;
+	float maxX0 = maxX();
+	float maxY0 = maxY();
+	x = SCUM::max(x, other.x);
+	y = SCUM::max(y, other.y);
+	w = SCUM::min(maxX0, other.maxX()) - x;
+	h = SCUM::min(maxY0, other.maxY()) - y;
     } else {
-        x = y = w = h = 0.f;
+	x = y = w = h = 0.f;
     }
 
     return *this;
@@ -460,19 +460,19 @@ inline SCUM_Rect& SCUM_Rect::operator |= (const SCUM_Rect& other)
     bool e2 = other.isEmpty();
 
     if (e1 && e2) {
-        x = y = w = h = 0.f;
+	x = y = w = h = 0.f;
     } else if (e1) {
-        x = other.x;
-        y = other.y;
-        w = other.w;
-        h = other.h;
+	x = other.x;
+	y = other.y;
+	w = other.w;
+	h = other.h;
     } else if (!e2) {
-        float maxX0 = maxX();
-        float maxY0 = maxY();
-        x = SCUM::min(x, other.x);
-        y = SCUM::min(y, other.y);
-        w = SCUM::max(maxX0, other.maxX()) - x;
-        h = SCUM::max(maxY0, other.maxY()) - y;
+	float maxX0 = maxX();
+	float maxY0 = maxY();
+	x = SCUM::min(x, other.x);
+	y = SCUM::min(y, other.y);
+	w = SCUM::max(maxX0, other.maxX()) - x;
+	h = SCUM::max(maxY0, other.maxY()) - y;
     }
 
     return *this;
@@ -494,33 +494,33 @@ inline SCUM_Rect SCUM_Rect::operator | (const SCUM_Rect& other) const
 
 // inline SCUM_Rect operator & (const SCUM_Rect& r1, const SCUM_Rect& r2)
 // {
-// 	// intersection
-// 	if (r1.intersects(r2)) {
-// 		float x11 = r1.minX();
-// 		float y11 = r1.minY();
-// 		return SCUM_Rect(r1.origin().max(r2.origin()),
-// 						 r1.extent().min(r2.extent()));
-// 	}
+//	// intersection
+//	if (r1.intersects(r2)) {
+//		float x11 = r1.minX();
+//		float y11 = r1.minY();
+//		return SCUM_Rect(r1.origin().max(r2.origin()),
+//						 r1.extent().min(r2.extent()));
+//	}
 	
-// 	return SCUM_Rect();
+//	return SCUM_Rect();
 // }
 
 // inline SCUM_Rect operator | (SCUM_Rect& r1, const SCUM_Rect& r2)
 // {
-// 	// union
-// 	bool e1 = r1.isEmpty();
-// 	bool e2 = r2.isEmpty();
+//	// union
+//	bool e1 = r1.isEmpty();
+//	bool e2 = r2.isEmpty();
 
-// 	if (e1 && e2) {
-// 		return SCUM_Rect();
-// 	} else if (e1) {
-// 		return r2;
-// 	} else if (e2) {
-// 		return r1;
-// 	}
+//	if (e1 && e2) {
+//		return SCUM_Rect();
+//	} else if (e1) {
+//		return r2;
+//	} else if (e2) {
+//		return r1;
+//	}
 	
-// 	return SCUM_Rect(r1.origin().min(r2.origin()),
-// 					 r1.extent().max(r2.extent()));
+//	return SCUM_Rect(r1.origin().min(r2.origin()),
+//					 r1.extent().max(r2.extent()));
 // }
 
 inline std::ostream& operator << (std::ostream& stream, const SCUM_Point& p)

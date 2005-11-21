@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -89,20 +89,20 @@ void SCUM_CanvasView::draw(const SCUM_Rect& damage)
 void SCUM_CanvasView::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (SCUM::equal(key, "visible")) {
-        if (m_handle) {
-            bool vis0 = flags().vVisible;
-            SCUM_View::setProperty(key, slot);
-            bool vis1 = flags().vVisible;
-            if (vis0 != vis1) {
-                if (vis1) {
-                    m_handle->show();
-                } else {
-                    m_handle->hide();
-                }
-            }
-        }
+	if (m_handle) {
+	    bool vis0 = flags().vVisible;
+	    SCUM_View::setProperty(key, slot);
+	    bool vis1 = flags().vVisible;
+	    if (vis0 != vis1) {
+		if (vis1) {
+		    m_handle->show();
+		} else {
+		    m_handle->hide();
+		}
+	    }
+	}
     } else {
-        SCUM_View::setProperty(key, slot);
+	SCUM_View::setProperty(key, slot);
     }
 }
 
@@ -142,9 +142,9 @@ void SCUM_CanvasView::drawCanvas()
     cairo_set_rgb_color(cr, fgColor());
     cairo_set_line_width(cr, 2);
     cairo_move_to(cr, 0, 0);
-    // 	cairo_line_to(cr, bounds.maxX(), bounds.maxY());
-    // 	cairo_move_to(cr, 0, bounds.maxY());
-    // 	cairo_line_to(cr, bounds.maxX(), 0);
+    //	cairo_line_to(cr, bounds.maxX(), bounds.maxY());
+    //	cairo_move_to(cr, 0, bounds.maxY());
+    //	cairo_line_to(cr, bounds.maxX(), 0);
     cairo_arc(cr, 0.5, 0.5, 0.4, 0, M_2_PI);
     cairo_stroke(cr);
 

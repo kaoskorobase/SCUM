@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -32,23 +32,23 @@ namespace SCUM
 {
     enum LineStyle
 	{
-            kLineStyleSolid,
-            kLineStyleDash,
-            kLineStyleDot
+	    kLineStyleSolid,
+	    kLineStyleDash,
+	    kLineStyleDot
 	};
 
     enum LineCap
 	{
-            kLineCapFlat,
-            kLineCapRound,
-            kLineCapSquare
+	    kLineCapFlat,
+	    kLineCapRound,
+	    kLineCapSquare
 	};
 
     enum LineJoin
 	{
-            kLineJoinMiter,
-            kLineJoinRound,
-            kLineJoinBevel
+	    kLineJoinMiter,
+	    kLineJoinRound,
+	    kLineJoinBevel
 	};
 
     void GCInit();
@@ -92,9 +92,9 @@ namespace SCUM
     void GCFillArc(float x, float y, float w, float h, float a1, float a2);
     inline void GCFillArc(const SCUM_Rect& bounds, float a1, float a2);
 		
-    // 	void GCDrawImage(SCUM::ImageHandle* img, float x, float y, float w, float h);
-    // 	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Rect& bounds);
-    // 	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Point& pos);
+    //	void GCDrawImage(SCUM::ImageHandle* img, float x, float y, float w, float h);
+    //	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Rect& bounds);
+    //	inline void GCDrawImage(const SCUM_Image& img, const SCUM_Point& pos);
 
     // clipping
     void GCInitClip();
@@ -150,12 +150,12 @@ inline void SCUM::GCFillArc(const SCUM_Rect& bounds, float a1, float a2)
 
 // inline void SCUM::GCDrawImage(const SCUM_Image& img, const SCUM_Rect& bounds)
 // {
-// 	GCDrawImage(const_cast<SCUM_Image&>(img).handle(), bounds.x, bounds.y, bounds.w, bounds.h);
+//	GCDrawImage(const_cast<SCUM_Image&>(img).handle(), bounds.x, bounds.y, bounds.w, bounds.h);
 // }
 
 // inline void SCUM::GCDrawImage(const SCUM_Image& img, const SCUM_Point& pos)
 // {
-// 	GCDrawImage(img, SCUM_Rect(pos, img.size()));
+//	GCDrawImage(img, SCUM_Rect(pos, img.size()));
 // }
 
 #endif // SCUM_GC_HH_INCLUDED

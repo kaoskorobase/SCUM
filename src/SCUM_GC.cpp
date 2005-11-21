@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -34,67 +34,67 @@ namespace SCUM
     class GC
     {
     public:
-        enum { kMaxDepth = 64 };
+	enum { kMaxDepth = 64 };
 
-        struct State
-        {
-            inline void pushClip(const SCUM_Rect& r)
-            {
-                SCUM_ASSERT(clipped == 0);
-                clipped = 1;
-                fl_push_clip((int)r.x, (int)r.y, (int)r.w, (int)r.h);
-            }
-            inline void pushNoClip()
-            {
-                SCUM_ASSERT(clipped == 0);
-                clipped = 1;
-                fl_push_no_clip();
-            }
-            inline void popClip()
-            {
-                SCUM_ASSERT(clipped == 1);
-                clipped = 0;
-                fl_pop_clip();
-            }
+	struct State
+	{
+	    inline void pushClip(const SCUM_Rect& r)
+	    {
+		SCUM_ASSERT(clipped == 0);
+		clipped = 1;
+		fl_push_clip((int)r.x, (int)r.y, (int)r.w, (int)r.h);
+	    }
+	    inline void pushNoClip()
+	    {
+		SCUM_ASSERT(clipped == 0);
+		clipped = 1;
+		fl_push_no_clip();
+	    }
+	    inline void popClip()
+	    {
+		SCUM_ASSERT(clipped == 1);
+		clipped = 0;
+		fl_pop_clip();
+	    }
 
-            inline void applyColor()
-            {
-                fl_color(color);
-            }
-            inline void applyLineStyle()
-            {
-                fl_line_style(
-                              lineStyle|lineCap|lineJoin,
-                              lineWidth,
-                              0
-                              );
-            }
-            inline void apply()
-            {
-                applyColor();
-                applyLineStyle();
-            }
+	    inline void applyColor()
+	    {
+		fl_color(color);
+	    }
+	    inline void applyLineStyle()
+	    {
+		fl_line_style(
+			      lineStyle|lineCap|lineJoin,
+			      lineWidth,
+			      0
+			      );
+	    }
+	    inline void apply()
+	    {
+		applyColor();
+		applyLineStyle();
+	    }
 
-            Fl_Color		color;
-            int				lineWidth;
-            int				lineStyle;
-            int				lineCap;
-            int				lineJoin;
-            int				clipped;
-        };
+	    Fl_Color		color;
+	    int				lineWidth;
+	    int				lineStyle;
+	    int				lineCap;
+	    int				lineJoin;
+	    int				clipped;
+	};
 
-        GC();
+	GC();
 
-        void validate();
-        void save();
-        void restore();
+	void validate();
+	void save();
+	void restore();
 
-        State	state;
+	State	state;
 
     private:
-        State*	m_ptr;
-        State*	m_limit;
-        State	m_stack[kMaxDepth];
+	State*	m_ptr;
+	State*	m_limit;
+	State	m_stack[kMaxDepth];
     };
 
     static GC gGC;
@@ -112,7 +112,7 @@ SCUM::GC::GC()
 void SCUM::GC::save()
 {
     if (m_ptr == m_stack) {
-        throw std::runtime_error("GC stack overflow");
+	throw std::runtime_error("GC stack overflow");
     }
     *(--m_ptr) = state;
 }
@@ -120,7 +120,7 @@ void SCUM::GC::save()
 void SCUM::GC::restore()
 {
     if (m_ptr == m_limit) {
-        throw std::runtime_error("GC stack underflow");
+	throw std::runtime_error("GC stack underflow");
     }
     state = *(m_ptr++);
     state.apply();
@@ -129,10 +129,10 @@ void SCUM::GC::restore()
 void SCUM::GC::validate()
 {
     if (state.clipped) {
-        throw std::runtime_error("invalid GC clip stack depth");
+	throw std::runtime_error("invalid GC clip stack depth");
     }
     if (m_ptr != m_limit) {
-        throw std::runtime_error("invalid GC state stack depth");
+	throw std::runtime_error("invalid GC state stack depth");
     }
 }
 
@@ -217,12 +217,12 @@ namespace SCUM
 {
     inline void GCDrawBeveledRectNW(int x1, int y1, int x2, int y2, int bw)
     {
-        while (bw--) fl_yxline(x1++, y2--, y1++, x2--);
+	while (bw--) fl_yxline(x1++, y2--, y1++, x2--);
     }
 
     inline void GCDrawBeveledRectSE(int x1, int y1, int x2, int y2, int bw)
     {
-        while (bw--) fl_xyline(x1++, y2--, x2--, y1++);
+	while (bw--) fl_xyline(x1++, y2--, x2--, y1++);
     }
 };
 
@@ -232,8 +232,8 @@ void SCUM::GCDrawBeveledRect(float xf, float yf, float wf, float hf, float bwf, 
     SCUM_Color sbc = SCUM_Color((uint32_t)bc & 0xFFFFFF00);
     Fl_Color lc = (Fl_Color)(sbc.blend(SCUM_Color(1, 1, 1), 0.3).rgba32() & 0xFFFFFF00);
     Fl_Color dc = (Fl_Color)(sbc.blend(SCUM_Color(0, 0, 0), 0.3).rgba32() & 0xFFFFFF00);
-    // 	Fl_Color lc = (Fl_Color)(SCUM_Color(1, 1, 1).rgba32() & 0xFFFFFF00);
-    // 	Fl_Color dc = (Fl_Color)(SCUM_Color(0, 0, 0).rgba32() & 0xFFFFFF00);
+    //	Fl_Color lc = (Fl_Color)(SCUM_Color(1, 1, 1).rgba32() & 0xFFFFFF00);
+    //	Fl_Color dc = (Fl_Color)(SCUM_Color(0, 0, 0).rgba32() & 0xFFFFFF00);
 
     int x1 = (int)xf;
     int y1 = (int)yf;
@@ -301,7 +301,7 @@ SCUM_Rect SCUM::GCClippedRect(const SCUM_Rect& r)
 {
     int x, y, w, h;
     if (fl_clip_box((int)r.x, (int)r.y, (int)r.w, (int)r.h, x, y, w, h))
-        return SCUM_Rect(x, y, w, h);
+	return SCUM_Rect(x, y, w, h);
     return r;
 }
 

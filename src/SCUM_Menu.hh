@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -38,49 +38,37 @@ struct SCUM_MenuItem
 {
     SCUM_MenuItem(int type, const std::string& text);
     SCUM_MenuItem(const SCUM_MenuItem& item);
-    //SCUM_MenuItem(PyrSlot* spec);
 
     int type() const { return m_type; }
     const char* text() const { return m_text.c_str(); }
 
 private:
-    int					m_type;
+    int				m_type;
     std::string			m_text;
 };
 
 typedef std::vector<SCUM_MenuItem> SCUM_MenuItems;
 
-// class SCUM_MenuHandle
-// {
-// public:
-// 	SCUM_MenuHandle();
-// 	virtual ~SCUM_MenuHandle();
-
-// 	virtual bool value(int item) const = 0;
-// 	virtual void setValue(int item, bool value) = 0;
-// 	virtual int popup(const SCUM_Point& where, int item) = 0;
-// };
-
 namespace SCUM
 {
     enum
-	{
-            MenuAction		= '!',
-            MenuSeparator	= '-',
-            MenuToggle		= '?',
-            MenuRadio		= '*',
-            MenuOpen		= '>',
-            MenuClose		= '<'
-	};
+    {
+	kMenuAction	= '!',
+	kMenuSeparator	= '-',
+	kMenuToggle	= '?',
+	kMenuRadio	= '*',
+	kMenuOpen	= '>',
+	kMenuClose	= '<'
+    };
 
     class MenuHandle : public SCUM_Handle
     {
     public:
-        static MenuHandle* create(const std::vector<SCUM_MenuItem>& items);
+	static MenuHandle* create(const std::vector<SCUM_MenuItem>& items);
 
-        virtual bool value(int item) = 0;
-        virtual void setValue(int item, bool value) = 0;
-        virtual int popup(const SCUM_Point& where, int item) = 0;
+	virtual bool value(int item) = 0;
+	virtual void setValue(int item, bool value) = 0;
+	virtual int popup(const SCUM_Point& where, int item) = 0;
     }; // MenuHandle
 };
 
@@ -91,6 +79,8 @@ public:
     virtual ~SCUM_Menu();
 
     SCUM::MenuHandle* handle() { return m_handle; }
+
+    void setItems(const std::vector<SCUM_MenuItem>& items);
 
     int item() const { return m_item; }
     void setItem(int item) { m_item = item; }
@@ -113,52 +103,52 @@ template <class T> class SCUM_Handle
 {
     inline void retain()
     {
-        if (m_cnt) (*m_cnt)++;
+	if (m_cnt) (*m_cnt)++;
     }
     inline void release()
     {
-        if (m_cnt && (--(*m_cnt) == 0)) {
-            delete m_ptr;
-            delete m_cnt;
-        }
+	if (m_cnt && (--(*m_cnt) == 0)) {
+	    delete m_ptr;
+	    delete m_cnt;
+	}
     }
 
 public:
     SCUM_Handle()
-        : m_ptr(0), m_cnt(0)
+	: m_ptr(0), m_cnt(0)
     { }
     SCUM_Handle(T* ptr)
-        : m_ptr(ptr), m_cnt(new int(1))
+	: m_ptr(ptr), m_cnt(new int(1))
     { }
     SCUM_Handle(const SCUM_Handle& handle)
-        : m_ptr(handle.m_ptr), m_cnt(handle.m_cnt)
+	: m_ptr(handle.m_ptr), m_cnt(handle.m_cnt)
     {
-        retain();
+	retain();
     }
     ~SCUM_Handle()
     {
-        release();
+	release();
     }
 
     bool operator == (const SCUM_Handle& handle)
     {
-        return m_ptr == handle.m_ptr;
+	return m_ptr == handle.m_ptr;
     }
     bool operator == (const T* ptr)
     {
-        return m_ptr == ptr;
+	return m_ptr == ptr;
     }
 
     T& operator * () { return *m_ptr; }
 	
     SCUM_Handle& operator = (const SCUM_Handle& handle)
     {
-        if (m_ptr == handle.m_ptr) return *this;
-        release();
-        m_ptr = handle.m_ptr;
-        m_cnt = handle.m_cnt;
-        retain();
-        return *this;
+	if (m_ptr == handle.m_ptr) return *this;
+	release();
+	m_ptr = handle.m_ptr;
+	m_cnt = handle.m_cnt;
+	retain();
+	return *this;
     }
 
 private:

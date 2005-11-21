@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -44,33 +44,33 @@ SCUM_App::SCUM_App()
 {
 #if 0
     if (!SCUM_RendezvousStart()) {
-        throw std::runtime_error("couldn't start rendezvous");
+	throw std::runtime_error("couldn't start rendezvous");
     }
 #endif
     if (!gClassRegistry) {
-        SCUM_ClassRegistry* reg = gClassRegistry = new SCUM_ClassRegistry();
-        extern void SCUM_Object_Init(SCUM_ClassRegistry*);
-        SCUM_Object_Init(reg);
-        extern void SCUM_View_Init(SCUM_ClassRegistry*);
-        SCUM_View_Init(reg);
-        extern void SCUM_Button_Init(SCUM_ClassRegistry*);
-        SCUM_Button_Init(reg);
-        extern void SCUM_Container_Init(SCUM_ClassRegistry*);
-        SCUM_Container_Init(reg);
-        extern void SCUM_Slider_Init(SCUM_ClassRegistry*);
-        SCUM_Slider_Init(reg);
-        extern void SCUM_Text_Init(SCUM_ClassRegistry*);
-        SCUM_Text_Init(reg);
-        extern void SCUM_GL_Init(SCUM_ClassRegistry*);
-        SCUM_GL_Init(reg);
-        extern void SCUM_ScrollView_Init(SCUM_ClassRegistry*);
-        SCUM_ScrollView_Init(reg);
-        extern void SCUM_Graph_Init(SCUM_ClassRegistry*);
-        SCUM_Graph_Init(reg);
-        extern void SCUM_Client_Init(SCUM_ClassRegistry*);
-        SCUM_Client_Init(reg);
-        extern void SCUM_Window_Init(SCUM_ClassRegistry*);
-        SCUM_Window_Init(reg);
+	SCUM_ClassRegistry* reg = gClassRegistry = new SCUM_ClassRegistry();
+	extern void SCUM_Object_Init(SCUM_ClassRegistry*);
+	SCUM_Object_Init(reg);
+	extern void SCUM_View_Init(SCUM_ClassRegistry*);
+	SCUM_View_Init(reg);
+	extern void SCUM_Button_Init(SCUM_ClassRegistry*);
+	SCUM_Button_Init(reg);
+	extern void SCUM_Container_Init(SCUM_ClassRegistry*);
+	SCUM_Container_Init(reg);
+	extern void SCUM_Slider_Init(SCUM_ClassRegistry*);
+	SCUM_Slider_Init(reg);
+	extern void SCUM_Text_Init(SCUM_ClassRegistry*);
+	SCUM_Text_Init(reg);
+	extern void SCUM_GL_Init(SCUM_ClassRegistry*);
+	SCUM_GL_Init(reg);
+	extern void SCUM_ScrollView_Init(SCUM_ClassRegistry*);
+	SCUM_ScrollView_Init(reg);
+	extern void SCUM_Graph_Init(SCUM_ClassRegistry*);
+	SCUM_Graph_Init(reg);
+	extern void SCUM_Client_Init(SCUM_ClassRegistry*);
+	SCUM_Client_Init(reg);
+	extern void SCUM_Window_Init(SCUM_ClassRegistry*);
+	SCUM_Window_Init(reg);
     }
 }
 
@@ -88,8 +88,8 @@ void SCUM_App::dataAvailableCB(int fd, void* data)
     socklen_t addrlen = sizeof(addr);
     int sock = accept(fd, (struct sockaddr*)&addr, &addrlen);
     if (sock == -1) {
-        perror("accept");
-        exit(1);
+	perror("accept");
+	exit(1);
     }
     SCUM_Class* klass = gClassRegistry->lookupClass("Client");
     SCUM_ArgStream args;
@@ -114,11 +114,11 @@ static int bind_port(int socket, uint16_t port)
 
     int opt = 1;
     if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
-        return errno;
+	return errno;
     }
 
     if (bind(socket, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-        return errno;
+	return errno;
     }
 
     return 0;
@@ -131,20 +131,20 @@ static int bind_port_range(int socket, uint16_t portStart, uint16_t portMax, boo
     int err;
 
     if (portStart > portMax)
-        return bind_port_range(socket, portMax, portStart, wrap);
+	return bind_port_range(socket, portMax, portStart, wrap);
 
     for (port = portStart; port < portMax; port++) {
-        struct sockaddr_in addr;
-        memset(&addr, 0, sizeof(addr));
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = INADDR_LOOPBACK;
-        addr.sin_port = htons(port);
-        err = bind(socket, (struct sockaddr*)&addr, sizeof(addr));
-        if (err != -1) break;
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = INADDR_LOOPBACK;
+	addr.sin_port = htons(port);
+	err = bind(socket, (struct sockaddr*)&addr, sizeof(addr));
+	if (err != -1) break;
     }
 
     if (err == -1) {
-        return wrap ? bind_port_range(socket, 1025, portStart, false) : errno;
+	return wrap ? bind_port_range(socket, 1025, portStart, false) : errno;
     }
 
     return 0;
@@ -157,8 +157,8 @@ void SCUM_App::initOSC(const char* address, uint16_t port)
     int ret;
     ret = socket(AF_INET, SOCK_STREAM, 0);
     if (ret == -1) {
-        perror("socket");
-        exit(1);
+	perror("socket");
+	exit(1);
     }
     m_socket = ret;
     struct sockaddr_in addr;
@@ -167,29 +167,29 @@ void SCUM_App::initOSC(const char* address, uint16_t port)
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(port);
     if (address) {
-        struct hostent* he = gethostbyname(address);
-        if (he) addr.sin_addr.s_addr = *(int32_t*)he->h_addr;
+	struct hostent* he = gethostbyname(address);
+	if (he) addr.sin_addr.s_addr = *(int32_t*)he->h_addr;
     }
     int opt = 1;
     if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
-        perror("setsockopt");
-        exit(1);
+	perror("setsockopt");
+	exit(1);
     }
     ret = bind(m_socket, (struct sockaddr*)&addr, sizeof(addr));
     if (ret == -1) {
-        perror("bind");
-        exit(1);
+	perror("bind");
+	exit(1);
     }
     ret = listen(m_socket, 8);
     if (ret == -1) {
-        perror("listen");
-        exit(1);
+	perror("listen");
+	exit(1);
     }
     Fl::add_fd(m_socket, &dataAvailableCB, this);
 #if 0
     if (!SCUM_RendezvousPublish("SCUM", kSCUM_ProtoTCP, port)) {
-        fprintf(stderr, "publishing OSC service failed\n");
-        exit(1);
+	fprintf(stderr, "publishing OSC service failed\n");
+	exit(1);
     }
 #endif
 }
@@ -204,16 +204,16 @@ void SCUM_App::removeClient(SCUM_Client* client)
     SCUM_ObjectList::iterator it;
     it = std::find(m_clients.begin(), m_clients.end(), client);
     if (it != m_clients.end()) {
-        m_clients.erase(it);
-        maybeQuit();
+	m_clients.erase(it);
+	maybeQuit();
     }
 }
 
 void SCUM_App::maybeQuit()
 {
     if (m_clients.empty()) {
-        //Fl::add_timeout(gIdleTimeout, &timeoutCB, this);
-        m_shouldBeRunning = false;
+	//Fl::add_timeout(gIdleTimeout, &timeoutCB, this);
+	m_shouldBeRunning = false;
     }
 }
 
@@ -221,9 +221,9 @@ void SCUM_App::run()
 {
     m_shouldBeRunning = true;
     while (m_shouldBeRunning) {
-        if (Fl::wait(1.0) < 0) {
-            m_shouldBeRunning = false;
-        }
+	if (Fl::wait(1.0) < 0) {
+	    m_shouldBeRunning = false;
+	}
     }
     printf("Quitting due to lack of interest. Goodbye.\n");
 }
@@ -239,10 +239,10 @@ int main(int argc, char** argv)
     char* address = 0;
     uint16_t port = 57130;
     if (argc > 1) {
-        address = argv[1];
+	address = argv[1];
     }
     if (argc > 2) {
-        port = atoi(argv[2]);
+	port = atoi(argv[2]);
     }
     SCUM::GCInit();
     SCUM_App::instance().initOSC(address, port);

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -39,7 +39,7 @@ struct SCUM_TextExtents
 struct SCUM_FontExtents
 {
     SCUM_FontExtents()
-        : ascent(0.f), descent(0.f), height(0.f)
+	: ascent(0.f), descent(0.f), height(0.f)
     { }
 
     float		ascent;

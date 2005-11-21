@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -45,15 +45,15 @@ inline Fl_Align SCUM::convert(Align align)
     int flalign;
     switch (align)
 	{
-        case kAlignNW: flalign = FL_ALIGN_TOP|FL_ALIGN_LEFT; break;
-        case kAlignN: flalign = FL_ALIGN_TOP; break;
-        case kAlignNE: flalign = FL_ALIGN_TOP|FL_ALIGN_RIGHT; break;
-        case kAlignW: flalign = FL_ALIGN_CENTER|FL_ALIGN_LEFT; break;
-        case kAlignC: flalign = FL_ALIGN_CENTER; break;
-        case kAlignE: flalign = FL_ALIGN_CENTER|FL_ALIGN_RIGHT; break;
-        case kAlignSW: flalign = FL_ALIGN_BOTTOM|FL_ALIGN_LEFT; break;
-        case kAlignS: flalign = FL_ALIGN_BOTTOM; break;
-        case kAlignSE: flalign = FL_ALIGN_BOTTOM|FL_ALIGN_RIGHT; break;
+	case kAlignNW: flalign = FL_ALIGN_TOP|FL_ALIGN_LEFT; break;
+	case kAlignN: flalign = FL_ALIGN_TOP; break;
+	case kAlignNE: flalign = FL_ALIGN_TOP|FL_ALIGN_RIGHT; break;
+	case kAlignW: flalign = FL_ALIGN_CENTER|FL_ALIGN_LEFT; break;
+	case kAlignC: flalign = FL_ALIGN_CENTER; break;
+	case kAlignE: flalign = FL_ALIGN_CENTER|FL_ALIGN_RIGHT; break;
+	case kAlignSW: flalign = FL_ALIGN_BOTTOM|FL_ALIGN_LEFT; break;
+	case kAlignS: flalign = FL_ALIGN_BOTTOM; break;
+	case kAlignSE: flalign = FL_ALIGN_BOTTOM|FL_ALIGN_RIGHT; break;
 	};
     return (Fl_Align)flalign;
 }
@@ -64,11 +64,11 @@ inline SCUM::ModMask SCUM::FLEventState()
     int state = 0;
 	
     if (flstate & FL_SHIFT)
-        state |= SCUM::kModMaskShift;
+	state |= SCUM::kModMaskShift;
     if (flstate & FL_CTRL)
-        state |= SCUM::kModMaskControl;
+	state |= SCUM::kModMaskControl;
     if ((flstate & FL_ALT) || (flstate & FL_META))
-        state |= SCUM::kModMaskCommand;
+	state |= SCUM::kModMaskCommand;
 	
     return (SCUM::ModMask)state;
 }

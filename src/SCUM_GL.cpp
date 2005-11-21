@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -57,15 +57,15 @@ void SCUM_GLContext::refresh()
 int SCUM_GLContext::handle(int evt)
 {
     return (evt == FL_SHOW) || (evt == FL_HIDE) ?
-        Fl_Gl_Window::handle(evt) : 0;
+	Fl_Gl_Window::handle(evt) : 0;
 }
 
 void SCUM_GLContext::draw()
 {
     if (!valid()) {
-        // SCUM_DEBUG_PRINT("initGL: %d %d %d %d\n",
-        // x(), y(), w(), h());
-        m_view->initGL();
+	// SCUM_DEBUG_PRINT("initGL: %d %d %d %d\n",
+	// x(), y(), w(), h());
+	m_view->initGL();
     }
     m_view->drawGL();
 }
@@ -100,7 +100,7 @@ void SCUM_GLView::drawView(const SCUM_Rect& damage)
     GCSetColor(bgColor());
     GCFillRect(bounds());
     if (m_border != kBorderNone)
-        GCDrawBeveledRect(bounds(), 1, m_border == kBorderIn);
+	GCDrawBeveledRect(bounds(), 1, m_border == kBorderIn);
 }
 
 void SCUM_GLView::setBounds(const SCUM_Rect& bounds)
@@ -125,15 +125,15 @@ void SCUM_GLView::drawGL()
 void SCUM_GLView::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "visible")) {
-        bool vis0 = isVisible();
-        SCUM_View::setProperty(key, args);
-        bool vis1 = isVisible();
-        if (vis0 != vis1) {
-            if (vis1) m_context->show();
-            else m_context->hide();
-        }
+	bool vis0 = isVisible();
+	SCUM_View::setProperty(key, args);
+	bool vis1 = isVisible();
+	if (vis0 != vis1) {
+	    if (vis1) m_context->show();
+	    else m_context->hide();
+	}
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     }
 }
 

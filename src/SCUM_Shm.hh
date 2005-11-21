@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -37,8 +37,8 @@ class SCUM_SharedMemory
 public:
     struct Segment
     {
-        uint32_t	m_size;
-        uint8_t		m_data[1];
+	uint32_t	m_size;
+	uint8_t		m_data[1];
     };
 
     SCUM_SharedMemory();

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -23,6 +23,7 @@
 
 
 #include "SCUM_Button.hh"
+#include "SCUM_Class.hh"
 #include "SCUM_Client.hh"
 #include "SCUM_GC.hh"
 #include "SCUM_Menu.hh"
@@ -45,30 +46,30 @@ void SCUM_Toggle::drawView(const SCUM_Rect& damage)
 {
     GCSave();
     if (m_pushed) {
-        GCSetColor(fgColor());
-        GCFillRect(bounds());
-        GCDrawBeveledRect(bounds(), 1, true);
+	GCSetColor(fgColor());
+	GCFillRect(bounds());
+	GCDrawBeveledRect(bounds(), 1, true);
     } else {
-        GCSetColor(bgColor());
-        GCFillRect(bounds());
-        GCDrawBeveledRect(bounds(), 1, false);
+	GCSetColor(bgColor());
+	GCFillRect(bounds());
+	GCDrawBeveledRect(bounds(), 1, false);
     }
     GCRestore();
-    // 	if (m_value) {
-    // 		float x1 = bounds().minX();
-    // 		float y1 = bounds().minY();
-    // 		float x2 = bounds().maxX();
-    // 		float y2 = bounds().maxY();
+    //	if (m_value) {
+    //		float x1 = bounds().minX();
+    //		float y1 = bounds().minY();
+    //		float x2 = bounds().maxX();
+    //		float y2 = bounds().maxY();
 
-    // 		// TODO: support different styles
-    // 		setColor(fgColor());
-    // // 		setLineStyle(1);
-    // // 		drawLine(x1, y1, x2, y2);
-    // // 		drawLine(x2, y1, x1, y2);
-    // 		setColor(fgColor());
-    // 		float inset = min(size().w, size().h) * 0.2;
-    // 		drawRect(bounds().inset(inset));
-    // 	}
+    //		// TODO: support different styles
+    //		setColor(fgColor());
+    // //		setLineStyle(1);
+    // //		drawLine(x1, y1, x2, y2);
+    // //		drawLine(x2, y1, x1, y2);
+    //		setColor(fgColor());
+    //		float inset = min(size().w, size().h) * 0.2;
+    //		drawRect(bounds().inset(inset));
+    //	}
 }
 
 bool SCUM_Toggle::mouseDown(int, const SCUM_Point&)
@@ -81,7 +82,7 @@ bool SCUM_Toggle::mouseDown(int, const SCUM_Point&)
 void SCUM_Toggle::mouseUp(int, const SCUM_Point& where)
 {
     if (contains(where)) {
-        toggleValue(true);
+	toggleValue(true);
     }
     m_pushed = m_value;
     refresh();
@@ -90,12 +91,12 @@ void SCUM_Toggle::mouseUp(int, const SCUM_Point& where)
 void SCUM_Toggle::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "value")) {
-        //setBoolValue(slot, setValue(boolValue(slot), false));
-        setValue(args.get_i(), false);
-        m_pushed = m_value;
-        refresh();
+	//setBoolValue(slot, setValue(boolValue(slot), false));
+	setValue(args.get_i(), false);
+	m_pushed = m_value;
+	refresh();
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     }
 }
 
@@ -103,9 +104,9 @@ void SCUM_Toggle::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Toggle::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setBoolValue(slot, m_value);
+	setBoolValue(slot, m_value);
     } else {
-        SCUM_View::getProperty(key, slot);
+	SCUM_View::getProperty(key, slot);
     }
 }
 #endif
@@ -113,17 +114,17 @@ void SCUM_Toggle::getProperty(const PyrSymbol* key, PyrSlot* slot)
 bool SCUM_Toggle::setValue(bool value, bool doSend)
 {
     if (value != m_value) {
-        m_value = value;
-        if (doSend) {
-            OSC::StaticClientPacket<36> p;
-            p.openMessage("/changed", 3);
-            putId(p);
-            p.putString("value");
-            p.putFloat32(value);
-            p.closeMessage();
-            send(p);
-        }
-        return true;
+	m_value = value;
+	if (doSend) {
+	    OSC::StaticClientPacket<36> p;
+	    p.openMessage("/changed", 3);
+	    putId(p);
+	    p.putString("value");
+	    p.putFloat32(value);
+	    p.closeMessage();
+	    send(p);
+	}
+	return true;
     }
     return false;
 }
@@ -156,8 +157,8 @@ void SCUM_Bang::drawView(const SCUM_Rect& damage)
     GCSetColor(fgColor());
     GCDrawArc(r, 0, 360);
     if (m_active) {
-        GCSetColor(fgColor());
-        GCFillArc(r, 0, 360);
+	GCSetColor(fgColor());
+	GCFillArc(r, 0, 360);
     }
     GCRestore();
 }
@@ -171,11 +172,11 @@ bool SCUM_Bang::mouseDown(int, const SCUM_Point&)
 void SCUM_Bang::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "value")) {
-        bang(false);
+	bang(false);
     } else if (equal(key, "flashTime")) {
-        m_flashTime = args.get_f();
+	m_flashTime = args.get_f();
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     }
 }
 
@@ -183,11 +184,11 @@ void SCUM_Bang::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Bang::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setBoolValue(slot, false);
+	setBoolValue(slot, false);
     } else if (equal(key, "flashTime")) {
-        setFloatValue(slot, m_flashTime);
+	setFloatValue(slot, m_flashTime);
     } else {
-        SCUM_View::getProperty(key, slot);
+	SCUM_View::getProperty(key, slot);
     }
 }
 #endif
@@ -195,8 +196,8 @@ void SCUM_Bang::getProperty(const PyrSymbol* key, PyrSlot* slot)
 void SCUM_Bang::animate()
 {
     if (m_active && ((SCUM::time() - m_timeStamp) > m_flashTime)) {
-        m_active = false;
-        refresh();
+	m_active = false;
+	refresh();
     }
 }
 
@@ -204,16 +205,16 @@ void SCUM_Bang::bang(bool doSend)
 {
     m_timeStamp = SCUM::time();
     if (!m_active) {
-        m_active = true;
-        refresh();
+	m_active = true;
+	refresh();
     }
     if (doSend) {
-        OSC::StaticClientPacket<28> p;
-        p.openMessage("/changed", 2);
-        putId(p);
-        p.putString("value");
-        p.closeMessage();
-        send(p);
+	OSC::StaticClientPacket<28> p;
+	p.openMessage("/changed", 2);
+	putId(p);
+	p.putString("value");
+	p.closeMessage();
+	send(p);
     }
 }
 
@@ -235,22 +236,22 @@ void SCUM_Button::drawView(const SCUM_Rect& damage)
     GCSave();
 
     if (m_states.empty()) {
-        GCSetColor(bgColor());
-        GCFillRect(bounds());
-        GCDrawBeveledRect(bounds(), 1, m_pushed);
+	GCSetColor(bgColor());
+	GCFillRect(bounds());
+	GCDrawBeveledRect(bounds(), 1, m_pushed);
     } else {
-        State& state = m_states[m_value];
-        if (state.bgColor.isTransparent())
-            GCSetColor(bgColor());
-        else
-            GCSetColor(state.bgColor);
-        GCFillRect(bounds());
-        GCDrawBeveledRect(bounds(), 1, m_pushed);
-        if (state.fgColor.isTransparent())
-            GCSetColor(fgColor());
-        else
-            GCSetColor(state.fgColor);
-        state.text.draw(bounds().inset(m_padding), makeAlign(m_textAlign));
+	State& state = m_states[m_value];
+	if (state.bgColor.isTransparent())
+	    GCSetColor(bgColor());
+	else
+	    GCSetColor(state.bgColor);
+	GCFillRect(bounds());
+	GCDrawBeveledRect(bounds(), 1, m_pushed);
+	if (state.fgColor.isTransparent())
+	    GCSetColor(fgColor());
+	else
+	    GCSetColor(state.fgColor);
+	state.text.draw(bounds().inset(m_padding), makeAlign(m_textAlign));
     }
 
     GCRestore();
@@ -273,33 +274,33 @@ void SCUM_Button::mouseUp(int, const SCUM_Point& where)
 void SCUM_Button::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "value")) {
-        //setBoolValue(slot, setValue(intValue(slot), false));
-        setValue(args.get_i(), false);
+	//setBoolValue(slot, setValue(intValue(slot), false));
+	setValue(args.get_i(), false);
     } else if (equal(key, "font")) {
-        m_font = fontValue(args);
-        for (int i=0; i < m_states.size(); i++) {
-            m_states[i].text.setFont(m_font);
-        }
-        updateLayout();
+	m_font = fontValue(args);
+	for (int i=0; i < m_states.size(); i++) {
+	    m_states[i].text.setFont(m_font);
+	}
+	updateLayout();
     } else if (equal(key, "xPadding")) {
-        m_padding.x = max(3.f, args.get_f());
-        updateLayout();
+	m_padding.x = max(3.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "yPadding")) {
-        m_padding.y = max(3.f, args.get_f());
-        updateLayout();
+	m_padding.y = max(3.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "textAlignment")) {
-        m_textAlign = args.get_i();
-        refresh();
+	m_textAlign = args.get_i();
+	refresh();
     } else if (equal(key, "states")) {
-        m_states.clear();
-        int n = args.get_i();
-        if (n > 0) {
-            m_states.reserve(n);
-            while (n--) stateValue(m_states, args);
-        }
-        updateLayout();
+	m_states.clear();
+	int n = args.get_i();
+	if (n > 0) {
+	    m_states.reserve(n);
+	    while (n--) stateValue(m_states, args);
+	}
+	updateLayout();
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     }
 }
 
@@ -307,13 +308,13 @@ void SCUM_Button::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Button::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setIntValue(slot, m_value);
+	setIntValue(slot, m_value);
     } else if (equal(key, "padding")) {
-        setPointValue(slot, m_padding);
+	setPointValue(slot, m_padding);
     } else if (equal(key, "textAlignment")) {
-        setIntValue(slot, m_textAlign);
+	setIntValue(slot, m_textAlign);
     } else {
-        SCUM_View::getProperty(key, slot);
+	SCUM_View::getProperty(key, slot);
     }
 }
 #endif
@@ -322,7 +323,7 @@ SCUM_Size SCUM_Button::getMinSize()
 {
     SCUM_Size size;
     for (int i=0; i < m_states.size(); i++) {
-        size = size.max(m_states[i].text.extents().size);
+	size = size.max(m_states[i].text.extents().size);
     }
     return size.padded(m_padding);
 }
@@ -340,22 +341,22 @@ void SCUM_Button::stateValue(StateArray& array, SCUM_ArgStream& args)
 bool SCUM_Button::setValue(int value, bool doSend)
 {
     if (!m_states.empty()) {
-        if (value < 0) value = m_states.size() - 1;
-        else if (value >= m_states.size()) value = 0;
-        //if (m_value != value) {
-        m_value = value;
-        if (doSend) {
-            OSC::StaticClientPacket<36> p;
-            p.openMessage("/changed", 3);
-            putId(p);
-            p.putString("value");
-            p.putInt32(value);
-            p.closeMessage();
-            send(p);
-        }
-        refresh();
-        return true;
-        //}
+	if (value < 0) value = m_states.size() - 1;
+	else if (value >= m_states.size()) value = 0;
+	//if (m_value != value) {
+	m_value = value;
+	if (doSend) {
+	    OSC::StaticClientPacket<36> p;
+	    p.openMessage("/changed", 3);
+	    putId(p);
+	    p.putString("value");
+	    p.putInt32(value);
+	    p.closeMessage();
+	    send(p);
+	}
+	refresh();
+	return true;
+	//}
     }
     return false;
 }
@@ -393,17 +394,17 @@ void SCUM_Choice::drawView(const SCUM_Rect& damage)
 
     // draw triangular indicator
     SCUM_Point p1(r.x + r.w - kIndicatorSize.w - kIndicatorPadding.w,
-                  r.y + .5f * r.h - .5f * kIndicatorSize.h);
+		  r.y + .5f * r.h - .5f * kIndicatorSize.h);
     SCUM_Point p2(p1.x + kIndicatorSize.w, p1.y);
     SCUM_Point p3(p1.x + floorf(.5f * kIndicatorSize.w),
-                  p1.y + kIndicatorSize.h);
+		  p1.y + kIndicatorSize.h);
 
     GCSetColor(fgColor());
     GCDrawPolygon(p1, p2, p3);
 
     if (!m_states.empty()) {
-        r.w -= kIndicatorSize.w;
-        m_states[m_value].draw(r.inset(m_padding), makeAlign(m_textAlign));
+	r.w -= kIndicatorSize.w;
+	m_states[m_value].draw(r.inset(m_padding), makeAlign(m_textAlign));
     }
 
     GCRestore();
@@ -423,38 +424,41 @@ void SCUM_Choice::contextMenu(int state, const SCUM_Point& where)
 void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "value")) {
-        //setBoolValue(slot, setValue(intValue(slot), false));
-        setValue(args.get_i(), false);
+	//setBoolValue(slot, setValue(intValue(slot), false));
+	setValue(args.get_i(), false);
     } else if (equal(key, "font")) {
-        m_font = fontValue(args);
-        updateLayout();
+	m_font = fontValue(args);
+	updateLayout();
     } else if (equal(key, "xPadding")) {
-        m_padding.x = max(3.f, args.get_f());
-        updateLayout();
+	m_padding.x = max(3.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "yPadding")) {
-        m_padding.y = max(3.f, args.get_f());
-        updateLayout();
+	m_padding.y = max(3.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "textAlignment")) {
-        m_textAlign = args.get_i();
-        refresh();
+	m_textAlign = args.get_i();
+	refresh();
     } else if (equal(key, "states")) {
-        m_states.clear();
-        m_states.reserve(args.get_i());
-        while (!args.atEnd()) {
-            m_states.push_back(SCUM_Text(args.get_s()));
-        }
-        delete m_menu; m_menu = 0;
-        if (!m_states.empty()) {
-            SCUM_MenuItems items;
-            items.reserve(m_states.size());
-            for (size_t i=0; i < m_states.size(); i++) {
-                items.push_back(SCUM_MenuItem(MenuAction, m_states[i].text()));
-            }
-            //m_menu = new SCUM_Menu(getClient(), kInvalidOID, items);
-        }
-        updateLayout();
+	m_states.clear();
+	m_states.reserve(args.get_i());
+	while (!args.atEnd()) {
+	    m_states.push_back(SCUM_Text(args.get_s()));
+	}
+	delete m_menu; m_menu = 0;
+	if (!m_states.empty()) {
+	    SCUM_MenuItems items;
+	    items.reserve(m_states.size());
+	    for (size_t i=0; i < m_states.size(); i++) {
+		items.push_back(SCUM_MenuItem(kMenuAction, m_states[i].text()));
+	    }
+	    //m_menu = new SCUM_Menu(getClient(), kInvalidOID, items);
+	    // TODO: use args directly?!
+	    m_menu = (SCUM_Menu*)SCUM_ClassRegistry::instance().makeObject("Menu", getClient(), kInvalidOID);
+	    m_menu->setItems(items);
+	}
+	updateLayout();
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     }
 }
 
@@ -462,13 +466,13 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Choice::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setIntValue(slot, m_value);
+	setIntValue(slot, m_value);
     } else if (equal(key, "padding")) {
-        setPointValue(slot, m_padding);
+	setPointValue(slot, m_padding);
     } else if (equal(key, "textAlignment")) {
-        setIntValue(slot, m_textAlign);
+	setIntValue(slot, m_textAlign);
     } else {
-        SCUM_View::getProperty(key, slot);
+	SCUM_View::getProperty(key, slot);
     }
 }
 #endif
@@ -478,7 +482,7 @@ SCUM_Size SCUM_Choice::getMinSize()
     SCUM_Size size;
 
     for (size_t i=0; i < m_states.size(); i++) {
-        size = size.max(m_states[i].extents().size);
+	size = size.max(m_states[i].extents().size);
     }
 
     size = size.padded(m_padding);
@@ -491,19 +495,19 @@ SCUM_Size SCUM_Choice::getMinSize()
 bool SCUM_Choice::setValue(int value, bool doSend)
 {
     if ((value >= 0) && (value < m_states.size()) && (m_value != value)) {
-        m_value = value;
-        if (m_menu) m_menu->setItem(m_value);
-        if (doSend) {
-            OSC::StaticClientPacket<36> p;
-            p.openMessage("/changed", 3);
-            putId(p);
-            p.putString("value");
-            p.putInt32(value);
-            p.closeMessage();
-            send(p);
-        }
-        refresh();
-        return true;
+	m_value = value;
+	if (m_menu) m_menu->setItem(m_value);
+	if (doSend) {
+	    OSC::StaticClientPacket<36> p;
+	    p.openMessage("/changed", 3);
+	    putId(p);
+	    p.putString("value");
+	    p.putInt32(value);
+	    p.closeMessage();
+	    send(p);
+	}
+	refresh();
+	return true;
     }
     return false;
 }

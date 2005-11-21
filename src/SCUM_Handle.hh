@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -55,8 +55,8 @@ inline void SCUM_Handle::release()
 {
 #ifdef SCUM_DEBUG
     if (m_refcount <= 0) {
-        fprintf(stderr, "SCUM_Handle::release: invalid reference count %d\n", m_refcount);
-        abort();
+	fprintf(stderr, "SCUM_Handle::release: invalid reference count %d\n", m_refcount);
+	abort();
     }
 #endif // SCUM_DEBUG
     if (--m_refcount == 0) destroy();

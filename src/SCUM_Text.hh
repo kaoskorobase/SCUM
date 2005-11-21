@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -76,8 +76,8 @@ public:
     virtual void mouseUp(int state, const SCUM_Point& where);
     virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
 
-    // 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-    // 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+    //	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+    //	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 };
 
 // =====================================================================

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -180,10 +180,10 @@ class SCUM_Grid : public SCUM_Container
 {
     struct Info
     {
-        float			preferredSize;
-        float			size;
-        float			expand;
-        bool			visible;
+	float			preferredSize;
+	float			size;
+	float			expand;
+	bool			visible;
     };
 
 public:
@@ -351,7 +351,7 @@ SCUM_View* SCUM_Bin::visibleChild()
 
 // inline void SCUM_Grid::childPut(size_t row, size_t col, SCUM_View* view)
 // {
-// //     m_grid[childIndex(row, col)] = view;
+// //	  m_grid[childIndex(row, col)] = view;
 //     m_grid[row * numCols() + col] = view;
 // }
 

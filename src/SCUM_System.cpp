@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -48,16 +48,16 @@ namespace SCUM
     class FLFontHandle : public FontHandle
     {
     public:
-        FLFontHandle(int id, int size);
+	FLFontHandle(int id, int size);
 
-        virtual void extents(SCUM_FontExtents& res);
-        virtual void measure(const char* str, SCUM_TextExtents& res);
+	virtual void extents(SCUM_FontExtents& res);
+	virtual void measure(const char* str, SCUM_TextExtents& res);
 		
-        inline void saveFont(int& id, int& size);
-        inline void restoreFont(int id, int size);
+	inline void saveFont(int& id, int& size);
+	inline void restoreFont(int id, int size);
 
-        int			m_id;
-        int			m_size;
+	int			m_id;
+	int			m_size;
     };
 
     // =====================================================================
@@ -66,42 +66,42 @@ namespace SCUM
     class FLWindowHandle : public SCUM_FL_WINDOW_HANDLE_SUPER, public WindowHandle
     {
     public:
-        FLWindowHandle(SCUM_Window* view);
+	FLWindowHandle(SCUM_Window* view);
 		
-        // interface
-        virtual SCUM_Rect bounds();
+	// interface
+	virtual SCUM_Rect bounds();
 		
-        virtual Flags flags();
-        virtual void setFlags(const Flags& flags);
+	virtual Flags flags();
+	virtual void setFlags(const Flags& flags);
 
-        virtual void setTitle(const char* str);
-        virtual void setPos(const SCUM_Point& pos);
-        virtual void setSize(const SCUM_Size& size);
-        virtual void setMinSize(const SCUM_Size& size);
-        virtual void setMaxSize(const SCUM_Size& size);
+	virtual void setTitle(const char* str);
+	virtual void setPos(const SCUM_Point& pos);
+	virtual void setSize(const SCUM_Size& size);
+	virtual void setMinSize(const SCUM_Size& size);
+	virtual void setMaxSize(const SCUM_Size& size);
 		
-        virtual void show();
-        virtual void hide();
+	virtual void show();
+	virtual void hide();
 		
-        virtual void refresh(const SCUM_Rect& damage);
+	virtual void refresh(const SCUM_Rect& damage);
 
     protected:
-        // overrides
-        virtual int handle(int evt);
-        virtual void resize(int x, int y, int w, int h);
-        virtual void draw();
-        virtual void destroy();
+	// overrides
+	virtual int handle(int evt);
+	virtual void resize(int x, int y, int w, int h);
+	virtual void draw();
+	virtual void destroy();
 
     private:
-        static void closeCB(Fl_Widget* w, void*);
+	static void closeCB(Fl_Widget* w, void*);
 
     private:
-        SCUM_Window*	m_view;
-        Flags			m_flags;
-        std::string		m_title;
-        SCUM_Size		m_minSize;
-        SCUM_Size		m_maxSize;
-        SCUM_Rect		m_saveBounds;
+	SCUM_Window*	m_view;
+	Flags			m_flags;
+	std::string		m_title;
+	SCUM_Size		m_minSize;
+	SCUM_Size		m_maxSize;
+	SCUM_Rect		m_saveBounds;
     };
 #endif
 
@@ -110,24 +110,24 @@ namespace SCUM
 
     class FLMenuHandle : public MenuHandle
     {
-        struct Item
-        {
-            std::string		text;
-            int				index;
-        };
+	struct Item
+	{
+	    std::string		text;
+	    int				index;
+	};
 		
     public:
-        FLMenuHandle(const std::vector<SCUM_MenuItem>& items);
-        virtual ~FLMenuHandle();
+	FLMenuHandle(const std::vector<SCUM_MenuItem>& items);
+	virtual ~FLMenuHandle();
 		
-        virtual bool value(int item);
-        virtual void setValue(int item, bool value);
-        virtual int popup(const SCUM_Point& where, int item);
+	virtual bool value(int item);
+	virtual void setValue(int item, bool value);
+	virtual int popup(const SCUM_Point& where, int item);
 		
     private:
-        size_t				m_size;
-        Item*				m_items;
-        Fl_Menu_Item*		m_data;
+	size_t				m_size;
+	Item*				m_items;
+	Fl_Menu_Item*		m_data;
     };
 
     // =====================================================================
@@ -136,15 +136,15 @@ namespace SCUM
     class FLImageHandle : public ImageHandle
     {
     public:
-        FLImageHandle(const char* fileName, const SCUM_Size& size);
-        virtual ~FLImageHandle();
+	FLImageHandle(const char* fileName, const SCUM_Size& size);
+	virtual ~FLImageHandle();
 		
-        Fl_Shared_Image* image() { return m_image; }
+	Fl_Shared_Image* image() { return m_image; }
 		
-        virtual SCUM_Size size();
+	virtual SCUM_Size size();
 		
     private:
-        Fl_Shared_Image*	m_image;
+	Fl_Shared_Image*	m_image;
     };
 }; // SCUM
 #if 0
@@ -156,51 +156,51 @@ namespace SCUM
 {
     struct FLFontDesc
     {
-        const char* name;
-        int id;
+	const char* name;
+	int id;
     };
 
     static FLFontDesc gFontTable[] = {
-        { "Helvetica", FL_HELVETICA },
-        { "Arial", FL_HELVETICA },
-        { "sans", FL_HELVETICA },
-        { "Times", FL_TIMES },
-        { "serif", FL_TIMES },
-        { "Courier", FL_COURIER },
-        { "Monaco", FL_COURIER },
-        { "monospace", FL_COURIER }
+	{ "Helvetica", FL_HELVETICA },
+	{ "Arial", FL_HELVETICA },
+	{ "sans", FL_HELVETICA },
+	{ "Times", FL_TIMES },
+	{ "serif", FL_TIMES },
+	{ "Courier", FL_COURIER },
+	{ "Monaco", FL_COURIER },
+	{ "monospace", FL_COURIER }
     };
     static const int kNumFonts = sizeof(gFontTable)/sizeof(FLFontDesc);
 
     static bool getFontID(const char* name, int& id)
     {
-        bool found = false;
+	bool found = false;
 		
-        const char* end = strchr(name, '-');
-        size_t len = end ? end - name : strlen(name);
+	const char* end = strchr(name, '-');
+	size_t len = end ? end - name : strlen(name);
 
-        for (int i=0; i < kNumFonts; i++) {
-            if (strncmp(name, gFontTable[i].name, len) == 0) {
-                id = gFontTable[i].id;
-                found = true;
-                break;
-            }
-        }
+	for (int i=0; i < kNumFonts; i++) {
+	    if (strncmp(name, gFontTable[i].name, len) == 0) {
+		id = gFontTable[i].id;
+		found = true;
+		break;
+	    }
+	}
 		
-        if (!found) return false;
+	if (!found) return false;
 
-        while (true) {
-            name = strchr(name, '-');
-            if (!name) break;
-            name++;
-            if (strncmp(name, "Bold", 4) == 0) {
-                id |= FL_BOLD;
-            } else if (strncmp(name, "Italic", 6) == 0) {
-                id |= FL_ITALIC;
-            }
-        }
+	while (true) {
+	    name = strchr(name, '-');
+	    if (!name) break;
+	    name++;
+	    if (strncmp(name, "Bold", 4) == 0) {
+		id |= FL_BOLD;
+	    } else if (strncmp(name, "Italic", 6) == 0) {
+		id |= FL_ITALIC;
+	    }
+	}
 		
-        return true;
+	return true;
     }
 }
 
@@ -208,7 +208,7 @@ SCUM::FontHandle* SCUM::FontHandle::create(const char* name, double size)
 {
     int id;
     if (getFontID(name, id)) {
-        return new SCUM::FLFontHandle(id, (int)size);
+	return new SCUM::FLFontHandle(id, (int)size);
     }
     return 0;
 }
@@ -296,25 +296,25 @@ SCUM::WindowHandle::Flags SCUM::FLWindowHandle::flags()
 void SCUM::FLWindowHandle::setFlags(const Flags& flags)
 {
     if (m_flags.decorated != flags.decorated) {
-        m_flags.decorated = flags.decorated;
-        border(flags.decorated);
+	m_flags.decorated = flags.decorated;
+	border(flags.decorated);
     }
     if (m_flags.modal != flags.modal) {
-        m_flags.modal = flags.modal;
-        if (flags.modal) set_modal();
-        else set_non_modal();
+	m_flags.modal = flags.modal;
+	if (flags.modal) set_modal();
+	else set_non_modal();
     }
     if (m_flags.fullscreen != flags.fullscreen) {
-        m_flags.fullscreen = flags.fullscreen;
-        if (flags.fullscreen) {
-            m_saveBounds = bounds();
-            fullscreen();
-        } else {
-            fullscreen_off(
-                           (int)m_saveBounds.x, (int)m_saveBounds.y,
-                           (int)m_saveBounds.w, (int)m_saveBounds.h
-                           );
-        }
+	m_flags.fullscreen = flags.fullscreen;
+	if (flags.fullscreen) {
+	    m_saveBounds = bounds();
+	    fullscreen();
+	} else {
+	    fullscreen_off(
+			   (int)m_saveBounds.x, (int)m_saveBounds.y,
+			   (int)m_saveBounds.w, (int)m_saveBounds.h
+			   );
+	}
     }
 }
 
@@ -342,18 +342,18 @@ void SCUM::FLWindowHandle::setMinSize(const SCUM_Size& size)
 {
     m_minSize = size;
     size_range(
-               (int)size.w, (int)size.h,
-               (int)m_maxSize.w, (int)m_maxSize.h
-               );
+	       (int)size.w, (int)size.h,
+	       (int)m_maxSize.w, (int)m_maxSize.h
+	       );
 }
 
 void SCUM::FLWindowHandle::setMaxSize(const SCUM_Size& size)
 {
     m_maxSize = size;
     size_range(
-               (int)m_minSize.w, (int)m_minSize.h,
-               (int)size.w, (int)size.h
-               );
+	       (int)m_minSize.w, (int)m_minSize.h,
+	       (int)size.w, (int)size.h
+	       );
 }
 
 void SCUM::FLWindowHandle::show()
@@ -369,79 +369,79 @@ void SCUM::FLWindowHandle::hide()
 void SCUM::FLWindowHandle::refresh(const SCUM_Rect& damage)
 {
     this->damage(
-                 FL_DAMAGE_CHILD,
-                 (int)damage.x, (int)damage.y,
-                 (int)damage.w, (int)damage.h
-                 );
+		 FL_DAMAGE_CHILD,
+		 (int)damage.x, (int)damage.y,
+		 (int)damage.w, (int)damage.h
+		 );
 }
 
 int SCUM::FLWindowHandle::handle(int evt)
 {
     switch (evt) {
     case FL_PUSH:
-        if (Fl::event_button() == 3) {
-            m_view->contextMenu(SCUM::FL_state(), SCUM::FL_eventPos());
-        } else {
-            m_view->mouseDown(SCUM::FL_state(), SCUM::FL_eventPos());
-        }
-        return true;
+	if (Fl::event_button() == 3) {
+	    m_view->contextMenu(SCUM::FL_state(), SCUM::FL_eventPos());
+	} else {
+	    m_view->mouseDown(SCUM::FL_state(), SCUM::FL_eventPos());
+	}
+	return true;
     case FL_DRAG:
-        m_view->mouseMove(SCUM::FL_state(), SCUM::FL_eventPos());
-        return true;
+	m_view->mouseMove(SCUM::FL_state(), SCUM::FL_eventPos());
+	return true;
     case FL_RELEASE:
-        m_view->mouseUp(SCUM::FL_state(), SCUM::FL_eventPos());
-        return true;
+	m_view->mouseUp(SCUM::FL_state(), SCUM::FL_eventPos());
+	return true;
     case FL_MOUSEWHEEL:
-        {
-            float dx = Fl::event_dx();
-            float dy = Fl::event_dy();
-            int state = SCUM::FL_state();
-            if (state & SCUM::kModMaskControl) {
-                // swap axes
-                float tmp = dx;
-                dx = dy;
-                dy = tmp;
-                // strip modifier
-                state &= ~SCUM::kModMaskControl;
-            }
-            m_view->scrollWheel(state, SCUM::FL_eventPos(), SCUM_Point(dx, dy));
-        }
-        return true;
+	{
+	    float dx = Fl::event_dx();
+	    float dy = Fl::event_dy();
+	    int state = SCUM::FL_state();
+	    if (state & SCUM::kModMaskControl) {
+		// swap axes
+		float tmp = dx;
+		dx = dy;
+		dy = tmp;
+		// strip modifier
+		state &= ~SCUM::kModMaskControl;
+	    }
+	    m_view->scrollWheel(state, SCUM::FL_eventPos(), SCUM_Point(dx, dy));
+	}
+	return true;
     case FL_FOCUS:
-        if (!m_flags.focused) {
-            m_flags.focused = true;
-            m_view->focusEvent(true);
-        }
-        return true;
+	if (!m_flags.focused) {
+	    m_flags.focused = true;
+	    m_view->focusEvent(true);
+	}
+	return true;
     case FL_UNFOCUS:
-        if (m_flags.focused) {
-            m_flags.focused = false;
-            m_view->focusEvent(false);
-        }
-        return true;
+	if (m_flags.focused) {
+	    m_flags.focused = false;
+	    m_view->focusEvent(false);
+	}
+	return true;
     case FL_KEYDOWN:
-        {
-            int state = SCUM::FL_state();
-            wint_t key = SCUM::FL_eventKey(state);
-            m_view->keyDown(state, key);
-        }
-        return true;
+	{
+	    int state = SCUM::FL_state();
+	    wint_t key = SCUM::FL_eventKey(state);
+	    m_view->keyDown(state, key);
+	}
+	return true;
     case FL_KEYUP:
-        {
-            int state = SCUM::FL_state();
-            wint_t key = SCUM::FL_eventKey(state);
-            m_view->keyUp(state, key);
-        }
-        return true;
+	{
+	    int state = SCUM::FL_state();
+	    wint_t key = SCUM::FL_eventKey(state);
+	    m_view->keyUp(state, key);
+	}
+	return true;
     case FL_SHOW:
-        m_flags.shown = true;
-        m_flags.visible = true;
-        m_view->showEvent();
-        return SCUM_FL_WINDOW_HANDLE_SUPER::handle(evt);
+	m_flags.shown = true;
+	m_flags.visible = true;
+	m_view->showEvent();
+	return SCUM_FL_WINDOW_HANDLE_SUPER::handle(evt);
     case FL_HIDE:
-        m_flags.visible = false;
-        m_view->hideEvent();
-        return true;
+	m_flags.visible = false;
+	m_view->hideEvent();
+	return true;
     }
 
     return SCUM_FL_WINDOW_HANDLE_SUPER::handle(evt);
@@ -458,9 +458,9 @@ void SCUM::FLWindowHandle::draw()
     int x, y, w, h;
     if (!fl_clip_box(0, 0, this->w(), this->h(), x, y, w, h)) {
     } else {
-        x = y = 0;
-        w = this->w();
-        h = this->h();
+	x = y = 0;
+	w = this->w();
+	h = this->h();
     }
     m_view->draw(SCUM_Rect(x, y, w, h));
 }
@@ -488,40 +488,40 @@ SCUM::FLMenuHandle::FLMenuHandle(const std::vector<SCUM_MenuItem>& items)
     int* lastFlags = 0;
 
     for (size_t i=0; i < m_size; i++) {
-        Item* item = m_items + i;
-        Fl_Menu_Item* data = m_data + i;
+	Item* item = m_items + i;
+	Fl_Menu_Item* data = m_data + i;
 
-        item->text = items[i].text();
-        item->index = i;
+	item->text = items[i].text();
+	item->index = i;
 
-        memset(data, 0, sizeof(Fl_Menu_Item));
+	memset(data, 0, sizeof(Fl_Menu_Item));
 
-        data->text = item->text.c_str();
-        data->user_data(item);
-        data->labeltype(FL_NORMAL_LABEL);
-        data->labelcolor(FL_BLACK);
-        data->labelfont(FL_HELVETICA);
-        data->labelsize(12);
+	data->text = item->text.c_str();
+	data->user_data(item);
+	data->labeltype(FL_NORMAL_LABEL);
+	data->labelcolor(FL_BLACK);
+	data->labelfont(FL_HELVETICA);
+	data->labelsize(12);
 
-        switch (items[i].type()) {
-        case SCUM::MenuSeparator:
-            data->flags = FL_MENU_INVISIBLE;
-            if (lastFlags) *lastFlags |= FL_MENU_DIVIDER;
-            break;
-        case SCUM::MenuToggle:
-            data->flags = FL_MENU_TOGGLE;
-            break;
-        case SCUM::MenuRadio:
-            data->flags = FL_MENU_RADIO;
-            break;
-        case SCUM::MenuOpen:
-            data->flags = FL_SUBMENU;
-            break;
-        case SCUM::MenuClose:
-            data->text = 0;
-        }
+	switch (items[i].type()) {
+	case SCUM::kMenuSeparator:
+	    data->flags = FL_MENU_INVISIBLE;
+	    if (lastFlags) *lastFlags |= FL_MENU_DIVIDER;
+	    break;
+	case SCUM::kMenuToggle:
+	    data->flags = FL_MENU_TOGGLE;
+	    break;
+	case SCUM::kMenuRadio:
+	    data->flags = FL_MENU_RADIO;
+	    break;
+	case SCUM::kMenuOpen:
+	    data->flags = FL_SUBMENU;
+	    break;
+	case SCUM::kMenuClose:
+	    data->text = 0;
+	}
 
-        lastFlags = &data->flags;
+	lastFlags = &data->flags;
     }
 
     m_data[m_size].text = 0;
@@ -541,24 +541,24 @@ bool SCUM::FLMenuHandle::value(int item)
 void SCUM::FLMenuHandle::setValue(int item, bool value)
 {
     if ((item >= 0) && (item < m_size)) {
-        Fl_Menu_Item* data = m_data + item;
-        if (data->flags & FL_MENU_TOGGLE) {
-            if (value) data->set();
-            else data->clear();
-        } else if (data->flags & FL_MENU_RADIO) {
-            if (value) data->setonly();
-            else data->clear();
-        }
+	Fl_Menu_Item* data = m_data + item;
+	if (data->flags & FL_MENU_TOGGLE) {
+	    if (value) data->set();
+	    else data->clear();
+	} else if (data->flags & FL_MENU_RADIO) {
+	    if (value) data->setonly();
+	    else data->clear();
+	}
     }
 }
 
 int SCUM::FLMenuHandle::popup(const SCUM_Point& where, int item)
 {
     const Fl_Menu_Item* data
-        = (item >= 0) && (item < m_size) ? m_data + item : 0;
+	= (item >= 0) && (item < m_size) ? m_data + item : 0;
 
     const Fl_Menu_Item* res
-        = m_data->popup((int)where.x, (int)where.y, 0, data);
+	= m_data->popup((int)where.x, (int)where.y, 0, data);
 
     return res ? ((Item*)res->user_data())->index : -1;
 }
@@ -597,66 +597,66 @@ namespace SCUM
     class FLSplash : public Fl_Window
     {
     public:
-        FLSplash(const char* label, double timeout)
-            : Fl_Window(0, 0, label)
-        {
-            m_img = new Fl_PNG_Image("/tmp/scum.png");
-            size(m_img->w(), m_img->h());
-            addTimeout(timeout);
-            clear_border();
-            set_modal();
-            hotspot(this);
-            show();
-        }
-        ~FLSplash()
-        {
-            SCUM_DEBUG_PRINT("yay!\n");
-            addTimeout(0);
-            delete m_img;
-        }
+	FLSplash(const char* label, double timeout)
+	    : Fl_Window(0, 0, label)
+	{
+	    m_img = new Fl_PNG_Image("/tmp/scum.png");
+	    size(m_img->w(), m_img->h());
+	    addTimeout(timeout);
+	    clear_border();
+	    set_modal();
+	    hotspot(this);
+	    show();
+	}
+	~FLSplash()
+	{
+	    SCUM_DEBUG_PRINT("yay!\n");
+	    addTimeout(0);
+	    delete m_img;
+	}
 
-        int handle(int evt)
-        {
-            switch (evt) {
-            case FL_KEYDOWN:
-                if (Fl::event_key() == FL_Escape)
-                    goto yay;
-                break;
-            case FL_PUSH:
-                goto yay;
-            }
+	int handle(int evt)
+	{
+	    switch (evt) {
+	    case FL_KEYDOWN:
+		if (Fl::event_key() == FL_Escape)
+		    goto yay;
+		break;
+	    case FL_PUSH:
+		goto yay;
+	    }
 
-            return Fl_Window::handle(evt);
+	    return Fl_Window::handle(evt);
 
-        yay:
-            addTimeout(0.01);
-            return 0;
-        };
+	yay:
+	    addTimeout(0.01);
+	    return 0;
+	};
 
-        void draw()
-        {
-            m_img->draw(0, 0);
-        }
+	void draw()
+	{
+	    m_img->draw(0, 0);
+	}
 
-        void addTimeout(double timeout)
-        {
-            if (Fl::has_timeout(timeoutCB))
-                Fl::remove_timeout(&timeoutCB, this);
-            if (timeout > 0) {
-                Fl::add_timeout(timeout, &timeoutCB, this);
-            }
-        }
-        static void timeoutCB(void* self)
-        {
-            delete (FLSplash*)self;
-        }
+	void addTimeout(double timeout)
+	{
+	    if (Fl::has_timeout(timeoutCB))
+		Fl::remove_timeout(&timeoutCB, this);
+	    if (timeout > 0) {
+		Fl::add_timeout(timeout, &timeoutCB, this);
+	    }
+	}
+	static void timeoutCB(void* self)
+	{
+	    delete (FLSplash*)self;
+	}
 
-        Fl_PNG_Image* m_img;
+	Fl_PNG_Image* m_img;
     };
 
     void showSplash(const char* label, double timeout)
     {
-        new FLSplash(label, timeout);
+	new FLSplash(label, timeout);
     }
 };
 #endif
@@ -683,13 +683,13 @@ namespace SCUM
 {
     static void timerCB(void* obj)
     {
-        SCUM_Timer* timer = (SCUM_Timer*)obj;
-        if (timer->isValid()) {
-            (*timer)();
-            Fl::repeat_timeout(timer->timeout(), &timerCB, timer);
-        } else {
-            delete timer;
-        }
+	SCUM_Timer* timer = (SCUM_Timer*)obj;
+	if (timer->isValid()) {
+	    (*timer)();
+	    Fl::repeat_timeout(timer->timeout(), &timerCB, timer);
+	} else {
+	    delete timer;
+	}
     }
 };
 

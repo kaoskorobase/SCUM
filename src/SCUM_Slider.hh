@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -81,30 +81,30 @@ public:
 // class SCUM_FillSlider : public SCUM_View
 // {
 // public:
-// 	SCUM_FillSlider(SCUM_Container* parent, PyrObject* obj);
+//	SCUM_FillSlider(SCUM_Container* parent, PyrObject* obj);
 
-// 	virtual void drawView();
-// 	virtual void drawFocus();
+//	virtual void drawView();
+//	virtual void drawFocus();
 
-// 	virtual bool mouseDown(int, const SCUM_Point&);
-// 	virtual void mouseMove(int, const SCUM_Point&);
-// 	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
+//	virtual bool mouseDown(int, const SCUM_Point&);
+//	virtual void mouseMove(int, const SCUM_Point&);
+//	virtual void scrollWheel(int, const SCUM_Point&, const SCUM_Point&);
 
-// 	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-// 	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+//	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+//	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 // protected:
-// 	void updateThumbRect();
-// 	bool setValue(double value, bool send);
-// 	double valueFromPoint(const SCUM_Point& p);
+//	void updateThumbRect();
+//	bool setValue(double value, bool send);
+//	double valueFromPoint(const SCUM_Point& p);
 
 // private:
-// 	double		m_value;
-// 	double		m_step;
-// 	SCUM_Rect	m_thumbRect;
-// 	int			m_thumbSize;
-// 	bool		m_steady;
-// 	double		m_steadyOffset;
+//	double		m_value;
+//	double		m_step;
+//	SCUM_Rect	m_thumbRect;
+//	int			m_thumbSize;
+//	bool		m_steady;
+//	double		m_steadyOffset;
 // };
 
 // =====================================================================
@@ -157,11 +157,11 @@ class SCUM_Table : public SCUM_View
 {
 public:
     enum
-        {
-            kLines,
-            kFilled,
-            kWaveform
-        };
+	{
+	    kLines,
+	    kFilled,
+	    kWaveform
+	};
 
     SCUM_Table(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
     virtual ~SCUM_Table();

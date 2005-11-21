@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -76,7 +76,7 @@ private:
     void osc_free(const char*, SCUM_ArgStream&);
 
 private:
-    int				m_socket;
+    int			m_socket;
     st_table*		m_objects;
     SCUM_ObjectList	m_resources;
     SCUM_Color		m_fgColor;

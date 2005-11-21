@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -59,9 +59,9 @@ class SCUM_Object
 {
 public:
     enum {
-        kInvalidOID = -1,
-        kRootOID = 0,
-        kFirstOID
+	kInvalidOID = -1,
+	kRootOID = 0,
+	kFirstOID
     };
 
 public:
@@ -93,41 +93,41 @@ namespace SCUM
 {
     inline bool equal(const char* s1, const char* s2)
     {
-        return strcmp(s1, s2) == 0;
+	return strcmp(s1, s2) == 0;
     }
     inline SCUM_Point pointValue(SCUM_ArgStream& args)
     {
-        float x = args.get_f();
-        float y = args.get_f();
-        return SCUM_Point(x, y);
+	float x = args.get_f();
+	float y = args.get_f();
+	return SCUM_Point(x, y);
     }
     inline SCUM_Size sizeValue(SCUM_ArgStream& args)
     {
-        float w = args.get_f();
-        float h = args.get_f();
-        return SCUM_Size(w, h);
+	float w = args.get_f();
+	float h = args.get_f();
+	return SCUM_Size(w, h);
     }
     inline SCUM_Rect rectValue(SCUM_ArgStream& args)
     {
-        float x = args.get_f();
-        float y = args.get_f();
-        float w = args.get_f();
-        float h = args.get_f();
-        return SCUM_Rect(x, y, w, h);
+	float x = args.get_f();
+	float y = args.get_f();
+	float w = args.get_f();
+	float h = args.get_f();
+	return SCUM_Rect(x, y, w, h);
     }
     inline SCUM_Color colorValue(SCUM_ArgStream& args)
     {
-        float r = args.get_f();
-        float g = args.get_f();
-        float b = args.get_f();
-        float a = args.get_f();
-        return SCUM_Color(r, g, b, a);
+	float r = args.get_f();
+	float g = args.get_f();
+	float b = args.get_f();
+	float a = args.get_f();
+	return SCUM_Color(r, g, b, a);
     }
     inline SCUM_Font fontValue(SCUM_ArgStream& args)
     {
-        const char* name = args.get_s();
-        double size = args.get_f();
-        return SCUM_Font(name, size);
+	const char* name = args.get_s();
+	double size = args.get_f();
+	return SCUM_Font(name, size);
     }
 };
 #endif // SCUM_OBJECT_HH_INCLUDED

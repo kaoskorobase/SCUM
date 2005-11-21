@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -44,7 +44,7 @@ SCUM_MenuItem::SCUM_MenuItem(const SCUM_MenuItem& item)
 SCUM_MenuItem::SCUM_MenuItem(PyrSlot* spec)
 {
     if (!isKindOfSlot(spec, class_array) || (spec->uo->size < 2))
-        throw TypeError();
+	throw TypeError();
 
     m_type = charValue(spec->uo->slots+0);
     m_text = stringValue(spec->uo->slots+1);
@@ -68,9 +68,15 @@ SCUM_Menu::SCUM_Menu(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgSt
       m_handle(0),
       m_item(-1)
 {
-    //m_handle = SCUM::MenuHandle::create(items);
+//     m_handle = SCUM::MenuHandle::create(items);
     SCUM_ASSERT(m_handle != 0);
     getClient()->retain(this);
+}
+
+void SCUM_Menu::setItems(const std::vector<SCUM_MenuItem>& items)
+{
+    if (m_handle) delete m_handle;
+    m_handle = SCUM::MenuHandle::create(items);
 }
 
 SCUM_Menu::~SCUM_Menu()
@@ -89,19 +95,19 @@ bool SCUM_Menu::setValue(int item, bool value)
 {
     bool prevValue = m_handle->value(item);
     if (prevValue != value) {
-        m_handle->setValue(item, value);
-        return true;
+	m_handle->setValue(item, value);
+	return true;
     }
     return false;
 }
 
 int SCUM_Menu::popup(const SCUM_Point& where, int item, bool send)
 {
-    // 	if (send) changed(SCUM_Symbol::willPopup);
+    //	if (send) changed(SCUM_Symbol::willPopup);
     item = m_handle->popup(where, item);
     if (item >= 0) {
-        m_item = item;
-        // 		if (send) changed(SCUM_Symbol::value);
+	m_item = item;
+	//		if (send) changed(SCUM_Symbol::value);
     }
     return item;
 }
@@ -109,12 +115,12 @@ int SCUM_Menu::popup(const SCUM_Point& where, int item, bool send)
 void SCUM_Menu::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "item")) {
-        m_item = args.get_i();
+	m_item = args.get_i();
     } else if (equal(key, "value")) {
-        //setBoolValue(slot, setValue(m_item, boolValue(slot)));
-        setValue(m_item, args.get_i());
+	//setBoolValue(slot, setValue(m_item, boolValue(slot)));
+	setValue(m_item, args.get_i());
     } else {
-        SCUM_Object::setProperty(key, args);
+	SCUM_Object::setProperty(key, args);
     }
 }
 
@@ -122,11 +128,11 @@ void SCUM_Menu::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Menu::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setBoolValue(slot, value(m_item));
+	setBoolValue(slot, value(m_item));
     } else if (equal(key, "item")) {
-        setIntValue(slot, m_item);
+	setIntValue(slot, m_item);
     } else {
-        SCUM_Object::getProperty(key, slot);
+	SCUM_Object::getProperty(key, slot);
     }
 }
 #endif

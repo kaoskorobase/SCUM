@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -38,36 +38,36 @@ class SCUM_Color
 public:
     union RGBA
     {
-        uint32_t		u32;
-        uint8_t			u8[4];
+	uint32_t        	u32;
+	uint8_t			u8[4];
     };
 
     SCUM_Color()
     {
-        rgba.u32 = 0;
+	rgba.u32 = 0;
     }
     SCUM_Color(float r, float g, float b, float a=1.0f)
     {
-        rgba.u8[0] = (uint8_t)(255. * r);
-        rgba.u8[1] = (uint8_t)(255. * g);
-        rgba.u8[2] = (uint8_t)(255. * b);
-        rgba.u8[3] = (uint8_t)(255. * a);
+	rgba.u8[0] = (uint8_t)(255. * r);
+	rgba.u8[1] = (uint8_t)(255. * g);
+	rgba.u8[2] = (uint8_t)(255. * b);
+	rgba.u8[3] = (uint8_t)(255. * a);
     }
     SCUM_Color(uint32_t packed)
     {
-        rgba.u8[0] = (uint8_t)((packed >> 24) & 0xFF);
-        rgba.u8[1] = (uint8_t)((packed >> 16) & 0xFF);
-        rgba.u8[2] = (uint8_t)((packed >> 8) & 0xFF);
-        rgba.u8[3] = (uint8_t)(packed & 0xFF);
+	rgba.u8[0] = (uint8_t)((packed >> 24) & 0xFF);
+	rgba.u8[1] = (uint8_t)((packed >> 16) & 0xFF);
+	rgba.u8[2] = (uint8_t)((packed >> 8) & 0xFF);
+	rgba.u8[3] = (uint8_t)(packed & 0xFF);
     }
     SCUM_Color(const SCUM_Color& color)
     {
-        rgba.u32 = color.rgba.u32;
+	rgba.u32 = color.rgba.u32;
     }
 
     uint32_t rgba32() const
     {
-        return (uint32_t)((((((rgba.u8[0] << 8) | rgba.u8[1]) << 8) | rgba.u8[2]) << 8) | rgba.u8[3]);
+	return (uint32_t)((((((rgba.u8[0] << 8) | rgba.u8[1]) << 8) | rgba.u8[2]) << 8) | rgba.u8[3]);
     }
 
     uint8_t r8() const { return rgba.u8[0]; }
@@ -86,10 +86,10 @@ public:
 
     template <class T> void copy(T* dst) const
     {
-        dst[0] = r32();
-        dst[1] = g32();
-        dst[2] = b32();
-        dst[3] = a32();
+	dst[0] = r32();
+	dst[1] = g32();
+	dst[2] = b32();
+	dst[3] = a32();
     }
 
     RGBA		rgba;
@@ -108,18 +108,18 @@ inline SCUM_Color SCUM_Color::blend(const SCUM_Color& c, float blend) const
     float a = a32();
 
     return SCUM_Color(
-                      r + blend * (c.r32() - r),
-                      g + blend * (c.g32() - g),
-                      b + blend * (c.b32() - b),
-                      a + blend * (c.a32() - a)
-                      );
+		      r + blend * (c.r32() - r),
+		      g + blend * (c.g32() - g),
+		      b + blend * (c.b32() - b),
+		      a + blend * (c.a32() - a)
+		      );
 }
 
 inline std::ostream& operator << (std::ostream& stream, const SCUM_Color& color)
 {
     stream << "SCUM_Color("
-           << color.r32() << ", " << color.g32() << ", "
-           << color.b32() << ", " << color.a32() << ")";
+	   << color.r32() << ", " << color.g32() << ", "
+	   << color.b32() << ", " << color.a32() << ")";
     return stream;
 }
 

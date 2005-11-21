@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -29,7 +29,7 @@ class SCUM_Timer
 {
 public:
     SCUM_Timer(float timeout)
-        : m_valid(true), m_timeout(timeout)
+	: m_valid(true), m_timeout(timeout)
     { }
 
     bool isValid() const { return m_valid; }
@@ -51,8 +51,8 @@ public:
     typedef void (T::*Callback)(SCUM_Timer* timer);
 
     SCUM_MemTimer(float timeout, Callback cb, T* obj)
-        : SCUM_Timer(timeout),
-          m_cb(cb), m_obj(obj)
+	: SCUM_Timer(timeout),
+	  m_cb(cb), m_obj(obj)
     { }
 
     virtual void operator () () { (m_obj->*m_cb)(this); }

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -53,8 +53,8 @@ SCUM_View::SCUM_View(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgSt
     int pid = args.get_i();
     SCUM_Container* parent = dynamic_cast<SCUM_Container*>(getClient()->getObject(pid));
     if (parent) {
-        parent->addChild(this);
-        SCUM_ASSERT(m_window != 0);
+	parent->addChild(this);
+	SCUM_ASSERT(m_window != 0);
     }
 
     m_fgColor = getClient()->fgColor();
@@ -160,55 +160,55 @@ void SCUM_View::refresh()
 
 void SCUM_View::refreshFocus()
 {
-    // 	refresh(bounds().inset(-4));
+    //	refresh(bounds().inset(-4));
     refresh(bounds());
 }
 
 void SCUM_View::draw(const SCUM_Rect& damage)
 {
     if (isVisible() && damage.intersects(bounds())) {
-        drawView(damage);
-        drawDisabled(damage);
+	drawView(damage);
+	drawDisabled(damage);
     }
 }
 
 void SCUM_View::drawView(const SCUM_Rect& damage)
 {
     if (!bgColor().isTransparent()) {
-        GCSave();
-        GCSetColor(bgColor());
-        GCFillRect(bounds());
-        GCRestore();
+	GCSave();
+	GCSetColor(bgColor());
+	GCFillRect(bounds());
+	GCRestore();
     }
 }
 
 void SCUM_View::drawDisabled(const SCUM_Rect& damage)
 {
     if (!isEnabled()) {
-        GCSave();
-        GCSetColor(bgColor().blend(SCUM_Color(0, 0, 0), 0.15));
-        GCSetLineStyle(kLineStyleDot);
-        float x1 = bounds().minX() + 1;
-        float x2 = bounds().maxX() - 1;
-        float y1 = bounds().minY() + 1;
-        float y2 = bounds().maxY() - 1;
-        while (y1 < y2) {
-            GCDrawLine(x1, y1, x2, y1);
-            y1 += 2.f;
-        }
-        GCRestore();
+	GCSave();
+	GCSetColor(bgColor().blend(SCUM_Color(0, 0, 0), 0.15));
+	GCSetLineStyle(kLineStyleDot);
+	float x1 = bounds().minX() + 1;
+	float x2 = bounds().maxX() - 1;
+	float y1 = bounds().minY() + 1;
+	float y2 = bounds().maxY() - 1;
+	while (y1 < y2) {
+	    GCDrawLine(x1, y1, x2, y1);
+	    y1 += 2.f;
+	}
+	GCRestore();
     }
 }
 
 void SCUM_View::drawFocus(const SCUM_Rect& damage)
 {
     if (hasFocus()) {
-        GCSave();
-        GCSetColor(getClient()->focusColor());
-        GCSetLineWidth(2);
-        // 		GCSetLineStyle(kLineStyleDash);
-        GCDrawRect(bounds().inset(1));
-        GCRestore();
+	GCSave();
+	GCSetColor(getClient()->focusColor());
+	GCSetLineWidth(2);
+	//		GCSetLineStyle(kLineStyleDash);
+	GCDrawRect(bounds().inset(1));
+	GCRestore();
     }
 }
 
@@ -234,44 +234,44 @@ void SCUM_View::makeFocus(bool flag, bool doSend)
     SCUM_ASSERT(m_window != 0);
 
     if (flag) {
-        if (canFocus() && !hasFocus()) {
-            m_window->unsetFocus(true);
-            m_window->setFocusView(this);
-            //if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
-            if (doSend) {
-                OSC::StaticClientPacket<32> p;
-                p.openMessage("/event", 3);
-                putId(p);
-                p.putString("focus");
-                p.putInt32(1);
-                p.closeMessage();
-                send(p);
-            }
-            refreshFocus();
-        }
+	if (canFocus() && !hasFocus()) {
+	    m_window->unsetFocus(true);
+	    m_window->setFocusView(this);
+	    //if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+	    if (doSend) {
+		OSC::StaticClientPacket<32> p;
+		p.openMessage("/event", 3);
+		putId(p);
+		p.putString("focus");
+		p.putInt32(1);
+		p.closeMessage();
+		send(p);
+	    }
+	    refreshFocus();
+	}
     } else {
-        if (hasFocus()) {
-            m_window->setFocusView(0);
-            //if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
-            if (doSend) {
-                OSC::StaticClientPacket<32> p;
-                p.openMessage("/event", 3);
-                putId(p);
-                p.putString("focus");
-                p.putInt32(0);
-                p.closeMessage();
-                send(p);
-            }
-            refreshFocus();
-        }
+	if (hasFocus()) {
+	    m_window->setFocusView(0);
+	    //if (send) sendMessage(getsym("prHandleFocus"), 0, 0);
+	    if (doSend) {
+		OSC::StaticClientPacket<32> p;
+		p.openMessage("/event", 3);
+		putId(p);
+		p.putString("focus");
+		p.putInt32(0);
+		p.closeMessage();
+		send(p);
+	    }
+	    refreshFocus();
+	}
     }
 }
 
 SCUM_View* SCUM_View::nextFocus(bool canFocus, bool& foundFocus)
 {
     if (hasFocus()) {
-        foundFocus = true;
-        return 0;
+	foundFocus = true;
+	return 0;
     }
     canFocus = canFocus && isEnabled() && isVisible() && flags().vCanFocus;
     if (canFocus && foundFocus) return this;
@@ -281,8 +281,8 @@ SCUM_View* SCUM_View::nextFocus(bool canFocus, bool& foundFocus)
 SCUM_View* SCUM_View::prevFocus(bool canFocus, bool& foundFocus)
 {
     if (hasFocus()) {
-        foundFocus = true;
-        return 0;
+	foundFocus = true;
+	return 0;
     }
     canFocus = canFocus && isEnabled() && isVisible() && flags().vCanFocus;
     if (canFocus && foundFocus) return this;
@@ -299,7 +299,7 @@ void SCUM_View::updateLayout()
 const SCUM_Size& SCUM_View::minSize()
 {
     if (layout().changed) {
-        m_minSize = getMinSize().max(layout().minSize);
+	m_minSize = getMinSize().max(layout().minSize);
     }
     return m_minSize;
 }
@@ -314,61 +314,61 @@ void SCUM_View::setProperty(const char* key, SCUM_ArgStream& args)
     SCUM_ASSERT(m_window != 0);
 
     if (equal(key, "visible")) {
-        bool flag = args.get_i();
-        if (flags().vVisible != flag) {
-            flags().vVisible = flag;
-            bool focus = hasFocus();
-            if (focus && !flag) {
-                m_window->resetFocus(true);
-            }
-            updateLayout();
-        }
+	bool flag = args.get_i();
+	if (flags().vVisible != flag) {
+	    flags().vVisible = flag;
+	    bool focus = hasFocus();
+	    if (focus && !flag) {
+		m_window->resetFocus(true);
+	    }
+	    updateLayout();
+	}
     } else if (equal(key, "enabled")) {
-        bool flag = args.get_i();
-        if (flags().vEnabled != flag) {
-            flags().vEnabled = flag;
-            bool focus = hasFocus();
-            if (focus && !flag) {
-                m_window->resetFocus(true);
-            }
-            refresh();
-        }
+	bool flag = args.get_i();
+	if (flags().vEnabled != flag) {
+	    flags().vEnabled = flag;
+	    bool focus = hasFocus();
+	    if (focus && !flag) {
+		m_window->resetFocus(true);
+	    }
+	    refresh();
+	}
     } else if (equal(key, "canFocus")) {
-        bool flag = args.get_i();
-        if (flags().vCanFocus != flag) {
-            flags().vCanFocus = flag;
-            bool focus = hasFocus();
-            if (focus && !flag) {
-                m_window->resetFocus(true);
-            }
-            refresh();
-        }
+	bool flag = args.get_i();
+	if (flags().vCanFocus != flag) {
+	    flags().vCanFocus = flag;
+	    bool focus = hasFocus();
+	    if (focus && !flag) {
+		m_window->resetFocus(true);
+	    }
+	    refresh();
+	}
     } else if (equal(key, "fgColor")) {
-        m_fgColor = colorValue(args);
-        refresh();
+	m_fgColor = colorValue(args);
+	refresh();
     } else if (equal(key, "bgColor")) {
-        m_bgColor = colorValue(args);
-        refresh();
+	m_bgColor = colorValue(args);
+	refresh();
     } else if (equal(key, "minSize")) {
-        layout().minSize = sizeValue(args);
-        updateLayout();
+	layout().minSize = sizeValue(args);
+	updateLayout();
     } else if (equal(key, "alignment")) {
-        layout().alignment = clipAlign(args.get_i());
-        updateLayout();
+	layout().alignment = clipAlign(args.get_i());
+	updateLayout();
     } else if (equal(key, "xExpand")) {
-        layout().expand.x = max(0.f, args.get_f());
-        updateLayout();
+	layout().expand.x = max(0.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "yExpand")) {
-        layout().expand.y = max(0.f, args.get_f());
-        updateLayout();
+	layout().expand.y = max(0.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "xFill")) {
-        layout().fill.x = clip(args.get_f(), 0.f, 1.f);
-        updateLayout();
+	layout().fill.x = clip(args.get_f(), 0.f, 1.f);
+	updateLayout();
     } else if (equal(key, "yFill")) {
-        layout().fill.y = clip(args.get_f(), 0.f, 1.f);
-        updateLayout();
+	layout().fill.y = clip(args.get_f(), 0.f, 1.f);
+	updateLayout();
     } else {
-        SCUM_Object::setProperty(key, args);
+	SCUM_Object::setProperty(key, args);
     }
 }
 
@@ -376,29 +376,29 @@ void SCUM_View::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_View::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal("bounds", key)) {
-        setRectValue(slot, bounds());
+	setRectValue(slot, bounds());
     } else if (equal("fgColor", key)) {
-        setColorValue(slot, fgColor());
+	setColorValue(slot, fgColor());
     } else if (equal("bgColor", key)) {
-        setColorValue(slot, bgColor());
+	setColorValue(slot, bgColor());
     } else if (equal("visible", key)) {
-        setBoolValue(slot, isVisible());
+	setBoolValue(slot, isVisible());
     } else if (equal("enabled", key)) {
-        setBoolValue(slot, isEnabled());
+	setBoolValue(slot, isEnabled());
     } else if (equal("canFocus", key)) {
-        setBoolValue(slot, canFocus());
+	setBoolValue(slot, canFocus());
     } else if (equal("hasFocus", key)) {
-        setBoolValue(slot, hasFocus());
+	setBoolValue(slot, hasFocus());
     } else if (equal("minSize", key)) {
-        setSizeValue(slot, layout().minSize);
+	setSizeValue(slot, layout().minSize);
     } else if (equal("alignment", key)) {
-        setIntValue(slot, layout().alignment);
+	setIntValue(slot, layout().alignment);
     } else if (equal(key, "expand")) {
-        setPointValue(slot, layout().expand);
+	setPointValue(slot, layout().expand);
     } else if (equal(key, "fill")) {
-        setPointValue(slot, layout().fill);
+	setPointValue(slot, layout().fill);
     } else {
-        SCUM_Object::getProperty(key, slot);
+	SCUM_Object::getProperty(key, slot);
     }
 }
 #endif
@@ -455,17 +455,17 @@ void SCUM_View::animateAction(SCUM_Timer*)
 void SCUM_View::startAnimation()
 {
     if (!m_animateTimer) {
-        m_animateTimer
-            = new SCUM_MemTimer<SCUM_View>(0.05, &SCUM_View::animateAction, this);
-        addTimer(m_animateTimer);
+	m_animateTimer
+	    = new SCUM_MemTimer<SCUM_View>(0.05, &SCUM_View::animateAction, this);
+	addTimer(m_animateTimer);
     }
 }
 
 void SCUM_View::stopAnimation()
 {
     if (m_animateTimer) {
-        m_animateTimer->remove();
-        m_animateTimer = 0;
+	m_animateTimer->remove();
+	m_animateTimer = 0;
     }
 }
 

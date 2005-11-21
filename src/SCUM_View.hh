@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -38,16 +38,16 @@ class SCUM_Window;
 struct SCUM_Layout
 {
     SCUM_Layout()
-        : alignment(SCUM::kAlignC),
-          changed(true)
+	: alignment(SCUM::kAlignC),
+	  changed(true)
     { }
 
-    SCUM_Size			sizeCache;				// cache for last computed view size
-    SCUM_Size			minSize;				// minimum view size
-    SCUM_Point			expand;					// factor for expanding into packing space
-    SCUM_Point			fill;					// ratio for filling available space
-    uint8_t				alignment;				// alignment for placement in available space
-    uint8_t				changed;				// changed flag
+    SCUM_Size	sizeCache;	// cache for last computed view size
+    SCUM_Size	minSize;	// minimum view size
+    SCUM_Point	expand;		// factor for expanding into packing space
+    SCUM_Point	fill;		// ratio for filling available space
+    uint8_t	alignment;	// alignment for placement in available space
+    uint8_t	changed;	// changed flag
 };
 
 /*
@@ -58,17 +58,17 @@ class SCUM_View : public SCUM_Object
 public:
     struct Flags
     {
-        // View
-        unsigned		vVisible : 1;
-        unsigned		vEnabled : 1;
-        unsigned		vCanFocus : 1;
-        // Container
-        unsigned		cHomogenous : 1;
-        unsigned		cHasVisible : 1;
-        // Window
-        unsigned		wResizable : 1;
-        unsigned		wFullscreen : 1;
-        unsigned		wShowFocus : 1;
+	// View
+	unsigned		vVisible : 1;
+	unsigned		vEnabled : 1;
+	unsigned		vCanFocus : 1;
+	// Container
+	unsigned		cHomogenous : 1;
+	unsigned		cHasVisible : 1;
+	// Window
+	unsigned		wResizable : 1;
+	unsigned		wFullscreen : 1;
+	unsigned		wShowFocus : 1;
     };
 
     friend class SCUM_Container;
@@ -191,7 +191,7 @@ protected:
     SCUM_Container*		m_parent;
     SCUM_View*			m_prevView;
     SCUM_View*			m_nextView;
-    Flags				m_flags;
+    Flags			m_flags;
     SCUM_Rect			m_bounds;
     SCUM_Size			m_minSize;
     SCUM_Layout			m_layout;

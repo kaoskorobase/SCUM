@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -49,16 +49,16 @@ int SCUM_SharedMemory::attach(const char* name)
 
     m_fd = shm_open(name, O_RDWR, 0);
     if (m_fd == -1) {
-        err = errno;
-        perror("shm_open");
-        goto error;
+	err = errno;
+	perror("shm_open");
+	goto error;
     }
 
     m_seg = (Segment*)mmap(0, sizeof(Segment), PROT_READ, MAP_SHARED, m_fd, 0);
     if (m_seg == MAP_FAILED) {
-        err = errno;
-        perror("mmap");
-        goto error;
+	err = errno;
+	perror("mmap");
+	goto error;
     }
 
     size = m_seg->m_size;
@@ -66,22 +66,22 @@ int SCUM_SharedMemory::attach(const char* name)
 
     m_seg = (Segment*)mmap(0, sizeof(Segment) + size, PROT_READ|PROT_WRITE, MAP_SHARED, m_fd, 0);
     if (m_seg == MAP_FAILED) {
-        err = errno;
-        perror("mmap");
-        goto error;
+	err = errno;
+	perror("mmap");
+	goto error;
     }
 
     char semName[SHM_NAME_MAX];
     if (snprintf(semName, SHM_NAME_MAX, "%s.sem", name) >= SHM_NAME_MAX) {
-        err = EINVAL;
-        goto error;
+	err = EINVAL;
+	goto error;
     }
 
     m_sem = sem_open(semName, 0);
     if (m_sem == (void*)SEM_FAILED) {
-        err = errno;
-        perror("sem_open");
-        goto error;
+	err = errno;
+	perror("sem_open");
+	goto error;
     }
 
     return 0;
@@ -94,29 +94,29 @@ int SCUM_SharedMemory::attach(const char* name)
 void SCUM_SharedMemory::detach()
 {
     if (m_sem != (void*)SEM_FAILED) {
-        sem_close(m_sem);
-        m_sem = (sem_t*)SEM_FAILED;
+	sem_close(m_sem);
+	m_sem = (sem_t*)SEM_FAILED;
     }
     if (m_seg != MAP_FAILED) {
-        munmap(m_seg, sizeof(Segment) + m_seg->m_size);
-        m_seg = (Segment*)MAP_FAILED;
+	munmap(m_seg, sizeof(Segment) + m_seg->m_size);
+	m_seg = (Segment*)MAP_FAILED;
     }
     if (m_fd != -1) {
-        close(m_fd);
-        m_fd = -1;
+	close(m_fd);
+	m_fd = -1;
     }
 }
 
 void SCUM_SharedMemory::lock()
 {
     if (m_sem != (void*)SEM_FAILED)
-        sem_wait(m_sem);
+	sem_wait(m_sem);
 }
 
 void SCUM_SharedMemory::unlock()
 {
     if (m_sem != (void*)SEM_FAILED)
-        sem_post(m_sem);
+	sem_post(m_sem);
 }
 
 // EOF

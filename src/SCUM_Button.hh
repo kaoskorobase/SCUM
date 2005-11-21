@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -89,9 +89,9 @@ class SCUM_Button : public SCUM_View
 public:
     struct State
     {
-        SCUM_Text		text;
-        SCUM_Color		fgColor;
-        SCUM_Color		bgColor;
+	SCUM_Text		text;
+	SCUM_Color		fgColor;
+	SCUM_Color		bgColor;
     };
 
     typedef std::vector<State> StateArray;

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -48,8 +48,8 @@ void SCUM_Label::drawView(const SCUM_Rect& damage)
     GCSave();
 
     if (!bgColor().isTransparent()) {
-        GCSetColor(bgColor());
-        GCFillRect(bounds());
+	GCSetColor(bgColor());
+	GCFillRect(bounds());
     }
 
     GCSetColor(fgColor());
@@ -61,37 +61,37 @@ void SCUM_Label::drawView(const SCUM_Rect& damage)
 void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "text")) {
-        m_text.setText(args.get_s());
-        //printf("frozenSize %d needsUpdate %d\n", m_frozenSize.isEmpty(), layoutNeedsUpdate(getMinSize()));
-        if (m_frozenSize.isEmpty() && layoutNeedsUpdate(getMinSize())) {
-            updateLayout();
-        } else {
-            refresh();
-        }
+	m_text.setText(args.get_s());
+	//printf("frozenSize %d needsUpdate %d\n", m_frozenSize.isEmpty(), layoutNeedsUpdate(getMinSize()));
+	if (m_frozenSize.isEmpty() && layoutNeedsUpdate(getMinSize())) {
+	    updateLayout();
+	} else {
+	    refresh();
+	}
     } else if (equal(key, "textAlignment")) {
-        m_textAlign = args.get_i();
-        refresh();
+	m_textAlign = args.get_i();
+	refresh();
     } else if (equal(key, "font")) {
-        m_text.setFont(fontValue(args));
-        updateLayout();
+	m_text.setFont(fontValue(args));
+	updateLayout();
     } else if (equal(key, "xPadding")) {
-        m_padding.x = max(2.f, args.get_f());
-        updateLayout();
+	m_padding.x = max(2.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "yPadding")) {
-        m_padding.y = max(2.f, args.get_f());
-        updateLayout();
+	m_padding.y = max(2.f, args.get_f());
+	updateLayout();
     } else if (equal(key, "frozen")) {
-        if (args.get_i()) {
-            m_frozenSize = minSize();
-        } else {
-            m_frozenSize = SCUM_Size();
-        }
-        updateLayout();
+	if (args.get_i()) {
+	    m_frozenSize = minSize();
+	} else {
+	    m_frozenSize = SCUM_Size();
+	}
+	updateLayout();
     } else if (equal(key, "minSize") && (args.peek() == 's')) { // overridden from SCUM_View
-        layout().minSize = m_text.font().measure(args.get_s()).size.padded(m_padding);
-        updateLayout();
+	layout().minSize = m_text.font().measure(args.get_s()).size.padded(m_padding);
+	updateLayout();
     } else {
-        SCUM_View::setProperty(key, args);
+	SCUM_View::setProperty(key, args);
     } 
 }
 
@@ -99,13 +99,13 @@ void SCUM_Label::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_Label::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal(key, "xPadding")) {
-        setFloatValue(slot, m_padding.x);
+	setFloatValue(slot, m_padding.x);
     } else if (equal(key, "yPadding")) {
-        setFloatValue(slot, m_padding.y);
+	setFloatValue(slot, m_padding.y);
     } else if (equal(key, "textAlignment")) {
-        setIntValue(slot, m_textAlign);
+	setIntValue(slot, m_textAlign);
     } else {
-        SCUM_View::getProperty(key, slot);
+	SCUM_View::getProperty(key, slot);
     }
 }
 #endif
@@ -113,8 +113,8 @@ void SCUM_Label::getProperty(const PyrSymbol* key, PyrSlot* slot)
 SCUM_Size SCUM_Label::getMinSize()
 {
     return m_frozenSize.isEmpty() ?
-        m_text.extents().size.padded(m_padding) :
-        m_frozenSize.max(SCUM_View::getMinSize());
+	m_text.extents().size.padded(m_padding) :
+	m_frozenSize.max(SCUM_View::getMinSize());
 }
 
 // =====================================================================
@@ -161,24 +161,24 @@ void SCUM_StringEntry::scrollWheel(int state, const SCUM_Point& where, const SCU
 
 // void SCUM_StringEntry::setProperty(const PyrSymbol* key, PyrSlot* slot)
 // {
-// 	if (equal(key, "sendMouse")) {
-// 		m_sendMouse = boolValue(slot);
-// 	} else if (equal(key, "sendScroll")) {
-// 		m_sendScroll = boolValue(slot);
-// 	} else {
-// 		SCUM_Label::setProperty(key, slot);
-// 	}
+//	if (equal(key, "sendMouse")) {
+//		m_sendMouse = boolValue(slot);
+//	} else if (equal(key, "sendScroll")) {
+//		m_sendScroll = boolValue(slot);
+//	} else {
+//		SCUM_Label::setProperty(key, slot);
+//	}
 // }
 
 // void SCUM_StringEntry::getProperty(const PyrSymbol* key, PyrSlot* slot)
 // {
-// 	if (equal(key, "sendMouse")) {
-// 		setBoolValue(slot, m_sendMouse);
-// 	} else if (equal(key, "sendScroll")) {
-// 		setBoolValue(slot, m_sendScroll);
-// 	} else {
-// 		SCUM_Label::getProperty(key, slot);
-// 	}
+//	if (equal(key, "sendMouse")) {
+//		setBoolValue(slot, m_sendMouse);
+//	} else if (equal(key, "sendScroll")) {
+//		setBoolValue(slot, m_sendScroll);
+//	} else {
+//		SCUM_Label::getProperty(key, slot);
+//	}
 // }
 
 // =====================================================================
@@ -211,28 +211,28 @@ void SCUM_List::drawContent(const SCUM_Rect& damage)
 
     // skip clipped items, starting from the first visible
     for (; i < n; i++) {
-        if (!GCIsClipped(itemBounds)) break;
-        itemBounds.y += h;
+	if (!GCIsClipped(itemBounds)) break;
+	itemBounds.y += h;
     }
 
     // draw items that are not clipped
     for (; i < n; i++) {
-        if (i == m_value) {
-            GCSetColor(m_bgColorSel);
-            GCFillRect(
-                       itemBounds.x, itemBounds.y,
-                       max(viewPortBounds().w, itemBounds.w), itemBounds.h
-                       );
-            GCSetColor(m_fgColorSel);
-        } else {
-            GCSetColor(fgColor());
-        }
+	if (i == m_value) {
+	    GCSetColor(m_bgColorSel);
+	    GCFillRect(
+		       itemBounds.x, itemBounds.y,
+		       max(viewPortBounds().w, itemBounds.w), itemBounds.h
+		       );
+	    GCSetColor(m_fgColorSel);
+	} else {
+	    GCSetColor(fgColor());
+	}
 
-        m_font.draw(itemBounds.inset(m_padding), makeAlign(m_textAlign), m_items[i].c_str());
-        printf("SCUM: %s\n", m_items[i].c_str());
+	m_font.draw(itemBounds.inset(m_padding), makeAlign(m_textAlign), m_items[i].c_str());
+	printf("SCUM: %s\n", m_items[i].c_str());
 
-        if (GCIsClipped(itemBounds)) break;
-        itemBounds.y += h;
+	if (GCIsClipped(itemBounds)) break;
+	itemBounds.y += h;
     }
 
     GCRestore();
@@ -247,7 +247,7 @@ bool SCUM_List::mouseDownInContent(int, const SCUM_Point& where)
 {
     int value = (int)((where.y - contentBounds().y) / m_itemSize.h);
     if ((value < 0) || (value >= (int)m_items.size())) {
-        value = -1;
+	value = -1;
     }
     setValue(value, true);
     return false;
@@ -256,41 +256,41 @@ bool SCUM_List::mouseDownInContent(int, const SCUM_Point& where)
 void SCUM_List::setProperty(const char* key, SCUM_ArgStream& args)
 {
     if (equal(key, "value")) {
-        setValue(args.get_i(), false);
+	setValue(args.get_i(), false);
     } else if (equal(key, "items")) {
-        m_items.clear();
-        m_items.reserve(args.get_i());
-        while (!args.atEnd()) {
-            m_items.push_back(args.get_s());
-        }
-        m_itemSize.w = 0.f;
-        for (int i=0; i < m_items.size(); i++) {
-            m_itemSize.w = max(m_itemSize.w, m_font.measure(m_items[i].c_str()).size.w);
-        }
-        m_itemSize.w += 2.f * m_padding.x;
-        m_scrollStep = SCUM_Point(1, m_itemSize.h);
-        updateContentSize();
+	m_items.clear();
+	m_items.reserve(args.get_i());
+	while (!args.atEnd()) {
+	    m_items.push_back(args.get_s());
+	}
+	m_itemSize.w = 0.f;
+	for (int i=0; i < m_items.size(); i++) {
+	    m_itemSize.w = max(m_itemSize.w, m_font.measure(m_items[i].c_str()).size.w);
+	}
+	m_itemSize.w += 2.f * m_padding.x;
+	m_scrollStep = SCUM_Point(1, m_itemSize.h);
+	updateContentSize();
     } else if (equal(key, "font")) {
-        m_font = fontValue(args);
-        m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
-        updateContentSize();
+	m_font = fontValue(args);
+	m_itemSize.h = m_font.extents().height + 2.f * m_padding.y;
+	updateContentSize();
     } else if (equal(key, "textAlignment")) {
-        m_textAlign = clipAlign(args.get_i());
-        refresh();
+	m_textAlign = clipAlign(args.get_i());
+	refresh();
     } else if (equal(key, "fgColorSel")) {
-        m_fgColorSel = colorValue(args);
-        refresh();
+	m_fgColorSel = colorValue(args);
+	refresh();
     } else if (equal(key, "bgColorSel")) {
-        m_bgColorSel = colorValue(args);
-        refresh();
+	m_bgColorSel = colorValue(args);
+	refresh();
     } else if (equal(key, "xPadding")) {
-        m_padding.x = max(0.f, args.get_f());
-        updateContentSize();
+	m_padding.x = max(0.f, args.get_f());
+	updateContentSize();
     } else if (equal(key, "yPadding")) {
-        m_padding.y = max(0.f, args.get_f());
-        updateContentSize();
+	m_padding.y = max(0.f, args.get_f());
+	updateContentSize();
     } else {
-        SCUM_ScrollView::setProperty(key, args);
+	SCUM_ScrollView::setProperty(key, args);
     }
 }
 
@@ -298,13 +298,13 @@ void SCUM_List::setProperty(const char* key, SCUM_ArgStream& args)
 void SCUM_List::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (key == SCUM_Symbol::value) {
-        setIntValue(slot, m_value);
+	setIntValue(slot, m_value);
     } else if (equal(key, "padding")) {
-        setPointValue(slot, m_padding);
+	setPointValue(slot, m_padding);
     } else if (equal(key, "textAlignment")) {
-        setIntValue(slot, m_textAlign);
+	setIntValue(slot, m_textAlign);
     } else {
-        SCUM_ScrollView::getProperty(key, slot);
+	SCUM_ScrollView::getProperty(key, slot);
     }
 }
 #endif
@@ -323,18 +323,18 @@ void SCUM_List::updateContentSize()
 bool SCUM_List::setValue(int value, bool send)
 {
     if (value != m_value) {
-        m_value = value;
-        if (send) doAction();
-        scrollVisible(
-                      SCUM_Rect(
+	m_value = value;
+	if (send) doAction();
+	scrollVisible(
+		      SCUM_Rect(
 				contentBounds().x,
 				contentBounds().y + value * m_itemSize.h,
 				m_itemSize.w, m_itemSize.h
 				),
-                      SCUM_Point()
-                      );
-        refresh();
-        return true;
+		      SCUM_Point()
+		      );
+	refresh();
+	return true;
     }
     return false;
 }

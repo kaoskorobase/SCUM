@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -42,6 +42,8 @@ public:
 	
     void addClass(const char* name, SCUM_Class* theClass);
     SCUM_Class* lookupClass(const char* name);
+    SCUM_Object* makeObject(const char* className, SCUM_Client* client, int oid, SCUM_ArgStream& args);
+    SCUM_Object* makeObject(const char* className, SCUM_Client* client, int oid);
 
 private:
     st_table*	m_classes;
@@ -68,7 +70,7 @@ protected:
 private:
     SCUM_ClassRegistry*	m_reg;
     const char*		m_name;
-    bool                m_abstract;
+    bool		m_abstract;
     const char*		m_superclassName;
     SCUM_Class*		m_superclass;
     st_table*		m_methods;
@@ -80,40 +82,40 @@ public:
     typedef void (T::*MethodFunc)(const char* name, SCUM_ArgStream& args);
     struct Method
     {
-        MethodFunc	m_func;
+	MethodFunc	m_func;
     };
 
     SCUM_ClassT(SCUM_ClassRegistry* reg, const char* name, const char* superclassName, bool abstract=false)
-        : SCUM_Class(reg, name, superclassName, abstract)
+	: SCUM_Class(reg, name, superclassName, abstract)
     { }
 
     SCUM_Object* makeObject(SCUM_Client* client, int oid, SCUM_ArgStream& args)
     {
-        return new T((SCUM_Class*)this, client, oid, args);
+	return new T((SCUM_Class*)this, client, oid, args);
     }
 
     void dispatchMethod(SCUM_Object* obj, const char* name, SCUM_ArgStream& args)
     {
-        T* tObj = dynamic_cast<T*>(obj);
-        if (!tObj)
-            throw std::runtime_error("wrong type");
-        Method* method = (Method*)lookupMethod(name);
-        if (method) {
-            MethodFunc func = method->m_func;
-            (tObj->*func)(name, args);
-        } else {
-            SCUM_Class* superclass = getSuperclass();
-            if (!superclass)
-                throw std::runtime_error("DNU");
-            superclass->dispatchMethod(obj, name, args);
-        }
+	T* tObj = dynamic_cast<T*>(obj);
+	if (!tObj)
+	    throw std::runtime_error("wrong type");
+	Method* method = (Method*)lookupMethod(name);
+	if (method) {
+	    MethodFunc func = method->m_func;
+	    (tObj->*func)(name, args);
+	} else {
+	    SCUM_Class* superclass = getSuperclass();
+	    if (!superclass)
+		throw std::runtime_error("DNU");
+	    superclass->dispatchMethod(obj, name, args);
+	}
     }
 
     void addMethod(const char* name, MethodFunc func)
     {
-        Method* method = new Method;
-        method->m_func = func;
-        addClosure(name, (void*)method);
+	Method* method = new Method;
+	method->m_func = func;
+	addClosure(name, (void*)method);
     }
 };
 

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -46,8 +46,20 @@ SCUM_Class* SCUM_ClassRegistry::lookupClass(const char* name)
 {
     st_data_t value;
     if (st_lookup(m_classes, (st_data_t)name, &value))
-        return (SCUM_Class*)value;
+	return (SCUM_Class*)value;
     return 0;
+}
+
+SCUM_Object* SCUM_ClassRegistry::makeObject(const char* className, SCUM_Client* client, int oid, SCUM_ArgStream& args)
+{
+    SCUM_Class* klass = lookupClass(className);
+    return klass ? klass->makeObject(client, oid, args) : 0;
+}
+
+SCUM_Object* SCUM_ClassRegistry::makeObject(const char* className, SCUM_Client* client, int oid)
+{
+    SCUM_ArgStream args;
+    return makeObject(className, client, oid, args);
 }
 
 SCUM_Class::SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* superclassName, bool abstract)
@@ -64,13 +76,13 @@ SCUM_Class::SCUM_Class(SCUM_ClassRegistry* reg, const char* name, const char* su
 SCUM_Class* SCUM_Class::getSuperclass()
 {
     if (!m_superclassName)
-        // Object
-        return 0;
+	// Object
+	return 0;
     if (!m_superclass) {
-        m_superclass = m_reg->lookupClass(m_superclassName);
-        if (!m_superclass) {
-            throw std::runtime_error("class not found");
-        }
+	m_superclass = m_reg->lookupClass(m_superclassName);
+	if (!m_superclass) {
+	    throw std::runtime_error("class not found");
+	}
     }
     return m_superclass;
 }
@@ -90,6 +102,6 @@ void* SCUM_Class::lookupMethod(const char* name)
 {
     st_data_t value;
     if (st_lookup(m_methods, (st_data_t)name, &value))
-        return (void*)value;
+	return (void*)value;
     return 0;
 }

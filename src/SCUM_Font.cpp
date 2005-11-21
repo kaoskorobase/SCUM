@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -39,88 +39,88 @@ namespace SCUM
 {
     struct FLFontDesc
     {
-        const char* name;
-        int id;
+	const char* name;
+	int id;
     };
 
     static FLFontDesc gFontTable[] = {
-        { "Helvetica", FL_HELVETICA },
-        { "Arial", FL_HELVETICA },
-        { "sans", FL_HELVETICA },
-        { "Times", FL_TIMES },
-        { "serif", FL_TIMES },
-        { "Courier", FL_COURIER },
-        { "Monaco", FL_COURIER },
-        { "monospace", FL_COURIER },
-        { "Symbol", FL_SYMBOL },
-        { "ZapfDingbats", FL_ZAPF_DINGBATS }
+	{ "Helvetica", FL_HELVETICA },
+	{ "Arial", FL_HELVETICA },
+	{ "sans", FL_HELVETICA },
+	{ "Times", FL_TIMES },
+	{ "serif", FL_TIMES },
+	{ "Courier", FL_COURIER },
+	{ "Monaco", FL_COURIER },
+	{ "monospace", FL_COURIER },
+	{ "Symbol", FL_SYMBOL },
+	{ "ZapfDingbats", FL_ZAPF_DINGBATS }
     };
     static const int kNumFonts = sizeof(gFontTable)/sizeof(FLFontDesc);
 
     static bool getFontID(const char* name, int& id)
     {
-        bool found = false;
+	bool found = false;
 		
-        const char* end = strchr(name, '-');
-        size_t len = end ? end - name : strlen(name);
+	const char* end = strchr(name, '-');
+	size_t len = end ? end - name : strlen(name);
 
-        for (int i=0; i < kNumFonts; i++) {
-            if (strncmp(name, gFontTable[i].name, len) == 0) {
-                id = gFontTable[i].id;
-                found = true;
-                break;
-            }
-        }
+	for (int i=0; i < kNumFonts; i++) {
+	    if (strncmp(name, gFontTable[i].name, len) == 0) {
+		id = gFontTable[i].id;
+		found = true;
+		break;
+	    }
+	}
 		
-        if (!found) return false;
+	if (!found) return false;
 
-        while (true) {
-            name = strchr(name, '-');
-            if (!name) break;
-            name++;
-            if (strncmp(name, "Bold", 4) == 0) {
-                id |= FL_BOLD;
-            } else if (strncmp(name, "Italic", 6) == 0) {
-                id |= FL_ITALIC;
-            } else if (strncmp(name, "Oblique", 7) == 0) {
-                id |= FL_ITALIC;
-            }
-        }
+	while (true) {
+	    name = strchr(name, '-');
+	    if (!name) break;
+	    name++;
+	    if (strncmp(name, "Bold", 4) == 0) {
+		id |= FL_BOLD;
+	    } else if (strncmp(name, "Italic", 6) == 0) {
+		id |= FL_ITALIC;
+	    } else if (strncmp(name, "Oblique", 7) == 0) {
+		id |= FL_ITALIC;
+	    }
+	}
 		
-        return true;
+	return true;
     }
 
     typedef void (*SetFontFunction)(Fl_Font, int);
 
     static struct
     {
-        SetFontFunction	func;
-        Fl_Font			id;
-        int				size;
+	SetFontFunction	func;
+	Fl_Font			id;
+	int				size;
     } gSaveFont;
 
     static void SetFont(Fl_Font id, int size)
     {
-        fl_font(id, size);
+	fl_font(id, size);
     }
     static void SetFontGL(Fl_Font id, int size)
     {
-        gl_font(id, size);
+	gl_font(id, size);
     }
 
     static inline void setFont(SetFontFunction func, const SCUM_Font& font)
     {
-        SCUM_ASSERT(gSaveFont.func == 0);
-        gSaveFont.func = func;
-        gSaveFont.id = (Fl_Font)font.id();
-        gSaveFont.size = font.size();
-        (*func)(gSaveFont.id, gSaveFont.size);
+	SCUM_ASSERT(gSaveFont.func == 0);
+	gSaveFont.func = func;
+	gSaveFont.id = (Fl_Font)font.id();
+	gSaveFont.size = font.size();
+	(*func)(gSaveFont.id, gSaveFont.size);
     }
     static inline void restoreFont()
     {
-        SCUM_ASSERT(gSaveFont.func != 0);
-        (*gSaveFont.func)(gSaveFont.id, gSaveFont.size);
-        gSaveFont.func = 0;
+	SCUM_ASSERT(gSaveFont.func != 0);
+	(*gSaveFont.func)(gSaveFont.id, gSaveFont.size);
+	gSaveFont.func = 0;
     }
 }
 
@@ -129,12 +129,12 @@ SCUM_Font::SCUM_Font(const char* name, double size)
       m_size(0)
 {
     if (getFontID(name, m_id)) {
-        m_size = (int)SCUM::max(0., size);
-        setFont(&SetFont, *this);
-        m_extents.height = fl_height();
-        m_extents.descent = fl_descent();
-        m_extents.ascent = m_extents.height - m_extents.descent;
-        restoreFont();
+	m_size = (int)SCUM::max(0., size);
+	setFont(&SetFont, *this);
+	m_extents.height = fl_height();
+	m_extents.descent = fl_descent();
+	m_extents.ascent = m_extents.height - m_extents.descent;
+	restoreFont();
     }
 }
 
@@ -149,12 +149,12 @@ SCUM_TextExtents SCUM_Font::measure(const char* str) const
 {
     SCUM_TextExtents res;
     if (isValid()) {
-        int w, h;
-        setFont(&SetFont, *this);
-        fl_measure(str, w, h, 0);
-        res.size.w = w;
-        res.size.h = h;
-        restoreFont();
+	int w, h;
+	setFont(&SetFont, *this);
+	fl_measure(str, w, h, 0);
+	res.size.w = w;
+	res.size.h = h;
+	restoreFont();
     }
     return res;
 }
@@ -162,61 +162,61 @@ SCUM_TextExtents SCUM_Font::measure(const char* str) const
 void SCUM_Font::draw(const SCUM_Point& pos, const char* str)
 {
     if (isValid()) {
-        setFont(&SetFont, *this);
-        fl_draw(str, pos.xi(), pos.yi());
-        restoreFont();
+	setFont(&SetFont, *this);
+	fl_draw(str, pos.xi(), pos.yi());
+	restoreFont();
     }
 }
 
 void SCUM_Font::draw(const SCUM_Rect& bounds, SCUM::Align align, const char* str)
 {
     if (isValid()) {
-        setFont(&SetFont, *this);
+	setFont(&SetFont, *this);
 #if 0
-        SCUM_Point pos(
-                       bounds.origin() +
-                       bounds.size().layout(extents.size, align)
-                       );
-        // 		pos.y += this->extents().ascent;
-        fl_draw(
-                str,
-                pos.xi(), pos.yi(),
-                extents.size.wi(), extents.size.hi(),
-                (Fl_Align)(FL_ALIGN_TOP|FL_ALIGN_LEFT),
-                0, 0
-                );
+	SCUM_Point pos(
+		       bounds.origin() +
+		       bounds.size().layout(extents.size, align)
+		       );
+	//		pos.y += this->extents().ascent;
+	fl_draw(
+		str,
+		pos.xi(), pos.yi(),
+		extents.size.wi(), extents.size.hi(),
+		(Fl_Align)(FL_ALIGN_TOP|FL_ALIGN_LEFT),
+		0, 0
+		);
 #endif
-        fl_draw(
-                str,
-                bounds.xi(), bounds.yi(),
-                bounds.wi(), bounds.hi(),
-                convert(align),
-                0, 0
-                );
-        restoreFont();
+	fl_draw(
+		str,
+		bounds.xi(), bounds.yi(),
+		bounds.wi(), bounds.hi(),
+		convert(align),
+		0, 0
+		);
+	restoreFont();
     }
 }
 
 void SCUM_Font::drawGL(const SCUM_Point& pos, const char* str)
 {
     if (isValid()) {
-        setFont(&SetFontGL, *this);
-        gl_draw(str, pos.x, pos.y);
-        restoreFont();
+	setFont(&SetFontGL, *this);
+	gl_draw(str, pos.x, pos.y);
+	restoreFont();
     }
 }
 
 void SCUM_Font::drawGL(const SCUM_Rect& bounds, SCUM::Align align, const char* str)
 {
     if (isValid()) {
-        setFont(&SetFontGL, *this);
-        gl_draw(
-                str,
-                bounds.xi(), bounds.yi(),
-                bounds.wi(), bounds.hi(),
-                convert(align)
-                );
-        restoreFont();
+	setFont(&SetFontGL, *this);
+	gl_draw(
+		str,
+		bounds.xi(), bounds.yi(),
+		bounds.wi(), bounds.hi(),
+		convert(align)
+		);
+	restoreFont();
     }
 }
 
@@ -287,11 +287,11 @@ void SCUM_Text::copyText(const char* text, size_t size)
 {
     delete [] m_text;
     if (text && (size > 0)) {
-        m_text = new char[size+1];
-        strncpy(m_text, text, size);
-        m_text[size] = '\0';
+	m_text = new char[size+1];
+	strncpy(m_text, text, size);
+	m_text[size] = '\0';
     } else {
-        m_text = 0;
+	m_text = 0;
     }
 }
 
@@ -392,13 +392,13 @@ bool SCUM_Font::isValid() const
 SCUM_Size SCUM_Font::sizeOf(const char* str)
 {
     if (m_handle) {
-        float h = m_handle->Ascender() - m_handle->Descender();
-        float w = 0.0f;
-        float x0, x1, f;
-        m_handle->BBox(str, x0, f, f, x1, f, f);
-        // TODO: get rid of initial lead?
-        w = x1; //- x0;
-        return SCUM_Size(ceilf(w), ceilf(h));
+	float h = m_handle->Ascender() - m_handle->Descender();
+	float w = 0.0f;
+	float x0, x1, f;
+	m_handle->BBox(str, x0, f, f, x1, f, f);
+	// TODO: get rid of initial lead?
+	w = x1; //- x0;
+	return SCUM_Size(ceilf(w), ceilf(h));
     }
     return SCUM_Size();
 }
@@ -406,9 +406,9 @@ SCUM_Size SCUM_Font::sizeOf(const char* str)
 void SCUM_Font::draw(const char* str, const SCUM_Rect& bounds, int align)
 {
     if (m_handle) {
-        SCUM_Point delta = bounds.origin + bounds.size().layout(sizeOf(str), align);
-        delta.y = delta.y - m_handle->Descender();
-        SCUM_FONT_RENDER(delta, str);
+	SCUM_Point delta = bounds.origin + bounds.size().layout(sizeOf(str), align);
+	delta.y = delta.y - m_handle->Descender();
+	SCUM_FONT_RENDER(delta, str);
     }
 }
 
@@ -448,10 +448,10 @@ FTFont* SCUM_FontManager::getFont(const char* name)
     CacheIter iter = m_cache.find(key);
     if (iter != m_cache.end()) {
 #ifndef NDEBUG
-        cout << "SCUM_FontManager::getFont: using cached font\n";
+	cout << "SCUM_FontManager::getFont: using cached font\n";
 #endif
-        FcPatternDestroy(match);
-        return iter->second;
+	FcPatternDestroy(match);
+	return iter->second;
     }
 	
     FcResult res;
@@ -461,36 +461,36 @@ FTFont* SCUM_FontManager::getFont(const char* name)
 
     res = FcPatternGetString(match, FC_FILE, 0, (FcChar8**)&fileName);
     if (res != FcResultMatch) {
-        FcPatternDestroy(match);
-        return 0;
+	FcPatternDestroy(match);
+	return 0;
     }
 
     res = FcPatternGetInteger(match, FC_SIZE, 0, &size);
     if (res != FcResultMatch) {
-        FcPatternDestroy(match);
-        return 0;
+	FcPatternDestroy(match);
+	return 0;
     }
 
     res = FcPatternGetDouble(match, FC_DPI, 0, &dpi);
     if (res != FcResultMatch) {
-        FcPatternDestroy(match);
-        return 0;
+	FcPatternDestroy(match);
+	return 0;
     }
 
 #ifndef NDEBUG
     printf("SCUM_FontManager::getFont: fileName %s size %d dpi %f\n",
-           fileName, size, dpi);
+	   fileName, size, dpi);
 #endif
 
     FTFont* font = new SCUM_FONT_CLASS(fileName);
     FcPatternDestroy(match);
 
     if (!(font
-          && (font->Error() == FT_Err_Ok)
-          && font->FaceSize(size, (unsigned int)dpi)))
+	  && (font->Error() == FT_Err_Ok)
+	  && font->FaceSize(size, (unsigned int)dpi)))
 	{
-            delete font;
-            return 0;
+	    delete font;
+	    return 0;
 	}
 	
     m_cache[key] = font;
@@ -507,10 +507,10 @@ FcPattern* SCUM_FontManager::matchName(const char* name)
 
     if (!FcConfigSubstitute(conf, pat, FcMatchPattern)) {
 #ifndef NDEBUG
-        printf("SCUM_FontManager::matchName: FcConfigSubstitute failed\n");
+	printf("SCUM_FontManager::matchName: FcConfigSubstitute failed\n");
 #endif
-        FcPatternDestroy(pat);
-        return 0;
+	FcPatternDestroy(pat);
+	return 0;
     }
 
     FcResult res;

@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -52,7 +52,7 @@ protected:
     virtual void draw();
 
 private:
-    SCUM_GLView*        m_view;
+    SCUM_GLView*	m_view;
 };
 
 // =====================================================================
@@ -144,42 +144,42 @@ namespace SCUM
 {
     inline static void glColor(const SCUM_Color& color)
     {
-        ::glColor4ub(color.r8(), color.g8(), color.b8(), color.a8());
+	::glColor4ub(color.r8(), color.g8(), color.b8(), color.a8());
     }
 
     inline static void glClearColor(const SCUM_Color& color)
     {
-        ::glClearColor(color.r32(), color.g32(), color.b32(), color.a32());
+	::glClearColor(color.r32(), color.g32(), color.b32(), color.a32());
     }
 
     inline static void glVertex(const SCUM_Point& p)
     {
-        ::glVertex2f(p.x, p.y);
+	::glVertex2f(p.x, p.y);
     }
 
     inline static void glRect(const SCUM_Rect& r)
     {
-        ::glRectf(r.minX(), r.minY(), r.maxX(), r.maxY());
+	::glRectf(r.minX(), r.minY(), r.maxX(), r.maxY());
     }
 
     inline static void glTranslate(const SCUM_Point& p)
     {
-        ::glTranslatef(p.x, p.y, 0.0f);
+	::glTranslatef(p.x, p.y, 0.0f);
     }
 
     inline static void glRasterPos(const SCUM_Point& p)
     {
-        ::glRasterPos2f(p.x, p.y);
+	::glRasterPos2f(p.x, p.y);
     }
 
     inline static void glScissor(const SCUM_Rect& scissor)
     {
-        ::glScissor(
-                    (GLint)scissor.x,
-                    (GLint)scissor.y,
-                    (GLint)scissor.w,
-                    (GLint)scissor.h
-                    );
+	::glScissor(
+		    (GLint)scissor.x,
+		    (GLint)scissor.y,
+		    (GLint)scissor.w,
+		    (GLint)scissor.h
+		    );
     }
 };
 

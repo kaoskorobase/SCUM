@@ -13,31 +13,31 @@
 s.boot;
 
 (
-	var synths;
-	w = SCUMWindow.make {
-		//~title = "Window example";
-		~bgColor = Color.rand;
-		~minSize = Size(400, 600);
-		SCUMHBox.make {
-			~bgColor = Color.green;
-			{ |i|
-				SCUMVSlider.make { |v|
-					~action = {
-						[i, v.value].postln;
-						synths[i].set(\freq, v.value * 50 + 20)
-					};
-					//~step = 0.1;
-					~bgColor = Color.blue(0.6);
-					~fgColor = Color.green(0.8);
-					~fill = 1.0;
-					~expand = 1.0;
-				}
-			} ! 4;
-		};
+var synths;
+w = SCUMWindow.make {
+	~title = "Window example";
+	~bgColor = Color.rand;
+	~minSize = Size(400, 600);
+	SCUMHBox.make {
+		~bgColor = Color.green;
+		{ |i|
+			SCUMVSlider.make { |v|
+				~action = {
+					[i, v.value].postln;
+					synths[i].set(\freq, v.value * 50 + 20)
+				};
+				//~step = 0.1;
+				~bgColor = Color.blue(0.6);
+				~fgColor = Color.green(0.8);
+				~fill = 1.0;
+				~expand = 1.0;
+			}
+		} ! 4;
 	};
-	synths = { Synth(\default, [\freq, 20]) } ! 4;
-	w.addResources(synths, \release);
-	w.show;
+};
+synths = { Synth(\default, [\freq, 20]) } ! 4;
+w.addResources(synths, \release);
+w.show;
 )
 w.close;
 
@@ -45,16 +45,16 @@ w.decorated = false;
 w.decorated = true;
 
 w.use {
-	~title = "Fucking hell";
+	~title = "Hmmmmmmmm.";
 	~minSize = Size(50, 200);
 }
 
 w = SCUMWindow.new;
 w.recordPropertyChangesDuring { |w|
-		w.putProperty(\title, "Window example");
-		w.bgColor = Color.rand;
-		w.initialSize = Size(200, 200);
-	};
+	w.putProperty(\title, "Window example");
+	w.bgColor = Color.rand;
+	w.initialSize = Size(200, 200);
+};
 
 w.id
 // change the minimum size the window can be resized to
@@ -69,14 +69,14 @@ w.resizable = true;
 
 // make fullscreen (may not work properly with all window managers)
 (
-	w.play(Routine({
-		w.screenBounds.postln;
-		w.fullscreen = true;
-		w.raise;
-		5.wait;
-		w.screenBounds.postln;
-		w.fullscreen = false;
-	}));
+w.play(Routine({
+	w.screenBounds.postln;
+	w.fullscreen = true;
+	w.raise;
+	5.wait;
+	w.screenBounds.postln;
+	w.fullscreen = false;
+}));
 )
 
 // close window

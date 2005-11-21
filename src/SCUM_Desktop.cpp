@@ -1,5 +1,5 @@
-/*  -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-    vi: et sta sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
     SCUM. copyright (c) 2004, 2005 stefan kersten.
 
@@ -57,30 +57,30 @@ void SCUM_Desktop::destroy(bool now)
 void SCUM_Desktop::setProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal(key, "fgColor")) {
-        m_fgColor = colorValue(slot);
+	m_fgColor = colorValue(slot);
     } else if (equal(key, "bgColor")) {
-        m_bgColor = colorValue(slot);
+	m_bgColor = colorValue(slot);
     } else if (equal(key, "focusColor")) {
-        m_focusColor = colorValue(slot);
+	m_focusColor = colorValue(slot);
     } else if (equal(key, "font")) {
-        m_font = fontValue(slot);
+	m_font = fontValue(slot);
     } else {
-        SCUM_Object::setProperty(key, slot);
+	SCUM_Object::setProperty(key, slot);
     }
 }
 
 void SCUM_Desktop::getProperty(const PyrSymbol* key, PyrSlot* slot)
 {
     if (equal(key, "bounds")) {
-        setRectValue(slot, SCUM_Rect(SCUM_Point(), SCUM::screenSize()));
+	setRectValue(slot, SCUM_Rect(SCUM_Point(), SCUM::screenSize()));
     } else if (equal(key, "fgColor")) {
-        setColorValue(slot, fgColor());
+	setColorValue(slot, fgColor());
     } else if (equal(key, "bgColor")) {
-        setColorValue(slot, bgColor());
+	setColorValue(slot, bgColor());
     } else if (equal(key, "focusColor")) {
-        setColorValue(slot, focusColor());
+	setColorValue(slot, focusColor());
     } else {
-        SCUM_Object::getProperty(key, slot);
+	SCUM_Object::getProperty(key, slot);
     }
 }
 
@@ -93,9 +93,9 @@ void SCUM_Desktop::retain(SCUM_Object* obj)
 void SCUM_Desktop::release(SCUM_Object* obj)
 {
     if (!m_resources.empty()) {
-        SCUM_ObjectIter it = find(m_resources.begin(), m_resources.end(), obj);
-        SCUM_ASSERT(it != m_resources.end());
-        m_resources.erase(it);
+	SCUM_ObjectIter it = find(m_resources.begin(), m_resources.end(), obj);
+	SCUM_ASSERT(it != m_resources.end());
+	m_resources.erase(it);
     }
 }
 
@@ -104,7 +104,7 @@ void SCUM_Desktop::destroyAll(bool now)
     SCUM_ObjectList list(m_resources);
     m_resources.clear();
     for (SCUM_ObjectIter it=list.begin(); it != list.end(); it++) {
-        (*it)->destroy(now);
+	(*it)->destroy(now);
     }
 }
 
