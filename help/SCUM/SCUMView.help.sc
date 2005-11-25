@@ -46,8 +46,8 @@
 	// click into the view and press some keys
 	v.canFocus = true;
 	v.keyDownAction = { | evt |
-		[evt.state, evt.char, evt.key].postln;
-		evt.accept;
+ 		evt.postln;
+ 		evt.accept;
 	}
 )
 

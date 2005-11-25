@@ -1,5 +1,5 @@
 SCUMEvent : SCUM {
-	var <view, <isAccepted=true;
+	var <receiver, <isAccepted=true;
 
 	isIgnored { ^isAccepted.not }
 
@@ -7,13 +7,13 @@ SCUMEvent : SCUM {
 	ignore { isAccepted = false }
 
 	properties {
-		^[\view, view, \accepted, isAccepted]
+		^[\receiver, receiver, \accepted, isAccepted]
 	}
 
 	printOn { | stream |
 		super.printOn(stream);
 		stream.put($();
-		this.properties.printItemsOn(stream);
+ 		this.properties.printItemsOn(stream);
 		stream.put($));
 	}
 }
@@ -36,11 +36,11 @@ SCUMInputEvent : SCUMEvent {
 		})
 	}
 	*modMaskToSpec { | mask |
-		var spec;
-		if (mask & modControl) { spec = spec.add(\C) };
-		if (mask & modCommand) { spec = spec.add(\M) };
-		if (mask & modShift)   { spec = spec.add(\S) };
-		if (mask & modKeypad)  { spec = spec.add(\K) };
+		var spec = [];
+		if ((mask & modControl) == modControl) { spec = spec.add(\C) };
+		if ((mask & modCommand) == modCommand) { spec = spec.add(\M) };
+		if ((mask & modShift)   == modShift)   { spec = spec.add(\S) };
+		if ((mask & modKeypad)  == modKeypad)  { spec = spec.add(\K) };
 		^spec
 	}
 
@@ -71,8 +71,8 @@ SCUMInputEvent : SCUMEvent {
 SCUMKeyEvent : SCUMInputEvent {
 	var <char, <key;
 
-	*new { | view, state, char, key |
-		^this.newCopyArgs(view, true, state, char, key)
+	*new { | object, state, char, key |
+		^this.newCopyArgs(object, true, state, char, key)
 	}
 
 	ifChar { | argChar, trueFunc, falseFunc |
@@ -109,8 +109,8 @@ SCUMKeyEvent : SCUMInputEvent {
 SCUMMouseEvent : SCUMInputEvent {
 	var <pos;
 
-	*new { | view, state, x, y |
-		^this.newCopyArgs(view, true, state, Point(x, y))
+	*new { | object, state, x, y |
+		^this.newCopyArgs(object, true, state, Point(x, y))
 	}
 
 	properties {
@@ -121,8 +121,8 @@ SCUMMouseEvent : SCUMInputEvent {
 SCUMScrollWheelEvent : SCUMMouseEvent {
 	var <delta;
 
-	*new { | view, state, x, y, dx, dy |
-		^this.newCopyArgs(view, true, state, Point(x, y), Point(dx, dy))
+	*new { | object, state, x, y, dx, dy |
+		^this.newCopyArgs(object, true, state, Point(x, y), Point(dx, dy))
 	}
 	properties {
 		^super.properties ++ [\delta, delta]

@@ -37,10 +37,10 @@ SCUMDesktop : SCUMObject {
 
 	// events
 	keyDown { | evt |
-		keyDownAction.value(this, evt)
+		keyDownAction.value(evt)
 	}
 	keyUp { | evt |
-		keyUpAction.value(this, evt)
+		keyUpAction.value(evt)
 	}
 
 	// properties

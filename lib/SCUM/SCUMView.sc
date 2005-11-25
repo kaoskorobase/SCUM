@@ -1,4 +1,5 @@
-SCUMView : SCUMObject {
+SCUMView : SCUMObject
+{
 	var <name, <parent;
 	var <>action, <>keyDownAction, <>keyUpAction, keyDict;
 	
@@ -90,30 +91,34 @@ SCUMView : SCUMObject {
 	scrollWheel { | evt | }
 	contextMenu { | evt | }
 
-	nextKeyHandler {
-		^parent
-	}
+	nextKeyHandler { ^parent }
 	defaultKeyDownAction { | evt | evt.ignore }
+	bubbleUpKeyEvent { | selector, evt |
+		var handler = this.nextKeyHandler;
+		if (handler.notNil) {
+			handler.perform(selector, SCUMKeyEvent(handler, evt.state, evt.char, evt.key))
+		}
+	}
 	keyDown { | evt |
 		this.defaultKeyDownAction(evt);
 		if (evt.isIgnored) {
-			keyDownAction.value(this, evt);
+			keyDownAction.value(evt);
 		};
 		if (evt.isIgnored) {
 			this.invokeKeyBinding(evt);
 		};
 		if (evt.isIgnored) {
-			this.nextKeyHandler.keyDown(evt);
+			this.bubbleUpKeyEvent(\keyDown, evt);
 		};
 	}
 
 	keyUp { | evt |
 		this.defaultKeyUpAction(evt);
 		if (evt.isIgnored) {
-			keyUpAction.value(this, evt);
+			keyUpAction.value(evt);
 		};
 		if (evt.isIgnored) {
-			this.nextKeyHandler.keyUp(evt);
+			this.bubbleUpKeyEvent(\keyUp, evt);
 		};
 	}
 	defaultKeyUpAction { | evt | evt.ignore }
@@ -250,9 +255,7 @@ SCUMView : SCUMObject {
 		this.perform(kx.asSetter, v.x);
 		this.perform(ky.asSetter, v.y);
 	}
-
-	// PRIVATE
-	// events coming from the window system
+	// event handlers
 	prHandle_focus { | flag |
 		this.putProperty(\hasFocus, flag != 0);
 		if (this.hasFocus) {
