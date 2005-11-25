@@ -70,11 +70,11 @@ w.resizable = true;
 // make fullscreen (may not work properly with all window managers)
 (
 w.play(Routine({
-	w.screenBounds.postln;
+// 	w.screenBounds.postln;
 	w.fullscreen = true;
 	w.raise;
 	5.wait;
-	w.screenBounds.postln;
+// 	w.screenBounds.postln;
 	w.fullscreen = false;
 }));
 )

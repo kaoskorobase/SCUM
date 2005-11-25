@@ -27,7 +27,6 @@
 #include "SCUM_Class.hh"
 #include "SCUM_Socket.hh"
 #include "SCUM_Util.hh"
-//#include "SCUM_ViewFactory.hh"
 #include "st.h"
 
 #include <FL/Fl.H>
@@ -85,9 +84,6 @@ SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_ArgStream& args, int socket)
     if (initOSCMethodTable()) {
 	addOSCMethod("new", &SCUM_Client::osc_new);
 	addOSCMethod("free", &SCUM_Client::osc_free);
-	//addOSCMethod("/o_set", &SCUM_Client::osc_o_set);
-	//addOSCMethod("/v_raise", &SCUM_Client::osc_v_raise);
-	//addOSCMethod("/w_update", &SCUM_Client::osc_w_update);
     }
 }
 

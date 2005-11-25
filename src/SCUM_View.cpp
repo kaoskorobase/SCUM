@@ -546,18 +546,12 @@ void SCUM_View::osc_refresh(const char*, SCUM_ArgStream&)
     refresh();
 }
 
-void SCUM_View::osc_update(const char*, SCUM_ArgStream&)
-{
-    updateLayout();
-}
-
 void SCUM_View_Init(SCUM_ClassRegistry* reg)
 {
     SCUM_ClassT<SCUM_View>* klass = new SCUM_ClassT<SCUM_View>(reg, "View", "Object");
     klass->addMethod("raise", &SCUM_View::osc_raise);
     klass->addMethod("lower", &SCUM_View::osc_lower);
     klass->addMethod("refresh", &SCUM_View::osc_refresh);
-    klass->addMethod("update", &SCUM_View::osc_update);
 }
 
 // EOF

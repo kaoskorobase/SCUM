@@ -168,7 +168,6 @@ public:
     void osc_raise(const char*, SCUM_ArgStream&);
     void osc_lower(const char*, SCUM_ArgStream&);
     void osc_refresh(const char*, SCUM_ArgStream&);
-    void osc_update(const char*, SCUM_ArgStream&);
 
 protected:
     inline const Flags& flags() const { return m_flags; }

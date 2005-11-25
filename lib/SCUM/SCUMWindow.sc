@@ -114,7 +114,7 @@ SCUMWindow : SCUMBin {
 
 	// layout
 	updateLayout { | xFit(false) yFit(false) |
-		SCUM.sendMsg("/w_update", id, xFit, yFit)
+		SCUM.sendMsg("/updateLayout", id, xFit, yFit)
 	}
 
 	// PRIVATE

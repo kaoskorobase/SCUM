@@ -47,11 +47,11 @@ SCUMView : SCUMObject {
 
 	// naming
 	name_ { | argName |
-		if (name.notNil) {
+		if (parent.notNil && name.notNil) {
 			parent.prRemoveNamed(name);
 		};
 		name = argName !? { argName.asString };
-		if (name.notNil) {
+		if (parent.notNil && name.notNil) {
 			parent.prAddNamed(name, this);
 		};
 	}
@@ -238,12 +238,10 @@ SCUMView : SCUMObject {
 		super.prDestroyed;
 	}
 	prRaise {
-		_SCUM_View_Raise
-		^this.primitiveFailed
+		SCUM.sendMsg("/raise", id)
 	}
 	prLower {
-		_SCUM_View_Lower
-		^this.primitiveFailed
+		SCUM.sendMsg("/lower", id)
 	}
 	prGetPointProperty { | kx, ky |
 		^Point(this.getProperty(kx), this.getProperty(ky))

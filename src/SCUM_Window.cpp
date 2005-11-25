@@ -287,7 +287,7 @@ void SCUM_Window::setProperty(const char* key, SCUM_ArgStream& args)
 	SCUM_View::flags().wResizable = args.get_i();
 	updateLayout(false, false);
     } else if (equal(key, "fullscreen")) {
-	//m_deferredCommands.fullscreen = args.get_i();
+	m_deferredCommands.fullscreen = args.get_i();
     } else if (equal(key, "decorated")) {
 	bool flag = args.get_i();
 	if (flag != border()) {
@@ -335,14 +335,17 @@ void SCUM_Window::getProperty(const PyrSymbol* key, PyrSlot* slot)
 
 void SCUM_Window::deferredAction(SCUM_Timer*)
 {
-#ifdef LATER
-    if (handle()->flags().fullscreen != m_deferredCommands.fullscreen) {
-	WindowHandle::Flags flags(handle()->flags());
-	flags.fullscreen = m_deferredCommands.fullscreen;
-	handle()->setFlags(flags);
-	m_deferredCommands.fullscreen = handle()->flags().fullscreen;
+    bool fs = m_deferredCommands.fullscreen;
+    if (SCUM_View::flags().wFullscreen != fs) {
+	SCUM_View::flags().wFullscreen = fs;
+	if (fs) {
+	    m_savedBounds = bounds();
+	    fullscreen();
+	} else {
+	    fullscreen_off((int)m_savedBounds.x, (int)m_savedBounds.y,
+                           (int)m_savedBounds.w, (int)m_savedBounds.h);
+	}
     }
-#endif
 
     if (m_deferredCommands.show) {
 	m_deferredCommands.show = false;
@@ -486,9 +489,17 @@ void SCUM_Window::closeCB(Fl_Widget* w, void* arg)
 
 #include "SCUM_Class.hh"
 
+void SCUM_Window::osc_updateLayout(const char*, SCUM_ArgStream& args)
+{
+    bool xFit = args.get_i();
+    bool yFit = args.get_i();
+    updateLayout(xFit, yFit);
+}
+
 void SCUM_Window_Init(SCUM_ClassRegistry* reg)
 {
-    new SCUM_ClassT<SCUM_Window>(reg, "Window", "Bin");
+    SCUM_ClassT<SCUM_Window>* klass = new SCUM_ClassT<SCUM_Window>(reg, "Window", "Bin");
+    klass->addMethod("updateLayout", &SCUM_Window::osc_updateLayout);
 }
 
 // EOF

@@ -240,7 +240,9 @@ SRC_FILE_RE = re.compile('.*\.(h|hh|c|cpp)$')
 # installation
 # ======================================================================
 
-env.Alias('install-bin', env.Install(os.path.join(INSTALL_PREFIX, 'bin'), scum))
+install_scum = env.Install(os.path.join(INSTALL_PREFIX, 'bin'), scum)
+env.AddPostAction(install_scum, Action('fltk-config --post $TARGET'))
+env.Alias('install-bin', [install_scum])
 env.Alias('install-data', install_dir(env, 'help', HELP_DIR, HELP_FILE_RE, 1))
 env.Alias('install-data', install_dir(env, 'lib', LIB_DIR, SC_FILE_RE, 1))
 env.Alias('install', ['install-bin', 'install-data'])

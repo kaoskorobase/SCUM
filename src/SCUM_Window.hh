@@ -143,6 +143,9 @@ public:
     virtual void setProperty(const char* key, SCUM_ArgStream& args);
     //virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
+    // OSC methods
+    void osc_updateLayout(const char*, SCUM_ArgStream&);
+
 protected:
     // overrides
     virtual int handle(int evt);
@@ -179,6 +182,7 @@ private:
     DeferredCommands	m_deferredCommands;
     SCUM_Size		m_initialSize;
     SCUM_Rect		m_screenBounds;
+    SCUM_Rect		m_savedBounds;
     SCUM_View*		m_mouseMoveView;
     SCUM_View*		m_focusView;
     SCUM_View*		m_saveFocusView;
