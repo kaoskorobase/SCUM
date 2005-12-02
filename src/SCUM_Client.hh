@@ -65,6 +65,8 @@ public:
     void message(const char* fmt, ...);
     void error(SCUM_Object* who, const char* where, const char* fmt, ...);
 
+    void dumpOSC(const char* path, SCUM_ArgStream args);
+
 private:
     friend class SCUM_Object;
     void addObject(int oid, SCUM_Object* obj);
@@ -74,10 +76,12 @@ private:
 
     void osc_new(const char*, SCUM_ArgStream&);
     void osc_free(const char*, SCUM_ArgStream&);
+    void osc_dumpOSC(const char*, SCUM_ArgStream&);
 
 private:
     int			m_socket;
     st_table*		m_objects;
+    bool		m_dumpOSC;
     SCUM_ObjectList	m_resources;
     SCUM_Color		m_fgColor;
     SCUM_Color		m_bgColor;

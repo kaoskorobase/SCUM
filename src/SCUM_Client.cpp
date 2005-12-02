@@ -73,7 +73,8 @@ SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_A
 
 SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_ArgStream& args, int socket)
     : SCUM_Object(klass, 0, 0, args),
-      m_socket(socket)
+      m_socket(socket),
+      m_dumpOSC(false)
 {
     m_objects = st_init_numtable();
     m_fgColor = SCUM_Color(0, 0, 0);
@@ -84,6 +85,7 @@ SCUM_Client::SCUM_Client(SCUM_Class* klass, SCUM_ArgStream& args, int socket)
     if (initOSCMethodTable()) {
 	addOSCMethod("new", &SCUM_Client::osc_new);
 	addOSCMethod("free", &SCUM_Client::osc_free);
+	addOSCMethod("dumpOSC", &SCUM_Client::osc_dumpOSC);
     }
 }
 
@@ -201,6 +203,22 @@ void SCUM_Client::message(const char* fmt, ...)
     send(p);
 }
 
+void SCUM_Client::dumpOSC(const char* path, SCUM_ArgStream args)
+{
+    printf("[ %s ", path);
+    size_t size = args.size();
+    size_t lastIndex = size - 1;
+    for (int i=0; i < size; ++i) {
+	switch (args.peek()) {
+	case 'i': printf("%d", args.get_i()); break;
+	case 'f': printf("%f", args.get_f()); break;
+	case 's': printf("'%s'", args.get_s()); break;
+	default: continue;
+	}
+	printf(i == lastIndex ? " ]\n" : " ");
+    }
+}
+
 void SCUM_Client::error(SCUM_Object* who, const char* where, const char* fmt, ...)
 {
     const size_t bufferSize = 256;
@@ -256,13 +274,19 @@ void SCUM_Client::osc_free(const char*, SCUM_ArgStream& args)
     }
 }
 
+void SCUM_Client::osc_dumpOSC(const char*, SCUM_ArgStream& args)
+{
+    m_dumpOSC = (bool)args.get_i();
+}
+
 void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
 {
+    const char* methodName = *path == '/' ? path + 1 : path;
     SCUM_Object* recvr = 0;
-    if (*path == '/') path++;
     try {
 	SCUM_ArgStream args(data, size);
-	if (OSCMethod m = lookupOSCMethod(path)) {
+	if (m_dumpOSC) dumpOSC(path, args);
+	if (OSCMethod m = lookupOSCMethod(methodName)) {
 	    (this->*m)(path, args);
 	} else if ((args.size() > 0) && (args.peek() == 'i')) {
 	    int oid = args.get_i();
@@ -270,7 +294,7 @@ void SCUM_Client::dispatchMessage(char* path, char* data, size_t size)
 	    if (!recvr) throw std::runtime_error("object not found");
 	    SCUM_Class* klass = recvr->getClass();
 	    if (!klass) throw std::runtime_error("classless object, wtf?");
-	    klass->dispatchMethod(recvr, path, args);
+	    klass->dispatchMethod(recvr, methodName, args);
 	}
     } catch (OSC::Error& e) {
 	error(recvr, path, "OSC Error: %s", e.what());

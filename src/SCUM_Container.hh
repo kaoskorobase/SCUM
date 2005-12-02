@@ -192,6 +192,7 @@ public:
 
     size_t numRows() const { return m_numRows; }
     size_t numCols() const { return m_numCols; }
+    size_t gridSize() const { return numRows() * numCols(); }
 
     virtual void setProperty(const char* key, SCUM_ArgStream& args);
     //virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);

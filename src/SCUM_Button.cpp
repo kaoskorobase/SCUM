@@ -455,7 +455,7 @@ void SCUM_Choice::setProperty(const char* key, SCUM_ArgStream& args)
 	for (size_t i=0; i < m_states.size(); i++) {
 	    items.push_back(SCUM_MenuItem(kMenuAction, m_states[i].text()));
 	}
-	m_menu->setItems(items);
+	if (m_menu) m_menu->setItems(items);
 	updateLayout();
     } else {
 	SCUM_View::setProperty(key, args);

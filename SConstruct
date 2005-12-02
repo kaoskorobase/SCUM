@@ -217,19 +217,22 @@ env.Default(scum)
 
 INSTALL_PREFIX = os.path.join('$DESTDIR', '$PREFIX')
 
-if PLATFORM == 'darwin':
-    if os.path.realpath(env['PREFIX']) == os.path.realpath(os.environ['HOME']):
-        data_prefix = '$PREFIX'
+def get_data_dir(package_name):
+    if PLATFORM == 'darwin':
+        if os.path.realpath(env['PREFIX']) == os.path.realpath(os.environ['HOME']):
+            data_prefix = '$PREFIX'
+        else:
+            data_prefix = '/'
+        data_dir = os.path.join(
+            '$DESTDIR', data_prefix,
+            'Library', 'Application Support', 'SuperCollider')
     else:
-        data_prefix = '/'
-    DATA_DIR = os.path.join(
-        '$DESTDIR', data_prefix,
-        'Library', 'Application Support', 'SuperCollider')
-else:
-    DATA_DIR = os.path.join(INSTALL_PREFIX, 'share', 'SuperCollider')
+        data_dir = os.path.join(INSTALL_PREFIX, 'share', 'SuperCollider')
+    return os.path.join(data_dir, 'Extensions', package_name)
 
-HELP_DIR = os.path.join(DATA_DIR, 'Help', env['PACKAGE'])
-LIB_DIR = os.path.join(DATA_DIR, 'Extensions', env['PACKAGE'])
+DATA_DIR = get_data_dir(env['PACKAGE'])
+HELP_DIR = os.path.join(DATA_DIR, 'help')
+LIB_DIR = os.path.join(DATA_DIR, 'lib')
 
 ANY_FILE_RE = re.compile('.*')
 SC_FILE_RE = re.compile('.*\.sc$')

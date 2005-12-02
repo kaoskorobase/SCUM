@@ -121,7 +121,7 @@ SCUMGrid : SCUMContainer {
 	}
 	// properties
 	*propertyKeys {
-		^super.propertyKeys ++ [\homogenous, \spacing, \wrap]
+		^super.propertyKeys ++ [\homogenous, \spacing, \dimensions]
 	}
 	homogenous { ^this.getProperty(\homogenous) }
 	homogenous_ { |v| this.setProperty(\homogenous, v) }

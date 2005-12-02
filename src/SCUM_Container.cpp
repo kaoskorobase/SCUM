@@ -1003,6 +1003,7 @@ void SCUM_Grid::dimensionsChanged()
 
     bytes = sizeof(SCUM_View*) * gridSize;
     m_grid = (SCUM_View**)realloc(m_grid, bytes);
+    memset(m_grid, 0, bytes);
     updateGrid();
 
     bytes = sizeof(Info) * rows;
@@ -1022,7 +1023,7 @@ void SCUM_Grid::updateGrid()
     memset(m_grid, 0, sizeof(SCUM_View*) * rows * cols);
 
     SCUM_View* child = firstChild();
-    for (int i = 0; i < numChildren(); ++i) {
+    for (int i = 0; i < min(numChildren(), gridSize()); ++i) {
 	m_grid[gridIndex(i)] = child;
 	child = child->nextView();
     }

@@ -154,6 +154,9 @@ SCUM {
 		};
 		^bundle
 	}
+	*dumpOSC { |flag(true)|
+		this.sendMsg("/dumpOSC", flag)
+	}
 	// object ids
 	*nextObjectID {
 		^objectIDStream.next.asInteger

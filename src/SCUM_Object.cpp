@@ -48,7 +48,8 @@ size_t SCUM_ArgStream::size() const
 
 int SCUM_ArgStream::peek() const
 {
-    return const_cast<SCUM_ArgStream*>(this)->m_stream.peekTag();
+//     return const_cast<SCUM_ArgStream*>(this)->m_stream.peekTag();
+    return m_stream.peekTag();
 }
 
 int32_t SCUM_ArgStream::get_i()
