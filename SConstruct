@@ -93,6 +93,7 @@ opts.AddOptions(
 # ======================================================================
 
 env = Environment(options = opts,
+                  ENV = { 'PATH':os.environ['PATH'] },
                   PACKAGE = PACKAGE,
                   VERSION = VERSION,
                   TARBALL = PACKAGE + '-' + VERSION + '.tbz2')
