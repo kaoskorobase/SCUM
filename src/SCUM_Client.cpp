@@ -217,6 +217,7 @@ void SCUM_Client::dumpOSC(const char* path, SCUM_ArgStream args)
 	}
 	printf(i == lastIndex ? " ]\n" : " ");
     }
+    fflush(stdout);
 }
 
 void SCUM_Client::error(SCUM_Object* who, const char* where, const char* fmt, ...)

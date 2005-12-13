@@ -9,9 +9,7 @@ SCUMObject : SCUM {
 		defaultClock = AppClock;
 		ActionListener(SCUM, \connected, {
 			SCUM.registerObjectMethod("/changed", { | obj, name ... args |
-				obj.doBlocked {
-					obj.tryPerform(("prSet_" ++ name).asSymbol, *args)
-				}
+				obj.tryPerform(("prSet_" ++ name).asSymbol, *args)
 			});
 		});
 	}
