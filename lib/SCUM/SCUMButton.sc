@@ -34,7 +34,9 @@ SCUMBang : SCUMControl {
 	}
 	flashTime { ^this.getProperty(\flashTime) }
 	flashTime_ { |v| this.setProperty(\flashTime, v.asFloat) }
-	
+
+	bang { this.setPropertyChanged(\value, 1) }
+
 	// PRIVATE
 	prSet_value {
 		this.doActionUnlessMuted(\bang)
