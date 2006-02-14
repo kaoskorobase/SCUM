@@ -1,1 +1,0 @@
-SCUMSlider.help.sc
