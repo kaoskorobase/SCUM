@@ -1,12 +1,20 @@
-SCUMLabel : SCUMView
-{
+SCUMLabel : SCUMView {
 	var <text, <font;
 
+	initClass {
+		this.propertyDefaults.putAll((
+			font: { SCUM.desktop.font },
+			textAlignment: 5,
+			xPadding: 5,
+			yPadding: 5,
+			frozen: false // better name?
+		));
+	}
+	
 	initDefaults {
 		super.initDefaults;
 		this.canFocus = false;
 		this.xFill = 1;
-		this.font = SCUMDesktop.font;
 	}
 
 	// properties
@@ -23,10 +31,18 @@ SCUMLabel : SCUMView
 	yPadding_ { |v| this.setProperty(\yPadding, v) }
 	padding { ^this.prGetPointProperty(\xPadding, \yPadding) }
 	padding_ { |v| this.prSetPointProperty(\xPadding, \yPadding, v.asPoint) }
+	frozen { ^this.getProperty(\frozen) }
+	frozen_ { |v| this.setProperty(\frozen, v != 0); }
+	minSize_ { |v|
+		if (v.isKindOf(String)) {
+			this.setProperty(\minSize, v);
+		}{
+			super.minSize_(v);
+		}
+	}
 }
 
-SCUMTextEntry : SCUMLabel
-{
+SCUMTextEntry : SCUMLabel {
 	var <value, <>setBoth=true, <editColor;
 	var fgColorSave, keyString;
 
@@ -49,7 +65,7 @@ SCUMTextEntry : SCUMLabel
 	stringToValue { | str | ^str }
 
 	addInput { | char, maxLength |
-		this.prStartEditing;
+		this.prStartEditing(true);
 		keyString = keyString.add(char);
 		if (maxLength.notNil) {
 			this.text = keyString.copyRange(0, maxLength);
@@ -57,17 +73,26 @@ SCUMTextEntry : SCUMLabel
 			this.text = keyString;
 		}
 	}
+	deleteLastInput {
+		this.prStartEditing(false);
+		keyString = keyString.copyRange(0, keyString.size - 2);
+		this.text = keyString;
+	}
 
 	defaultKeyDownAction { | evt |
 		evt.ifNl({
 			if (this.isEditing) {
 				this.prStopEditing(true);
 			}{
-				this.prStartEditing;
+				this.prStartEditing(false);
 			}
 			^this
 		});
-		evt.ifKeys([keyDelete, keyBackSpace, keyEscape], {
+		evt.ifKey(keyBackSpace) {
+			this.deleteLastInput;
+			^this
+		};
+		evt.ifKeys([keyDelete, keyEscape], {
 			this.prStopEditing(false);
 			^this
 		});
@@ -76,12 +101,8 @@ SCUMTextEntry : SCUMLabel
 	
 	// properties
 	*propertyKeys {
-		^super.propertyKeys ++ [\sendMouse, \sendScroll, \editColor]
+		^super.propertyKeys ++ [\editColor]
 	}
-	sendMouse { ^this.getProperty(\sendMouse) }
-	sendMouse_ { |v| this.setProperty(\sendMouse, v) }
-	sendScroll { ^this.getProperty(\sendScroll) }
-	sendScroll_ { |v| this.setProperty(\sendScroll, v) }
 	editColor_ { | color |
 		editColor = color;
 		if (this.isEditing) {
@@ -89,29 +110,24 @@ SCUMTextEntry : SCUMLabel
 		}
 	}
 	value_ { | obj |
+		var prev = value;
 		keyString = nil;
 		value = obj;
 		if (setBoth) {
 			this.text = this.valueToString(value);
-		}
-	}
-	valueAction_ { | obj |
-		var prev;
-		prev = value;
-		this.value = obj;
+		};
 		if (value != prev) {
-			this.doAction;
-			this.changed(\value);
-		}
+			this.doActionUnlessMuted(\value);
+		};
 	}
 
 	onStartEditing { }
 	onStopEditing { }
 
 	// PRIVATE
-	prStartEditing {
+	prStartEditing { | erase |
 		if (this.isEditing.not) {
-			keyString = String.new;
+			keyString = if (erase) { String.new } { this.text };
 			fgColorSave = this.fgColor;
 			this.fgColor = editColor;
 			this.onStartEditing;
@@ -120,7 +136,7 @@ SCUMTextEntry : SCUMLabel
 	prStopEditing { | commit |
 		if (this.isEditing) {
 			if (commit) {
-				this.valueAction = this.stringToValue(keyString);
+				this.value = this.stringToValue(keyString);
 			}{
 				this.text = this.valueToString(value);
 			};
@@ -131,8 +147,7 @@ SCUMTextEntry : SCUMLabel
 	}
 }
 
-SCUMStringEntry : SCUMTextEntry
-{
+SCUMStringEntry : SCUMTextEntry {
 	var <>history, historyIndex;
 
 	initDefaults {
@@ -168,29 +183,34 @@ SCUMStringEntry : SCUMTextEntry
 	}
 }
 
-SCUMNumberEntry : SCUMTextEntry
-{
-	var <precision, <>coarseStep=1, <>fineStep=0.001;
+SCUMNumberEntry : SCUMTextEntry {
+	var <>precision, <>coarseStep=1, <>fineStep=0.001, <>min, <>max;
 	var lastMousePos;
 
-	*viewClass { ^SCUMStringEntry }
+	*serverClass { ^SCUMStringEntry }
 
 	initDefaults {
 		super.initDefaults;
+		min = -inf;
+		max = inf;
 		this.bgColor = Color.grey(0.6);
 		this.font = Font("Courier", 12);
 		this.textAlignment = 4;
-		this.sendMouse = true;
-		this.sendScroll = true;
 		this.precision = 5;
+		this
+			.setKey(nil, SCUM.keyUp, { |v| v.increment })
+			.setKey(nil, SCUM.keyDown, { |v| v.decrement })
+			.setKey(\S, SCUM.keyUp, { |v| v.increment(fine: true) })
+			.setKey(\S, SCUM.keyDown, { |v| v.decrement(fine: true) })
 	}
 
 	defaultValue { ^0 }
 	valueToString { | obj | ^obj.asFloat.asStringPrec(precision) }
 	stringToValue { | str | ^str.asFloat }
+	value_ { | aNumber | super.value_(aNumber.clip(min, max)) }
 
-	increment { | n=1, fine=false | this.valueAction = this.value + (n * fine.if(fineStep, coarseStep)) }
-	decrement { | n=1, fine=false | this.valueAction = this.value - (n * fine.if(fineStep, coarseStep)) }
+	increment { | n=1, fine=false | this.value = this.value + (n * fine.if(fineStep, coarseStep)) }
+	decrement { | n=1, fine=false | this.value = this.value - (n * fine.if(fineStep, coarseStep)) }
 
 	mouseDown { | evt |
 		lastMousePos = evt.pos;
@@ -215,6 +235,7 @@ SCUMNumberEntry : SCUMTextEntry
 	*propertyKeys {
 		^super.propertyKeys ++ #[\precision];
 	}
+	/*
 	precision_ { | n |
 		var size;
 		precision = n;
@@ -224,6 +245,7 @@ SCUMNumberEntry : SCUMTextEntry
 		size.height = 2.0 * this.padding.y + size.height;
 		this.minSize = size;
 	}
+	*/
 	padding_ { | v |
 		super.padding_(v);
 		this.precision_(this.precision);
@@ -231,17 +253,26 @@ SCUMNumberEntry : SCUMTextEntry
 }
 
 SCUMList : SCUMScrollView {
-	var <font, <items;
-
+	*initClass {
+		this.propertyDefaults.putAll((
+			value: 0,
+			font: { SCUM.desktop.font },
+			textAlignment: 5,
+			fgColorSel: nil, // FIXME
+			bgColorSel: nil, // FIXME
+			xPadding: 4,
+			yPadding: 1
+		));
+	}
+	
 	// properties
 	value { ^this.getProperty(\value) }
-	value_ { |v| this.setProperty(\value, v) }
-	font_ { |v| font = v; this.setProperty(\font, v) }
-	items_ { |v|
-		items = v;
-		this.setProperty(\items, v.asArray);
-	}
-	item { ^items[this.value] }
+	value_ { |v| this.setActiveProperty(\value, v.clip(0, this.items.size)) }
+	font { ^this.getProperty(\font) }
+	font_ { |v| this.setProperty(\font, v) }
+	items { ^this.getProperty(\items) }
+	items_ { |v| this.setProperty(\items, v.asArray) }
+	item { ^this.items.at(this.value) }
 	bgColorSel_ { |v| this.setProperty(\bgColorSel, v) }
 	fgColorSel_ { |v| this.setProperty(\fgColorSel, v) }
 }

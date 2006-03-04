@@ -3,7 +3,7 @@ AbstractListener
 	var model;
 
 	*new { | model |
-		^this.newCopyArgs(model).initModel
+		^super.newCopyArgs(model).initModel
 	}
 	initModel {
 		model.addDependant(this);
@@ -23,10 +23,10 @@ AbstractListener
 
 ActionListener : AbstractListener
 {
-	var <>aspect, <>action;
+	var <aspect, <action;
 
 	*new { | model, aspect, action |
-		^super.new(model).aspect_(aspect).action_(action)
+		^super.newCopyArgs(model, aspect, action).initModel
 	}
 
 	update { | theChanger, what ... moreArgs |

@@ -1,6 +1,6 @@
 + Stethoscope
 {
-	makeWindow { | view |
+	makeSCUMWindow { | view |
 		var style = 0, w;
 		var vb, hb;
 
@@ -22,7 +22,7 @@
 		n.expand = 1;
 		n.fill = 1;
 
-		view.keyDownAction = { | evt | this.keyDown(evt.char) };
+		view.keyDownAction = { | view, evt | this.keyDown(evt.char) };
 
 		zx = n.xZoom.log2;
 		zy = n.yZoom.log2;
@@ -35,7 +35,7 @@
 		hb.xFill = 1;
 		hb.spacing = 2;
 
-		sl = SCUMSlider(hb);
+		sl = SCUMHSlider(hb);
 		sl.action = { arg x;
 			var i;
 			i = this.spec.map(x.value);
@@ -55,7 +55,7 @@
 		view.show;
 	}
 	
-	updateColors {
+	updateSCUMColors {
 		// not yet.
 // 		var no, ni, c;
 // 		no = server.options.numOutputBusChannels;

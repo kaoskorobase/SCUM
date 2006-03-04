@@ -1,24 +1,24 @@
-/*	-*- mode: c++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
-	vi: ts=4 noet sw=4:
+/*  -*- mode: c++; indent-tabs-mode: t; c-basic-offset: 4 -*-
+    vi: noet sta sw=4:
 
-	SCUM. copyright (c) 2004 stefan kersten.
+    SCUM. copyright (c) 2004, 2005 stefan kersten.
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License as
-	published by the Free Software Foundation; either version 2 of the
-	License, or (at your option) any later version.
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 2 of the
+    License, or (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-	02111-1307 USA
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-	$Id: SCUM_Text.hh,v 1.1 2004/07/30 16:20:14 steve Exp $
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+    02111-1307 USA
+
+    $Id$
 */
 
 
@@ -36,7 +36,7 @@
 
 namespace SCUM
 {
-	const size_t maxStringSize = 256;
+    const size_t maxStringSize = 256;
 };
 
 // =====================================================================
@@ -45,20 +45,20 @@ namespace SCUM
 class SCUM_Label : public SCUM_View
 {
 public:
-	SCUM_Label(SCUM_Container* parent, PyrObject* obj);
+    SCUM_Label(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
-	virtual void drawView();
+    virtual void drawView(const SCUM_Rect& damage);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+    virtual void setProperty(const char* key, SCUM_ArgStream& args);
+    //virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
-	virtual SCUM_Size preferredSize();
+    virtual SCUM_Size getMinSize();
 
 protected:
-	SCUM_Font	m_font;
-	SCUM_Point	m_padding;
-	char		m_text[SCUM::maxStringSize];
-	uint8_t		m_textAlign;
+    SCUM_Point	m_padding;
+    SCUM_Size	m_frozenSize;
+    SCUM_Text	m_text;
+    uint8_t		m_textAlign;
 };
 
 // =====================================================================
@@ -67,21 +67,17 @@ protected:
 class SCUM_StringEntry : public SCUM_Label
 {
 public:
-	SCUM_StringEntry(SCUM_Container* parent, PyrObject* obj);
+    SCUM_StringEntry(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
-	virtual void drawView();
+    virtual void drawView(const SCUM_Rect& damage);
 
-	virtual bool mouseDown(int state, const SCUM_Point& where);
-	virtual void mouseMove(int state, const SCUM_Point& where);
-	virtual void mouseUp(int state, const SCUM_Point& where);
-	virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
+    virtual bool mouseDown(int state, const SCUM_Point& where);
+    virtual void mouseMove(int state, const SCUM_Point& where);
+    virtual void mouseUp(int state, const SCUM_Point& where);
+    virtual void scrollWheel(int state, const SCUM_Point& where, const SCUM_Point& delta);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
-
-protected:
-	uint8_t		m_sendMouse;
-	uint8_t		m_sendScroll;
+    //	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
+    //	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 };
 
 // =====================================================================
@@ -90,33 +86,33 @@ protected:
 class SCUM_List : public SCUM_ScrollView
 {
 public:
-	SCUM_List(SCUM_Container* parent, PyrObject* obj);
+    SCUM_List(SCUM_Class* klass, SCUM_Client* client, int oid, SCUM_ArgStream& args);
 
 protected:
-	virtual void drawContent();
-	virtual void drawContentFocus();
+    virtual void drawContent(const SCUM_Rect& damage);
+    virtual void drawContentFocus(const SCUM_Rect& damage);
 
-	virtual bool mouseDownInContent(int, const SCUM_Point&);
+    virtual bool mouseDownInContent(int, const SCUM_Point&);
 
-	virtual void setProperty(const PyrSymbol* key, PyrSlot* slot);
-	virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
+    virtual void setProperty(const char* key, SCUM_ArgStream& args);
+    //virtual void getProperty(const PyrSymbol* key, PyrSlot* slot);
 
 protected:
-	virtual SCUM_Size preferredViewPortSize();
+    virtual SCUM_Size preferredViewPortSize();
 
 private:
-	void updateContentSize();
-	bool setValue(int value, bool send);
+    void updateContentSize();
+    bool setValue(int value, bool send);
 	
 private:
-	SCUM_Font					m_font;
-	std::vector<std::string>	m_items;
-	int							m_value;
-	SCUM_Size					m_itemSize;
-	int							m_textAlign;
-	SCUM_Point					m_padding;
-	SCUM_Color					m_fgColorSel;
-	SCUM_Color					m_bgColorSel;
+    SCUM_Font					m_font;
+    std::vector<std::string>	m_items;
+    int							m_value;
+    SCUM_Size					m_itemSize;
+    int							m_textAlign;
+    SCUM_Point					m_padding;
+    SCUM_Color					m_fgColorSel;
+    SCUM_Color					m_bgColorSel;
 };
 
 #endif // SCUM_TEXT_HH_INCLUDED

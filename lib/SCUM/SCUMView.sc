@@ -2,36 +2,59 @@ SCUMView : SCUMObject
 {
 	var <name, <parent;
 	var <>action, <>keyDownAction, <>keyUpAction, keyDict;
-
+	
+	*initClass {
+		this.propertyDefaults.putAll((
+			// appearance
+			fgColor: { SCUM.desktop.fgColor },
+			bgColor: { SCUM.desktop.bgColor },
+			visible: true,
+			enabled: true,
+			canFocus: true,
+			hasFocus: false,
+			// layout
+			alignment: 5,
+			xExpand: 0,
+			yExpand: 0,
+			xFill: 0,
+			yFill: 0,
+			minSize: Size.new
+		));
+		ActionListener(SCUM, \connected, {
+			SCUM.registerObjectMethod("/event", {Ê| obj name ... args |
+				obj.tryPerform(("prHandle_" ++ name).asSymbol, *args);
+			});
+		});
+	}
+	
 	*new { | parent, function |
-		^super.new.init(parent, function);
+		^super.new.initObject(parent, function);
 	}
-
-	init { | argParent, function |
-		var envir;
+	*make { | function |
+		if (~buildParent.isNil) {
+			Error("missing ~buildParent for view").throw;
+		};
+		^this.new(~buildParent, function)
+	}
+	initObject { | argParent initFunction serverArgs |
 		parent = argParent.asView;
-		this.prInit(parent, this.class.viewClass);
+		super.initObject(initFunction, [parent] ++ serverArgs);
 		this.prAddToParent;
-		this.initDefaults;
-		this.use(function);
-	}
-	initDefaults {
-		this.fgColor = SCUMDesktop.fgColor;
-		this.bgColor = SCUMDesktop.bgColor;
 	}
 
 	*viewClass { ^this }
+	*actionProperty { ^nil }
 	asView { ^this }
 
 	// naming
 	name_ { | argName |
-		var oldName;
-		oldName = name;
-		name = if (argName.notNil, { argName.asString });
-		if (parent.notNil) {
-			parent.prRemoveChild(nil, oldName);
-			parent.prAddChild(this, name);
-		}
+		if (parent.notNil && name.notNil) {
+			parent.prRemoveNamed(name);
+		};
+		name = argName !? { argName.asString };
+		if (parent.notNil && name.notNil) {
+			parent.prAddNamed(name, this);
+		};
 	}
 	printOn { | stream |
 		super.printOn(stream);
@@ -59,9 +82,7 @@ SCUMView : SCUMObject
 	}
 
 	// action
-	doAction {
-		action.value(this);
-	}
+	doAction { |aspect| action.value(this, aspect) }
 
 	// events
 	mouseDown { | evt | evt.ignore }
@@ -70,11 +91,13 @@ SCUMView : SCUMObject
 	scrollWheel { | evt | }
 	contextMenu { | evt | }
 
-	nextKeyHandler {
-		^parent
-	}
-	defaultKeyDownAction { | evt |
-		evt.ignore
+	nextKeyHandler { ^parent }
+	defaultKeyDownAction { | evt | evt.ignore }
+	bubbleUpKeyEvent { | selector, evt |
+		var handler = this.nextKeyHandler;
+		if (handler.notNil) {
+			handler.perform(selector, SCUMKeyEvent(handler, evt.state, evt.char, evt.key))
+		}
 	}
 	keyDown { | evt |
 		this.defaultKeyDownAction(evt);
@@ -85,7 +108,7 @@ SCUMView : SCUMObject
 			this.invokeKeyBinding(evt);
 		};
 		if (evt.isIgnored) {
-			this.nextKeyHandler.keyDown(evt);
+			this.bubbleUpKeyEvent(\keyDown, evt);
 		};
 	}
 
@@ -95,7 +118,7 @@ SCUMView : SCUMObject
 			keyUpAction.value(evt);
 		};
 		if (evt.isIgnored) {
-			this.nextKeyHandler.keyUp(evt);
+			this.bubbleUpKeyEvent(\keyUp, evt);
 		};
 	}
 	defaultKeyUpAction { | evt | evt.ignore }
@@ -103,18 +126,7 @@ SCUMView : SCUMObject
 	setKey { | mods, key, action |
 		var dict0, dict1;
 		dict0 = keyDict ?? { keyDict = IdentityDictionary.new };
-		mods = mods.asArray.inject(0, {
-			| cur, nxt |
-			if (nxt.isKindOf(Symbol)) {
-				nxt = (
-					C: SCUM.modControl,
-					M: SCUM.modCommand,
-					S: SCUM.modShift,
-					K: SCUM.modKeypad
-				).at(nxt) ? 0;
-			};
-			cur | nxt
-		});
+		mods = SCUMInputEvent.specToModMask(mods);
 		if (key.isKindOf(Char)) {
 			key = key.ascii
 		};
@@ -141,7 +153,7 @@ SCUMView : SCUMObject
 			action = keyDict.atFail(evt.state, { ^this }).atFail(evt.key, { ^this });
 			if (action.notNil) {
 				evt.accept;
-				action.value(this);
+				action.value(this, evt);
 			}
 		}
 	}
@@ -164,17 +176,17 @@ SCUMView : SCUMObject
 			\alignment, \xExpand, \yExpand, \xFill, \yFill, \minSize
 		];
 	}
-	bounds    { ^this.getProperty(\bounds, Rect.new) }
-	fgColor   { ^this.getProperty(\fgColor, Color.new) }
+	bounds    { ^this.getProperty(\bounds, Rect) }
+	fgColor   { ^this.getProperty(\fgColor, Color) }
 	fgColor_  { |v| this.setProperty(\fgColor, v) }
-	bgColor   { ^this.getProperty(\bgColor, Color.new) }
+	bgColor   { ^this.getProperty(\bgColor, Color) }
 	bgColor_  { |v| this.setProperty(\bgColor, v) }
 	visible   { ^this.getProperty(\visible) }
-	visible_  { |v| this.setPropertyChanged(\visible, v, { this.changed(\focus) }) }
+	visible_  { |v| this.setProperty(\visible, v) }
 	enabled   { ^this.getProperty(\enabled) }
-	enabled_  { |v| this.setPropertyChanged(\enabled, v, { this.changed(\focus) }) }
+	enabled_  { |v| this.setProperty(\enabled, v) }
 	canFocus  { ^this.getProperty(\canFocus) }
-	canFocus_ { |v| this.setPropertyChanged(\canFocus, v, { this.changed(\focus) }) }
+	canFocus_ { |v| this.setProperty(\canFocus, v) }
 	hasFocus  { ^this.getProperty(\hasFocus) }
 
 	// layout properties
@@ -192,7 +204,7 @@ SCUMView : SCUMObject
 	yFill_     { |v| this.setProperty(\yFill, v) }
 	fill       { ^this.prGetPointProperty(\xFill, \yFill) }
 	fill_      { |v| this.prSetPointProperty(\xFill, \yFill, v.asPoint) }
-	minSize    { ^this.getProperty(\minSize, Size.new) }
+	minSize    { ^this.getProperty(\minSize) }
 	minSize_   { |v| this.setProperty(\minSize, v.asSize) }
 
 	// layout
@@ -213,15 +225,14 @@ SCUMView : SCUMObject
 	}
 
 	// PRIVATE
-	prInit { | parent, class |
-		_SCUM_View_New
-		^this.primitiveFailed;
-	}
 	prAddToParent {
 		parent.prAddChild(this);
 	}
 	prRemoveFromParent {
-		parent.prRemoveChild(this, name);
+		parent.prRemoveChild(this);
+		if (name.notNil) {
+			parent.prRemoveNamed(name);
+		};
 	}
 	prDestroyed {
 		this.prRemoveFromParent;
@@ -232,49 +243,61 @@ SCUMView : SCUMObject
 		super.prDestroyed;
 	}
 	prRaise {
-		_SCUM_View_Raise
-		^this.primitiveFailed
+		SCUM.sendMsg("/raise", id)
 	}
 	prLower {
-		_SCUM_View_Lower
-		^this.primitiveFailed
+		SCUM.sendMsg("/lower", id)
 	}
 	prGetPointProperty { | kx, ky |
 		^Point(this.getProperty(kx), this.getProperty(ky))
 	}
 	prSetPointProperty { | kx, ky, v |
-		this.setProperty(kx, v.x);
-		this.setProperty(ky, v.y);
+		this.perform(kx.asSetter, v.x);
+		this.perform(ky.asSetter, v.y);
 	}
-
-	// PRIVATE
-	// events coming from the window system
-	prHandleFocus {
+	// event handlers
+	prHandle_focus { | flag |
+		this.putProperty(\hasFocus, flag != 0);
+		if (this.hasFocus) {
+			this.window.showFocusFor(1);
+		};
 		this.changed(\focus);
 	}
-	prHandleMouseDown { | state, x, y |
+	prHandle_mouseDown { | state x y |
 		var evt;
 		evt = SCUMMouseEvent(this, state, x, y);
 		this.mouseDown(evt);
 		^evt.isAccepted
 	}
-	prHandleMouseMove { | state, x, y |
-		this.mouseMove(SCUMMouseEvent(this, state, x, y))
+	prHandle_mouseMove { | state x y |
+		this.mouseMove(
+			SCUMMouseEvent(this, state, x, y)
+		)
 	}
-	prHandleMouseUp { | state, x, y |
-		this.mouseUp(SCUMMouseEvent(this, state, x, y))
+	prHandle_mouseUp { | state x y |
+		this.mouseUp(
+			SCUMMouseEvent(this, state, x, y)
+		)
 	}
-	prHandleScrollWheel { | state, x, y, dx, dy |
-		this.scrollWheel(SCUMScrollWheelEvent(this, state, x, y, dx, dy))
+	prHandle_scrollWheel { | state x y dx dy |
+		this.scrollWheel(
+			SCUMScrollWheelEvent(this, state, x, y, dx, dy)
+		)
 	}
-	prHandleContextMenu { | state, x, y |
-		this.contextMenu(SCUMContextMenuEvent(this, state, x, y))
+	prHandle_contextMenu { | state x y |
+		this.contextMenu(
+			SCUMContextMenuEvent(this, state, x, y)
+		)
 	}
-	prHandleKeyDown { | state, char, key |
-		this.keyDown(SCUMKeyEvent(this, state, char, key))
+	prHandle_keyDown { | state char key |
+		this.keyDown(
+			SCUMKeyEvent(this, state, char.clip(0, 255).asAscii, key)
+		)
 	}
-	prHandleKeyUp { | state, char, key |
-		this.keyUp(SCUMKeyEvent(this, state, char, key))
+	prHandle_keyUp { | state char key |
+		this.keyUp(
+			SCUMKeyEvent(this, state, char.clip(0, 255).asAscii, key)
+		)
 	}
 }
 

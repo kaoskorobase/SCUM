@@ -37,9 +37,6 @@ ServerPanel {
 
 		contentFrame = SCUMVBox(frame, { |v|
 			v.fill = 1;
-			v.keyDownAction = #{ | evt |
-				evt.ifChar($r, { evt.view.raise; evt.accept; });
-			};
 		});
 
 		buttonBar = SCUMHBox(contentFrame, { |v|
@@ -129,7 +126,7 @@ ServerPanel {
 
 		countFrame = SCUMHGrid(contentFrame, { |v|
 			v.name = "countFrame";
-			v.wrap = 4;
+			v.dimensions = Size(4, 3);
 			v.xExpand = 1;
 			v.xFill = 1;
 			v.homogenous = true;

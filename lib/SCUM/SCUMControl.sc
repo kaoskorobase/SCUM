@@ -1,5 +1,11 @@
-SCUMControl : SCUMView
-{
+SCUMControl : SCUMView {
+	/*
+	*initClass {
+		this.addProperty(\value, Float /* reasonable default */, 0.0);
+	}
+	*actionProperty { ^\value }
+	*/
+	
 	// connecting with models
 	connect { | controlValue |
 		var spec;
@@ -17,17 +23,15 @@ SCUMControl : SCUMView
 	}
 
 	// properties
+	/*
 	*propertyKeys {
 		^super.propertyKeys ++ [\value]
 	}
 	value { ^this.getProperty(\value) }
-	value_ { |v| this.setProperty(\value, v) }
-	valueAction_ { |v|
-		this.setPropertyAction(\value, v, {
-			this.doAction;
-			this.changed(\value);
-		})
-	}
+	value_ { |v| this.setActiveProperty(\value, v) }
+	*/
+	value { ^0 }
+	value_ { }
 }
 
 // EOF

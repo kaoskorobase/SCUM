@@ -1,3 +1,4 @@
+// OBSOLETE, use SCUMButtonAction
 LookupTable
 {
 	var <>indexMsg=\value, <>table;

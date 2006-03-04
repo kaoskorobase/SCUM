@@ -1,38 +1,45 @@
-SCUMDesktop : SCUMObject
-{
-	classvar instance, objects;
-	classvar <font, <>keyDownAction, <>keyUpAction;
+SCUMDesktop : SCUMObject {
+	var resources /* FIXME: already in SCUMObject! */, <>keyDownAction, <>keyUpAction;
 	classvar <>currentCopy;
 
 	*initClass {
-		instance = this.new.prInit;
-		objects = [];
-
-		this.fgColor = Color(0.2, 0.2, 0.2);
-		this.bgColor = Color(0.6, 0.6, 0.6);
-		this.focusColor = Color(0.1, 0.1, 0.7);
-		this.font = Font("Helvetica", 12);
-
-		UI.registerForShutdown({ instance.prDestroyed });
+		this.propertyDefaults.putAll((
+			fgColor: Color(0.2, 0.2, 0.2, 1),
+			bgColor: Color(0.6, 0.6, 0.6, 1),
+			focusColor: Color(0.1, 0.1, 0.7, 1),
+			font: Font("Helvetica", 12)
+		));
+	}
+	*allocID { ^0 }
+	*new {
+		^super.new.initObject
+	}
+	initObject {
+		super.initObject;
+		resources = [];
+	}
+	initDefaults {
+		//SCUM.makeBundle(nil) {
+			this.class.propertyDefaults.keys.do { | key |
+				// SCUM.sendMsg(*this.setPropertyMsg(key, this.class.propertyDefault(key)));
+				this.perform(key.asSetter, this.class.propertyDefault(key));
+			}
+		//}
 	}
 
 	// windows
-	*windows {
-		^objects.selectMsg(\isKindOf, SCUMWindow)
+	windows {
+		^resources.selectMsg(\isKindOf, SCUMWindow)
 	}
-	*closeAllWindows {
+	closeAllWindows {
 		this.windows.doMsg(\close)
 	}
 
 	// events
-	*keyDown { | evt |
-		evt.ifMod(modCommand, {
-			evt.ifChar($c, { currentCopy = this.copyEvent; ^this });
-			evt.ifChar($v, { if (currentCopy.notNil) { evt.view.pasteEvent(currentCopy) } ^this });
-		});
+	keyDown { | evt |
 		keyDownAction.value(evt)
 	}
-	*keyUp { | evt |
+	keyUp { | evt |
 		keyUpAction.value(evt)
 	}
 
@@ -42,30 +49,40 @@ SCUMDesktop : SCUMObject
 			\size, \fgColor, \bgColor, \focusColor, \font
 		];
 	}
-	*size { ^instance.getProperty(\bounds, Size.new) }
-	*fgColor { ^instance.getProperty(\fgColor, Color.new) }
-	*fgColor_ { |v| instance.setProperty(\fgColor, v) }
-	*bgColor { ^instance.getProperty(\bgColor, Color.new) }
-	*bgColor_ { |v| instance.setProperty(\bgColor, v) }
-	*focusColor { ^instance.getProperty(\focusColor, Color.new) }
-	*focusColor_ { |v| instance.setProperty(\focusColor, v) }
-	*font_ { |v| font = v; instance.setProperty(\font, v) }
+	size { ^this.prQueryProperty(\bounds, Size) }
+	fgColor { ^this.getProperty(\fgColor) }
+	fgColor_ { |v| this.setProperty(\fgColor, v) }
+	bgColor { ^this.getProperty(\bgColor) }
+	bgColor_ { |v| this.setProperty(\bgColor, v) }
+	focusColor { ^this.getProperty(\focusColor) }
+	focusColor_ { |v| this.setProperty(\focusColor, v) }
+	font { ^this.getProperty(\font) }
+	font_ { |v| this.setProperty(\font, v) }
+
+	// server windows
+	showServerPanel {
+		Server.named.keys.asArray.sort.do { | key |
+			Server.named[key].makeSCUMWindow
+		}
+	}
+	makeServerWindows {
+		// obsolete
+		this.showServerPanel;
+	}
 
 	// PRIVATE
-	prInit {
-		_SCUM_Desktop_New
-	}
 	prDestroyed {
 		var list;
-		list = objects.copy;
-		objects = [];
+		list = resources.copy;
+		resources = [];
 		list.doMsg(\prDestroyed);
+		super.prDestroyed;
 	}
-	*prRetain { | obj |
-		objects = objects.add(obj);
+	prRetain { | obj |
+		resources = resources.add(obj);
 	}
-	*prRelease { | obj |
-		objects.remove(obj);
+	prRelease { | obj |
+		resources.remove(obj);
 	}
 }
 

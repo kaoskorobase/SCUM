@@ -2,15 +2,13 @@ SCUMMenuBuilder
 {
 	var menu, radioItems, radioAction, radioUpdateAction;
 
-	*new { ^this.newCopyArgs(List.new) }
-
 	action { | text, action |
 		this.prCloseRadio(false);
-		menu.add(SCUMMenuAction(text, action))
+		this.prAdd(SCUMMenuAction, text, action)
 	}
 	toggle { | text, action, updateAction |
 		this.prCloseRadio(false);
-		menu.add(SCUMMenuToggle(text, action, updateAction))
+		this.prAdd(SCUMMenuToggle, text, action, updateAction)
 	}
 	sep {
 		this.prCloseRadio(false);
@@ -19,11 +17,11 @@ SCUMMenuBuilder
 
 	openMenu { | text |
 		this.prCloseRadio(false);
-		menu.add(SCUMMenuOpen(text))
+		this.prAdd(SCUMMenuOpen, text)
 	}
 	closeMenu {
 		this.prCloseRadio(false);
-		menu.add(SCUMMenuClose.new)
+		this.prAdd(SCUMMenuClose)
 	}
 
 	openRadio { | action, updateAction |
@@ -35,23 +33,35 @@ SCUMMenuBuilder
 	}
 	radio { | text |
 		if (radioItems.isNil) {
-			warning("No open radio group");
+			Error("No open radio group").throw;
 		};
 		radioItems.add(text)
 	}
 
 	menu {
 		this.prCloseRadio(false);
-		^SCUMMenu(menu.asArray.deepCopy);
+		^SCUMMenu(menu.collectMsg(\value).flatten);
+	}
+	clear {
+		menu = nil;
 	}
 
 	// PRIVATE
+	prAdd { | class ... args |
+		menu = menu.add(Message(class, \new, args))
+	}
 	prSep {
-		menu.add(SCUMMenuSeparator.new)
+		this.prAdd(SCUMMenuSeparator)
 	}
 	prCloseRadio { | sep |
 		if (radioItems.notNil) {
-			menu.addAll(SCUMMenuRadioGroup(menu.size, radioItems, radioAction, radioUpdateAction));
+			this.prAdd(
+				SCUMMenuRadioGroup,
+				menu.size,
+				radioAction,
+				radioUpdateAction,
+				radioItems
+			);
 			if (sep) { this.prSep };
 			radioItems = nil;
 		}
@@ -69,12 +79,12 @@ SCUMMenu : SCUMObject
 	init { | argItems |
 		items = argItems;
 		this.prInit(items.collectMsg(\primSpec));
-		SCUMDesktop.prRetain(this);
+		SCUM.desktop.prRetain(this);
 	}
 
 	popup { | pos, item=nil |
-		items.do { | item, i |
-			item.update(this, i);
+		items.do { | elt, i |
+			elt.update(this, i);
 		};
 		item = this.prPopup(pos, item ?? -1);
 		if (item >= 0) {
@@ -95,7 +105,7 @@ SCUMMenu : SCUMObject
 		^this.primitiveFailed
 	}
 	prDestroyed {
-		SCUMDesktop.prRelease(this);
+		SCUM.desktop.prRelease(this);
 		super.prDestroyed;
 	}
 	prPopup { | pos, item |

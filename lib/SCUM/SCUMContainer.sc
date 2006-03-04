@@ -1,15 +1,34 @@
 SCUMContainer : SCUMView {
 	var children, named;
 
-	init { | parent, function |
-		super.init(parent, function);
-		children = List.new;
-		named = Dictionary.new;
+	*initClass {
+		this.propertyDefaults.putAll((
+			xPadding: 0.0,
+			yPadding: 0.0
+		));
 	}
-
+	initObject { | argParent initFunction serverArgs |
+		var func;
+		super.initObject(argParent, initFunction, serverArgs);
+		if (children.isKindOf(Function)) {
+			func = children;
+			children = nil;
+			"SCUM: obsolete use of ~children function, please review your code".warn;
+			Environment.new.put(\buildParent, this).put(\parent, this).use(func);
+		};
+	}
+	initEnvironment {
+		super.initEnvironment;
+		~buildParent = this;
+	}
 	size { ^children.size }
 	at { | key |
 		^key.isNumber.if(children, named).at(key)
+	}
+	children_ { | continuation |
+		if (children.isNil and: { continuation.isKindOf(Function) }) {
+			children = continuation;
+		}
 	}
 	children {
 		^children.copy
@@ -32,19 +51,29 @@ SCUMContainer : SCUMView {
 	prDestroyed {
 		var list;
 		list = children.copy;
-		children.clear;
+		children = nil;
 		list.do { arg child; child.prDestroyed };
 		super.prDestroyed;
 	}
 	prAddChild { | child, name |
+		if (children.isNil) {
+			children = List.new;
+		};
 		if (children.includes(child).not) {
 			children = children.add(child);
 		};
-		if (name.notNil) { named.put(name, child) }
 	}
 	prRemoveChild { | child, name |
 		children.remove(child);
-		if (name.notNil) { named.removeAt(name) }
+	}
+	prAddNamed { | name, child |
+		if (named.isNil) {
+			named = Dictionary.new;
+		};
+		named.put(name, child);
+	}
+	prRemoveNamed { | name |
+		named.removeAt(name);
 	}
 	prRaiseChild { | child |
 		var i;
@@ -92,7 +121,7 @@ SCUMGrid : SCUMContainer {
 	}
 	// properties
 	*propertyKeys {
-		^super.propertyKeys ++ [\homogenous, \spacing, \wrap]
+		^super.propertyKeys ++ [\homogenous, \spacing, \dimensions]
 	}
 	homogenous { ^this.getProperty(\homogenous) }
 	homogenous_ { |v| this.setProperty(\homogenous, v) }
@@ -102,8 +131,10 @@ SCUMGrid : SCUMContainer {
 	ySpacing_ { |v| this.setProperty(\ySpacing, v) }
 	spacing { ^this.prGetPointProperty(\xSpacing, \ySpacing) }
 	spacing_ { |v| this.prSetPointProperty(\xSpacing, \ySpacing, v.asPoint) }
-	wrap { ^this.getProperty(\wrap) }
-	wrap_ { |v| this.setProperty(\wrap, v) }
+// 	wrap { ^this.getProperty(\wrap) }
+// 	wrap_ { |v| this.setProperty(\wrap, v) }
+	dimensions { ^this.getProperty(\dimensions, Size.new) }
+	dimensions_ { |v| this.setProperty(\dimensions, v.asSize) }
 }
 
 SCUMHGrid : SCUMGrid {
@@ -118,9 +149,8 @@ SCUMVGrid : SCUMGrid {
 	}
 }
 
-// not a container
-SCUMScrollView : SCUMView
-{
+// actually not a container
+SCUMScrollView : SCUMView {
 	// properties
 	*propertyKeys {
 		^super.propertyKeys ++ [\hThumb, \vThumb, \thumbSize];
