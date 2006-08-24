@@ -1,4 +1,4 @@
-History
+SCUMHistory
 {
 	var <array, <size;
 

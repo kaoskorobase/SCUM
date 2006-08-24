@@ -152,7 +152,7 @@ SCUMStringEntry : SCUMTextEntry {
 
 	initDefaults {
 		super.initDefaults;
-		history = History(10);
+		history = SCUMHistory(10);
 		ActionListener(this, \value, #{ | view |
 			view.history.push(view.value);
 		});
